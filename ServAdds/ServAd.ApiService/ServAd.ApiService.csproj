@@ -5,11 +5,14 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	  <UserSecretsId>05a8d95a-397e-4d49-98ea-a4f7b9182980</UserSecretsId>
+	  <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
 	<ItemGroup>
 		<!-- FluentEmail for SMTP email sending -->
 		<PackageReference Include="FluentEmail.Core" Version="3.0.2" />
+		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.11" />
+		<PackageRefrence Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
 		<PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.8" />
 
@@ -28,6 +31,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
 
 		<!-- Token Management -->
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
@@ -40,7 +44,9 @@
 
 
 	<ItemGroup>
+		<ProjectReference Include="..\ServAd.AdminDashboard\ServAd.AdminDashboard.csproj" />
 		<ProjectReference Include="..\ServAd.UserDashboard\ServAd.UserDashboard.csproj" />
+		
 	</ItemGroup>
 
 

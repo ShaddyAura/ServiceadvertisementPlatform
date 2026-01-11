@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ServAd.ApiService.Data.Enums;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,6 +10,7 @@ namespace ServAd.ApiService.Data.Entities
         [Key]
         public Guid Id { get; set; }
 
+        // Link to AspNet Identity User
         [ForeignKey("User")]
         public Guid UserId { get; set; }
 
@@ -22,14 +24,43 @@ namespace ServAd.ApiService.Data.Entities
         public string LastName { get; set; } = null!;
 
         // -----------------------------
-        // Account State (Derived, not KYC logic)
+        // Identity Document Images
         // -----------------------------
-        public bool IsVerified { get; set; } = false;
+        [MaxLength(300)]
+        public string? CitizenshipDocumentUrl { get; set; }
+
+        [MaxLength(300)]
+        public string? PassportDocumentUrl { get; set; }
+
+        [MaxLength(300)]
+        public string? NINDocumentUrl { get; set; }
 
         // -----------------------------
-        // Audit
+        // Identity Document Metadata
+        // -----------------------------
+        public DocumentType? UploadedDocumentType { get; set; }
+
+        [MaxLength(100)]
+        public string? UploadedDocumentNumber { get; set; }
+
+        public DateTime? DocumentExpiryDate { get; set; }
+
+        // -----------------------------
+        // Verification
+        // -----------------------------
+        public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
+
+        public bool IsVerified { get; set; } = false;
+
+        public DateTime? VerificationDate { get; set; }
+
+        public Guid? VerifierAdminId { get; set; }
+
+        // -----------------------------
+        // Audit Fields
         // -----------------------------
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         public DateTime? UpdatedAt { get; set; }
     }
 }

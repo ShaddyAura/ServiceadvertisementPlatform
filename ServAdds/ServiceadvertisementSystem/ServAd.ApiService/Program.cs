@@ -4,16 +4,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using ServAd.ApiService.Configuration;
 using ServAd.ApiService.Data;
 using ServAd.ApiService.Data.Seeder;
 using ServAd.ApiService.Services.CurrentUser;
 using ServAd.ApiService.Services.Email;
 using ServAd.ApiService.Services.Jwt;
-using System;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
@@ -21,46 +18,32 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // ============================================================================
-// 1. Database - Docker Optimized
-// ============================================================================
-
-builder.Services.AddDbContext<ServiceDbContext>(options => {
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("Service_Db"),
-        sql => sql.EnableRetryOnFailure());
-
-    // ADD THIS LINE TO SUPPRESS THE ERROR
-    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-});
+// 1. Database
+builder.Services.AddDbContext<ServiceDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Service_Db")));
 
 // ============================================================================
-// 2. HealthChecks - FIXED (Install: Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore)
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<ServiceDbContext>("database")  // ✅ Real SQL connection test
-    .AddCheck("rabbitmq", () => HealthCheckResult.Healthy("RabbitMQ ready"))
-    .AddCheck("jwt", () => HealthCheckResult.Healthy("JWT configured"))
-    .AddCheck("email", () => HealthCheckResult.Healthy("Email service ready"));
-
-// ============================================================================
-// 3. Identity (GUID Primary Keys)
+// 2. Identity (GUID)
 builder.Services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<ServiceDbContext>()
     .AddDefaultTokenProviders();
 
-// Configure Application Cookies
+// Configure Main Application Cookie
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/login";
     options.LogoutPath = "/logout";
     options.AccessDeniedPath = "/access-denied";
+
     options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
     options.SlidingExpiration = true;
+
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-// Fix Google OAuth External Cookies
+// Fix External Login Cookie (Google OAuth)
 builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.ExternalScheme, options =>
 {
     options.Cookie.SameSite = SameSiteMode.None;
@@ -69,26 +52,29 @@ builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.Extern
 });
 
 // ============================================================================
-// 4. JWT Configuration
+// 3. JWT Settings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
 var jwtSettings = builder.Configuration
     .GetSection(JwtSettings.SectionName)
-    .Get<JwtSettings>() ?? throw new InvalidOperationException("JWT Settings not found");
+    .Get<JwtSettings>();
 
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SigningKey));
 
 // ============================================================================
-// 5. Authentication Schemes (Cookie + Google + JWT)
+// 4. Authentication (Cookie + Google + JWT)
 builder.Services.AddAuthentication(options =>
 {
+    // Default auth = Cookies
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
+    // Default challenge = Google login page
     options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
 })
 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
-    options.RequireHttpsMetadata = false; // Docker localhost
+    options.RequireHttpsMetadata = true;
     options.SaveToken = true;
 
     options.TokenValidationParameters = new TokenValidationParameters
@@ -103,90 +89,71 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 
+    // Allow token from header
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
             var header = context.Request.Headers["Authorization"].ToString();
+
             if (header.StartsWith("Bearer "))
                 context.Token = header["Bearer ".Length..];
+
             return Task.CompletedTask;
         }
     };
 });
 
-// Google OAuth
 builder.Services.AddAuthentication()
-    .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
-    {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-        options.CallbackPath = "/signin-google";
+.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+{
+   options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+   options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+   options.CallbackPath = "/signin-google";
 
-        options.Events.OnRemoteFailure = context =>
-        {
-            context.Response.Redirect("https://localhost:5173/login?error=google_cancelled");
-            context.HandleResponse();
-            return Task.CompletedTask;
-        };
+  // 🔥 THIS HANDLES CANCEL BUTTON
+   options.Events.OnRemoteFailure = context =>
+   {
+     context.Response.Redirect(
+      "https://localhost:5173/login?error=google_cancelled"
+     );
+
+     context.HandleResponse(); // 🚫 stops exception page
+     return Task.CompletedTask;
+   };
+});
+
+
+// ============================================================================
+// 5. Email Service (FluentEmail)
+builder.Services.AddFluentEmail(
+        builder.Configuration["EmailSettings:SenderEmail"],
+        builder.Configuration["EmailSettings:SenderName"])
+    .AddSmtpSender(new SmtpClient(builder.Configuration["EmailSettings:SmtpServer"]!)
+    {
+        Port = int.Parse(builder.Configuration["EmailSettings:SmtpPort"]!),
+        Credentials = new NetworkCredential(
+            builder.Configuration["EmailSettings:SmtpUser"],
+            builder.Configuration["EmailSettings:SmtpPass"]
+        ),
+        EnableSsl = true
     });
 
 // ============================================================================
-// 6. FluentEmail Setup
-builder.Services.AddFluentEmail(
-    builder.Configuration["EmailSettings:SenderEmail"],
-    builder.Configuration["EmailSettings:SenderName"])
-.AddSmtpSender(new SmtpClient(builder.Configuration["EmailSettings:SmtpServer"]!)
-{
-    Port = int.Parse(builder.Configuration["EmailSettings:SmtpPort"]!),
-    Credentials = new NetworkCredential(
-        builder.Configuration["EmailSettings:SmtpUser"],
-        builder.Configuration["EmailSettings:SmtpPass"]),
-    EnableSsl = true
-});
-
-// ============================================================================
-// 7. Custom Services
+// 6. Custom Services
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<CurrentUserService>();
 builder.Services.AddHttpContextAccessor();
 
 // ============================================================================
-// 8. Controllers & Swagger
+// 7. Controllers & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ServAd.ApiService", Version = "v1" });
-
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer {token}'",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+builder.Services.AddSwaggerGen();
 
 // ============================================================================
-// 9. CORS for React
+// 8. CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
@@ -198,34 +165,64 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "ServAd.ApiService", Version = "v1" });
+
+    // Add JWT Support
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme.\r\n\r\n" +
+                      "Enter your token like this: Bearer {token}",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+
 // ============================================================================
-// Build App
+// Build the App
 var app = builder.Build();
 
 // ============================================================================
-// 10. HealthChecks Endpoint (CRITICAL for Docker)
-app.MapHealthChecks("/health");
-
-// ============================================================================
-// 11. Database Initialization & Seeding (Docker Safe)
+// 9. Seed Roles & Admin User
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ServiceDbContext>();
-    db.Database.Migrate();
+    var services = scope.ServiceProvider;
+    await RolesSeeder.SeedAsync(services);
+    await UsersSeeder.SeedAdminAsync(services);
 }
 
-
 // ============================================================================
-// 12. Middleware Pipeline
+// 10. Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+
 app.UseCors("AllowReact");
 
-// Cookie policy for Google OAuth
+// Cookie policy required for Google OAuth
 app.UseCookiePolicy(new CookiePolicyOptions
 {
     MinimumSameSitePolicy = SameSiteMode.None,
@@ -236,5 +233,4 @@ app.UseCookiePolicy(new CookiePolicyOptions
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();
