@@ -1,0 +1,84 @@
+﻿version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "SqlPass123"
+    volumes:
+      - sql_data:/var/opt/mssql
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'SqlPass123' -Q 'SELECT 1' || exit 1"
+      ]
+      interval: 10s
+      retries: 10
+    networks:
+      - servad-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 10s
+      retries: 5
+    networks:
+      - servad-network
+
+  app:
+    container_name: servad-api
+    build:
+      context: .
+      dockerfile: ServAd.ApiService/Dockerfile
+    ports:
+      - "8082:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Service_Db: >
+        Server=sqlserver,1433;
+        Database=Service_Db;
+        User Id=sa;
+        Password=SqlPass123;
+        TrustServerCertificate=true;
+        MultipleActiveResultSets=true
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
+      RabbitMQ__Exchange: servad.exchange
+      RabbitMQ__Queue: verification.queue
+      RabbitMQ__RoutingKey: verification.created
+      EmailSettings__SenderEmail: serviceadvertisment0@gmail.com
+      EmailSettings__SmtpServer: smtp.gmail.com
+      EmailSettings__SmtpPort: 587
+      EmailSettings__EnableSSL: "true"
+      EmailSettings__SmtpUser: serviceadvertisment0@gmail.com
+      EmailSettings__SmtpPass: jxlq rjev vwcb eyfw
+      Jwt__Issuer: JobPortal.Users.API
+      Jwt__Audience: JobPortal.Client
+      Jwt__SigningKey: THIS_IS_A_SUPER_SECRET_SIGNING_KEY_AT_LEAST_256_BITS_LONG_2026
+    networks:
+      - servad-network
+    command: ["sh", "-c", "dotnet ServAd.ApiService.dll"]
+
+networks:
+  servad-network:
+    driver: bridge
+
+volumes:
+  sql_data:

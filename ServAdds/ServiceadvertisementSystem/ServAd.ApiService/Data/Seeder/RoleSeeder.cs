@@ -1,0 +1,29 @@
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace ServAd.ApiService.Data.Seeder
+{
+    public static class RolesSeeder
+    {
+        public static async Task SeedAsync(IServiceProvider serviceProvider)
+        {
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+            var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("RolesSeeder");
+
+            var roles = new[] { "Admin", "User" };
+
+            foreach (var roleName in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(roleName))
+                {
+                    await roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
+                    logger.LogInformation("✅ Created role: {Role}", roleName);
+                }
+                else
+                {
+                    logger.LogInformation("ℹ️ Role already exists: {Role}", roleName);
+                }
+            }
+        }
+    }
+}
+
