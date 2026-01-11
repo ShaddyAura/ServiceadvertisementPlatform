@@ -1,0 +1,18 @@
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  text-decoration: none;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.logo-text {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ff7a00; 
+  letter-spacing: 0.5px;
+}

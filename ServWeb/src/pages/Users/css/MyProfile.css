@@ -1,0 +1,162 @@
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* ===== LAYOUT ===== */
+.profile-layout {
+  min-height: 100vh;
+  background: #f4f6f9;
+}
+
+/* ===== TOPBAR ===== */
+.topbar {
+  height: 55px;
+  background: #fff;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  position: fixed;
+  width: 100%;
+  z-index: 10;
+}
+
+.topbar input {
+  width: 280px;
+  padding: 8px;
+}
+
+.logout-btn {
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+}
+
+/* ===== BODY ===== */
+.profile-body {
+  display: flex;
+  padding-top: 55px;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 240px;
+  height: calc(100vh - 55px);
+  background: linear-gradient(180deg, #243b55, #141e30);
+  padding: 20px;
+  position: fixed;
+  color: #fff;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+}
+
+.sidebar a {
+  display: block;
+  padding: 12px;
+  margin-bottom: 6px;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.sidebar a.active,
+.sidebar a:hover {
+  background: #1abc9c;
+}
+
+/* ===== CONTENT ===== */
+.profile-content {
+  margin-left: 240px;
+  padding: 30px;
+  width: calc(100% - 240px);
+}
+
+.profile-content h1 {
+  margin-bottom: 20px;
+}
+
+/* ===== PROFILE CARD ===== */
+.profile-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+}
+
+/* ===== LEFT ===== */
+.profile-left {
+  text-align: center;
+}
+
+.profile-left img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+}
+
+.change-photo {
+  background: #2980b9;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+}
+
+/* ===== RIGHT ===== */
+.profile-right {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full {
+  grid-column: span 2;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* ===== ACTIONS ===== */
+.actions {
+  grid-column: span 2;
+  margin-top: 15px;
+}
+
+.actions button {
+  padding: 8px 18px;
+  border-radius: 6px;
+  border: none;
+  margin-right: 10px;
+}
+
+.actions .save {
+  background: #1abc9c;
+  color: #fff;
+}
+
+.actions .cancel {
+  background: #ccc;
+}

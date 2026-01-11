@@ -1,0 +1,99 @@
+.bookings-page {
+  padding: 20px;
+  color: #fff;
+}
+
+/* HEADER */
+.bookings-header {
+  margin-bottom: 20px;
+}
+
+.bookings-header h2 {
+  font-size: 26px;
+  margin-bottom: 5px;
+}
+
+.bookings-header p {
+  color: #aaa;
+}
+
+/* CARD */
+.bookings-card {
+  background: #343a40;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+/* TABLE */
+.bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bookings-table th,
+.bookings-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #555;
+}
+
+.bookings-table th {
+  color: #ddd;
+  font-weight: 600;
+}
+
+.bookings-table tr:hover {
+  background: #3f464d;
+}
+
+/* STATUS BADGES */
+.status {
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.confirmed {
+  background: #2ecc71;
+  color: #fff;
+}
+
+.status.pending {
+  background: #f39c12;
+  color: #fff;
+}
+
+.status.completed {
+  background: #3498db;
+  color: #fff;
+}
+
+/* BUTTONS */
+.btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+.btn.view {
+  background: #2980b9;
+  color: #fff;
+}
+
+.btn.accept {
+  background: #27ae60;
+  color: #fff;
+}
+
+.btn.reject {
+  background: #c0392b;
+  color: #fff;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}

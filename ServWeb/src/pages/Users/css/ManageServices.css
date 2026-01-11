@@ -1,0 +1,218 @@
+.manage-services {
+  padding: 20px;
+  background: #f4f6f9;
+}
+
+/* ===== HEADER ===== */
+.services-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-btn {
+  background: #2e6fd6;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ===== BOOST BANNER ===== */
+.boost-banner {
+  background: linear-gradient(135deg, #fff4df, #fff);
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.boost-btn {
+  background: #f0a23b;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ===== SERVICE CARD ===== */
+.service-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.boosted-badge {
+  position: absolute;
+  top: -10px;
+  left: 15px;
+  background: #f0c36d;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* ===== LEFT ===== */
+.service-left {
+  display: flex;
+  gap: 15px;
+}
+
+.media-box {
+  position: relative;
+}
+
+.media-box img {
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.duration {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.service-info h3 {
+  margin: 0;
+}
+
+.service-info h4 {
+  margin: 5px 0;
+  font-weight: 600;
+}
+
+.service-info h4 span {
+  font-weight: normal;
+  color: #777;
+}
+
+.service-info p {
+  color: #666;
+  max-width: 450px;
+}
+
+/* ===== RIGHT ===== */
+.service-right {
+  text-align: right;
+}
+
+.status {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #fff;
+}
+
+.status.active {
+  background: #3fa37a;
+}
+
+.status.pending {
+  background: #d89c3c;
+}
+
+.actions {
+  margin-top: 10px;
+}
+
+.actions button {
+  border: none;
+  padding: 6px 10px;
+  margin-left: 5px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.actions .edit {
+  background: #e7f0ff;
+  color: #2e6fd6;
+}
+
+.actions .delete {
+  background: #ffe7e7;
+  color: #d9534f;
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background: #2e6fd6;
+  color: #fff;
+}
+
+.pagination span {
+  margin-left: auto;
+  color: #666;
+}
+
+/* CLICKABLE SERVICE */
+.clickable {
+  cursor: pointer;
+}
+
+/* REVIEWS PANEL */
+.reviews-panel {
+  background: #f9fafb;
+  border-left: 4px solid #2e6fd6;
+  padding: 15px 20px;
+  margin: 10px 0 20px 20px;
+  border-radius: 8px;
+}
+
+.reviews-panel h4 {
+  margin-bottom: 10px;
+}
+
+.review-item {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.review-item span {
+  color: #f1c40f;
+  margin-left: 8px;
+}
+
+.review-item p {
+  margin-top: 5px;
+  color: #555;
+}
+
+.no-reviews {
+  color: #888;
+  font-style: italic;
+}
