@@ -1,0 +1,85 @@
+.verticalbar {
+  padding: 20px;
+  width: 250px;
+  /* Set a fixed height so it knows when to start scrolling */
+  height: 100vh; 
+  position: sticky; /* Keeps it on screen while main content scrolls */
+  top: 0;
+  
+  /* THIS IS THE KEY FIX */
+  overflow-y: auto; 
+  background-color: #f9f9f9;
+  
+  /* Optional: Hide scrollbar for a cleaner look while keeping functionality */
+  /* scrollbar-width: thin;  */
+}
+
+/* Optional: Make the scrollbar look better in Chrome/Safari */
+.verticalbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.verticalbar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  /* Ensure there is padding at the bottom so the last card isn't cramped */
+  padding-bottom: 30px; 
+}
+
+.nav-card {
+  display: flex;
+  flex-direction: column; /* Icon above text */
+  align-items: center;
+  justify-content: center;
+  padding: 20px 10px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #333;
+  transition: all 0.3s ease;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.card-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.card-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Hover State - Red Color */
+.nav-card:hover {
+  background-color: #f72929; /* Red color */
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.3);
+}
+
+/* Active State (React Router NavLink adds .active class) */
+.nav-card.active {
+ background: linear-gradient(
+    to bottom,
+    rgb(244, 6, 6) 0%,
+    rgba(206, 36, 13, 0.8) 100%
+  ) !important;
+}
+
+/* Specifically for logout if you want it red by default */
+.nav-card.logout {
+  color: #ff4d4d;
+}
+
+.nav-card.logout:hover {
+  background-color: #cc0000;
+  color: white;
+}

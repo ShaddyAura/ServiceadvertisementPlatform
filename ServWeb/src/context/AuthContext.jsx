@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { getCurrentUser } from "../Services/authService";  // Assuming this is your service to fetch user data
+import { getCurrentUser } from "../Services/authService";
 
 const AuthContext = createContext(null);
 
@@ -7,22 +7,34 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshUser = async () => {
+    try {
+      const res = await getCurrentUser();
+      
+      // 'res' now contains { id, email, role, profileId } from your backend
+      if (res) {
+        setUser({
+          ...res,
+          id: res.id || res.Id, // Normalizing ID for consistency
+          profileId: res.profileId || res.ProfileId
+        });
+      } else {
+        setUser(null);
+      }
+    } catch (err) {
+      console.error("Auth refresh failed:", err);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Attempt to fetch user data
-    getCurrentUser()
-      .then(u => {
-        if (u) {
-          setUser(u);  // u = {email, role}
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+    refreshUser();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading }}>
+    <AuthContext.Provider value={{ user, setUser, loading, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

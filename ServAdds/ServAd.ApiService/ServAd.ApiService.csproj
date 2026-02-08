@@ -9,9 +9,16 @@
   </PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Controllers\Booking\Dto\BookingReadDto.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<!-- FluentEmail for SMTP email sending -->
 		<PackageReference Include="FluentEmail.Core" Version="3.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.11" />
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.11" />
+		<PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
 		<PackageRefrence Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
 		<PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.8" />
@@ -42,11 +49,16 @@
 		<PackageReference Include="Microsoft.OpenApi" Version="1.2.3" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\ShareLibrary.cs\ShareLibrary.cs.csproj" />
+	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\ServAd.AdminDashboard\ServAd.AdminDashboard.csproj" />
-		<ProjectReference Include="..\ServAd.UserDashboard\ServAd.UserDashboard.csproj" />
-		
+	  <None Include="Controllers\Booking\Dto\BookingReadDto.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\uploads\services\" />
 	</ItemGroup>
 
 

@@ -1,0 +1,43 @@
+.verification-wrapper {
+    background-color: #f8f9fa;
+    min-height: 80vh;
+}
+
+.custom-input {
+    border: 2px solid #eee;
+    padding: 10px;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.custom-input:focus {
+    border-color: #f40606;
+    box-shadow: none;
+}
+
+.upload-box {
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    background: #fafafa;
+    transition: 0.3s;
+}
+
+.upload-box:hover {
+    background: #fff0f0;
+    border-color: #f40606;
+}
+
+.bg-success-subtle { background-color: #e6fffa; }
+.bg-warning-subtle { background-color: #fffaf0; }
+.bg-danger-subtle { background-color: #fff5f5; }
+
+.animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

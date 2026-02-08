@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using ServAd.ApiService.Data.Entities;
+using ShareLibrary.cs.Data.Entities;
+using ShareLibrary.Data.Entities;
 using System;
 using System.ComponentModel.DataAnnotations;
 using static System.Runtime.InteropServices.JavaScript.JSType;

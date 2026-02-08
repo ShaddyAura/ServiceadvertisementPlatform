@@ -6,8 +6,7 @@ WORKDIR /src
 # 1. Copy csproj files from all projects (relative to the context root)
 # This allows for better Docker layer caching
 COPY ["ServAd.ApiService/ServAd.ApiService.csproj", "ServAd.ApiService/"]
-COPY ["ServAd.AdminDashboard/ServAd.AdminDashboard.csproj", "ServAd.AdminDashboard/"]
-COPY ["ServAd.UserDashboard/ServAd.UserDashboard.csproj", "ServAd.UserDashboard/"]
+COPY ["ShareLibrary.cs/ShareLibrary.cs.csproj", "ShareLibrary.cs/"]
 
 # 2. Restore dependencies
 RUN dotnet restore "ServAd.ApiService/ServAd.ApiService.csproj"

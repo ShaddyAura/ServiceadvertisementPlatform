@@ -1,0 +1,136 @@
+/* 1. Universal Typography - Forced Arial for everything */
+.manage-services-container, 
+.manage-services-container * {
+    font-family: 'Arial', 'Helvetica', sans-serif !important;
+}
+
+/* 2. Headings */
+.main-heading {
+    color: #2a3547 !important;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* 3. Form Card & Labels */
+.add-service-card {
+    border-top: 4px solid #dc3545 !important;
+    background-color: #ffffff !important;
+    border-radius: 8px;
+}
+
+.add-service-card label {
+    color: #000000 !important;
+    font-weight: bold;
+}
+
+/* 4. Input Fields */
+.custom-input-white {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.custom-input-white:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.25) !important;
+    outline: none;
+}
+
+/* 5. Table Design - Reference Image Matches */
+.table-red-border {
+    border: 1px solid #eef2f6 !important; 
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.custom-data-table thead th {
+    background-color: #ffffff;
+    color: #5a6a85 !important; /* Muted header text */
+    border-bottom: 1px solid #eef2f6 !important;
+    font-weight: 600;
+    text-transform: none;
+    font-size: 0.9rem;
+    padding: 15px;
+}
+
+.custom-data-table td {
+    vertical-align: middle !important;
+    color: #2a3547 !important;
+    border-top: 1px solid #f1f4f8 !important;
+    padding: 12px 15px;
+}
+
+/* Service Details Column */
+.service-title-text {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #2a3547;
+}
+
+.service-category-text {
+    font-size: 0.75rem;
+    color: #7c8fac;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+/* Price - Bold Red */
+.price-text-bold {
+    color: #d33333 !important;
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+/* 6. Action Icons - Clean No Background (Matching Image) */
+.action-cell {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-action-transparent {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    transition: transform 0.2s;
+}
+
+.btn-action-transparent:hover {
+    transform: scale(1.1);
+}
+
+.icon-teal { color: #49beaf !important; } /* Teal Edit icon */
+.icon-red { color: #e57373 !important; }  /* Soft Red Delete icon */
+
+/* 7. Pagination */
+.custom-red-pagination .page-item {
+    margin: 0 4px;
+}
+
+.custom-red-pagination .page-link {
+    background-color: #ffffff !important;
+    color: #dc3545 !important;
+    border: 1px solid #dee2e6 !important;
+    font-weight: bold;
+    border-radius: 4px !important;
+}
+
+.custom-red-pagination .page-item.active .page-link {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+    border-color: #dc3545 !important;
+}
+
+/* 8. Animations */
+.animate-slide-down {
+    animation: slideDown 0.35s ease-out;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-15px); }
+    to { opacity: 1; transform: translateY(0); }
+}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";   
-import Logo from "../component/Logo";  
+
 
 function Footer() {
   return (
@@ -44,12 +44,9 @@ function Footer() {
           <div className="col-md-4 mb-4">
             <h5 className="footer-title">Quick Links</h5>
             <ul className="list-unstyled footer-links">
-
-              {/* ContactUs Page Link */}
               <li>
                 <Link to="/contact" className="footer-link">Contact Us</Link>
               </li>
-
               <li>Terms & Policies</li>
               <li>Service Guide</li>
               <li>FAQs</li>
@@ -63,46 +60,46 @@ function Footer() {
         </div>
       </div>
 
-      {/* INTERNAL CSS */}
+      {/* UPDATED INTERNAL CSS */}
       <style>{`
         .footer-section {
-          background-color: #cbe8ff !important;
-          color: #000 !important;
+          background-color: #ffffff !important; 
+          color: #000000 !important;
+          border-top: 1px solid #eee;
         }
 
         .footer-title {
           font-size: 20px;
-          font-weight: 600;
+          font-weight: 700;
           margin-bottom: 15px;
+          color: #000;
         }
 
         .footer-list li,
         .footer-links li {
           font-size: 15px;
           margin-bottom: 8px;
-          opacity: 0.85;
+          color: #333;
+          transition: 0.3s;
           cursor: pointer;
-          color: #000;
         }
 
-        .footer-links li:hover {
+        /* Hover Red Logic */
+        .footer-links li:hover, 
+        .footer-link:hover {
+          color: rgb(244, 6, 6) !important;
           opacity: 1;
-          color: #0d6efd;
         }
 
-        /* Link styling */
         .footer-link {
           text-decoration: none;
-          color: #000;
-        }
-
-        .footer-link:hover {
-          color: #0d6efd;
+          color: #333;
+          transition: 0.3s;
         }
 
         /* Subscribe box */
         .subscribe-box {
-          background: white;
+          background: #f8f9fa;
           border-radius: 30px;
           overflow: hidden;
           border: 1px solid #ddd;
@@ -115,29 +112,25 @@ function Footer() {
           padding-left: 15px;
         }
 
-        .subscribe-input::placeholder {
-          color: #666;
-        }
-
         .subscribe-btn {
-          background: #0d6efd;
+          background: rgb(244, 6, 6); /* Red button to match theme */
           border: none;
-          padding: 10px 18px;
+          padding: 10px 22px;
           color: #fff;
           font-size: 18px;
           border-radius: 0 30px 30px 0;
           cursor: pointer;
+          transition: 0.3s;
         }
 
         .subscribe-btn:hover {
-          background: #0b5ed7;
+          background: #000; /* Turns black on hover */
         }
 
         .footer-bottom {
-          border-top: 1px solid #9bb8d6;
+          border-top: 1px solid #eee;
           font-size: 14px;
-          opacity: 0.8;
-          color: #000;
+          color: #666;
         }
       `}</style>
     </footer>

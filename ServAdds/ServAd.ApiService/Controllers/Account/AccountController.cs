@@ -2,14 +2,17 @@
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ServAd.ApiService.Configuration;
 using ServAd.ApiService.Controllers.Account.Dto;
-using ServAd.ApiService.Data;
-using ServAd.ApiService.Data.Entities;
 using ServAd.ApiService.Services.Email;
 using ServAd.ApiService.Services.Jwt;
+using ShareLibrary.cs.Data;
+using ShareLibrary.cs.Data.Entities;
+using ShareLibrary.Data;
+using ShareLibrary.Data.Entities;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
@@ -145,10 +148,11 @@ namespace ServAd.ApiService.Controllers.Account
 
                     // ✅ ADD ROLE INTO CLAIMS (so JWT has role info too)
                     var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Email, user.Email!),
-                new Claim(ClaimTypes.Role, role) // 🔥 Now JWT contains the role!
-            };
+                    {
+                        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                        new Claim(ClaimTypes.Email, user.Email!),
+                       new Claim(ClaimTypes.Role, role) // 🔥 Now JWT contains the role!
+                    };
 
                     // ✅ CREATE JWT TOKEN INCLUDING ROLE CLAIM
                     var (accessToken, expiresIn) = jwtTokenService.CreateToken(claims);
@@ -360,10 +364,12 @@ namespace ServAd.ApiService.Controllers.Account
             var role = roles.FirstOrDefault() ?? "User";
 
             var claims = new List<Claim>
-    {
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+
               new Claim(ClaimTypes.Email, email),
               new Claim(ClaimTypes.Role, role)
-    };
+           };
 
             var (jwt, expiresInSeconds) = jwtTokenService.CreateToken(claims);
 
@@ -414,7 +420,6 @@ namespace ServAd.ApiService.Controllers.Account
 
 
 
-
         [HttpPost("logout")]
         public IActionResult Logout()
         {
@@ -423,14 +428,13 @@ namespace ServAd.ApiService.Controllers.Account
         }
 
         [HttpGet("me")]
-        public IActionResult Me([FromServices] IOptions<JwtSettings> jwtSettings)
+        public async Task<IActionResult> Me([FromServices] IOptions<JwtSettings> jwtSettings)
         {
             var token = Request.Cookies["jwt"];
-            if (token == null)
+            if (string.IsNullOrEmpty(token))
                 return Unauthorized();
 
             var settings = jwtSettings.Value;
-
             var handler = new JwtSecurityTokenHandler();
 
             var validationParams = new TokenValidationParameters
@@ -438,16 +442,12 @@ namespace ServAd.ApiService.Controllers.Account
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateIssuerSigningKey = true,
-                ValidateLifetime = false, // You can enable if needed
-
+                ValidateLifetime = true,
                 ValidIssuer = settings.Issuer,
                 ValidAudience = settings.Audience,
-
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(settings.SigningKey)
                 ),
-
-                // 🔥 REQUIRED: decrypt the encrypted JWT
                 TokenDecryptionKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(settings.EncryptingKey)
                 )
@@ -455,18 +455,43 @@ namespace ServAd.ApiService.Controllers.Account
 
             try
             {
-                var principal = handler.ValidateToken(token, validationParams, out var validatedToken);
+                var principal = handler.ValidateToken(token, validationParams, out _);
 
-                var email = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-                var role = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+                var email = principal.FindFirst(ClaimTypes.Email)?.Value;
+                var role = principal.FindFirst(ClaimTypes.Role)?.Value;
 
-                return Ok(new { email, role });
+                var userIdClaim =
+                principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
+                principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userIdClaim == null)
+                    return Unauthorized();
+
+                var userId = Guid.Parse(userIdClaim);
+
+                var profileId = await _context.Profiles
+                    .Where(p => p.UserId == userId)
+                    .Select(p => p.Id)
+                    .FirstOrDefaultAsync();
+
+                return Ok(new
+                {
+                    id = userId,
+                    email,
+                    role,
+                    profileId
+                });
             }
-              catch (Exception ex)
+            catch
             {
-                return Unauthorized(new { message = "Invalid token", error = ex.Message });
+                return Unauthorized(new { message = "Session expired" });
             }
         }
+
+
+
+
+
 
 
     }

@@ -1,0 +1,71 @@
+.my-profile-container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.table-red-border {
+    border-top: 3px solid #f40606 !important;
+    border-radius: 12px !important;
+}
+
+.avatar-img {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+}
+
+.camera-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: #f40606;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.status-badge.pending { background: #fff3cd; color: #856404; }
+.status-badge.verified { background: #d4edda; color: #155724; }
+
+.custom-input {
+    background: #fdfdfd;
+    border: 1px solid #e0e0e0;
+    font-size: 0.9rem;
+}
+
+.doc-upload-area {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.doc-upload-area:hover {
+    border-color: #f40606;
+    background: #fff5f5;
+}
+
+.preview-small {
+    max-height: 100px;
+    border-radius: 4px;
+}
+
+.bg-success-subtle { background-color: #d1e7dd; }
+.bg-danger-subtle { background-color: #f8d7da; }
+.bg-warning-subtle { background-color: #fff3cd; }

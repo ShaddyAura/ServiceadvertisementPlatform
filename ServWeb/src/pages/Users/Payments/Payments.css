@@ -1,0 +1,68 @@
+.payment-page-container {
+    background-color: #f1f4f8;
+    min-height: 95vh;
+}
+
+.payment-card { border-radius: 24px; }
+
+/* Header Branding */
+.payment-header { background: #2d3436; color: white; transition: 0.3s; }
+.payment-header.esewa { background: #60bb46; }
+.payment-header.khalti { background: #5c2d91; }
+
+.payment-icon-circle {
+    width: 50px; height: 50px; background: rgba(255,255,255,0.2);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto; font-size: 1.4rem;
+}
+
+/* Summary Box */
+.summary-pill {
+    background: #fff5f6; padding: 15px 20px;
+    border-radius: 15px; border: 1px solid #ffe3e5;
+}
+
+/* Gateway Selectors */
+.gateway-selector {
+    border: 2px solid #edf2f7; border-radius: 12px;
+    padding: 15px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: white;
+}
+
+.gateway-selector img { height: 25px; filter: grayscale(100%); opacity: 0.6; }
+
+.gateway-selector.active-esewa { border-color: #60bb46; background: #f0fff4; }
+.gateway-selector.active-esewa img { filter: grayscale(0); opacity: 1; }
+
+.gateway-selector.active-khalti { border-color: #5c2d91; background: #f5f3ff; }
+.gateway-selector.active-khalti img { filter: grayscale(0); opacity: 1; }
+
+/* Form Inputs */
+.auth-input {
+    height: 50px; border-radius: 10px; padding-left: 45px;
+    border: 1px solid #e2e8f0; background: #f8fafc;
+}
+
+.input-icon {
+    position: absolute; left: 15px; top: 17px; color: #94a3b8;
+}
+
+.gateway-badge { font-size: 0.85rem; font-weight: 600; }
+
+/* Buttons */
+.payment-submit-btn {
+    border-radius: 12px; font-size: 1rem; border: none;
+    color: white; transition: 0.3s;
+}
+
+.esewa-btn { background: #60bb46; box-shadow: 0 4px 15px rgba(96, 187, 70, 0.3); }
+.khalti-btn { background: #5c2d91; box-shadow: 0 4px 15px rgba(92, 45, 145, 0.3); }
+
+/* Animations */
+.animate-slide-up { animation: fadeInUp 0.4s ease; }
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.x-small { font-size: 0.7rem; }

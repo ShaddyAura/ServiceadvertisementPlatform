@@ -8,15 +8,34 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ServAd.ApiService.Configuration;
-using ServAd.ApiService.Data;
-using ServAd.ApiService.Data.Seeder;
+using ServAd.ApiService.Services.Booking.Interface;
+using ServAd.ApiService.Services.Booking.Service;
+using ServAd.ApiService.Services.Boosting.Interface;
+using ServAd.ApiService.Services.Boosting.Service;
+using ServAd.ApiService.Services.Category.Interface;
+using ServAd.ApiService.Services.Category.Service;
+using ServAd.ApiService.Services.Chat.Interface;
+using ServAd.ApiService.Services.Chat.Service;
 using ServAd.ApiService.Services.CurrentUser;
 using ServAd.ApiService.Services.Email;
 using ServAd.ApiService.Services.Jwt;
+using ServAd.ApiService.Services.Profile.Interface;
+using ServAd.ApiService.Services.Profile.Service;
+using ServAd.ApiService.Services.RabbitMq.Interface;
+using ServAd.ApiService.Services.RabbitMq.Service;
+using ServAd.ApiService.Services.ServiceListing.Interface;
+using ServAd.ApiService.Services.ServiceListing.Service;
+using ServAd.ApiService.Services.Verification.Interface;
+using ServAd.ApiService.Services.Verification.Service;
+using ServAd.ApiService.Services.Wallet.Interface;
+using ServAd.ApiService.Services.Wallet.Service;
+using ShareLibrary.cs.Data;
+using ShareLibrary.Data;
 using System;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -152,9 +171,48 @@ builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<CurrentUserService>();
 builder.Services.AddHttpContextAccessor();
 
+
+// Register all service
+
+builder.Services.AddSignalR();
+builder.Services.AddHttpClient(); // Required for Payment Gateway API calls (Khalti/eSewa)
+builder.Services.AddScoped<IRabbitmqService, RabbitmqService>();
+
+// --- Business Logic Services ---
+// Service Listing (Images/Videos)
+builder.Services.AddScoped<IServiceListing, ServiceListingService>();
+
+// Booking System
+builder.Services.AddScoped<IServAddBooking, ServAddBookingService>();
+
+// User Wallet & Points (eSewa/Khalti)
+builder.Services.AddScoped<IUserWalletService, UserWalletService>();
+
+// Boosting System (RabbitMQ + Points)
+builder.Services.AddScoped<IBoostingService, BoostingService>();
+
+// Document Verification (Admin/User Flow)
+builder.Services.AddScoped<IDocumentVerificationService, DocumentVerificationService>();
+
+// Real-time Chat (SignalR Integration)
+builder.Services.AddScoped<IChatService, ChatService>();
+
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
 // ============================================================================
 // 8. Controllers & Swagger
-builder.Services.AddControllers();
+// Program.cs
+// Program.cs
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Ignores cycles globally if they appear elsewhere
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+
+        // Bonus: Makes Enums appear as strings (e.g., "Active") instead of numbers (0)
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -208,10 +266,29 @@ app.MapHealthChecks("/health");
 
 // ============================================================================
 // 11. Database Initialization & Seeding (Docker Safe)
+
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ServiceDbContext>();
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<ServiceDbContext>();
+
+    // 1. Run Migrations
     db.Database.Migrate();
+
+    // 2. Run Seeders (Add these lines!)
+    try
+    {
+        // First, seed roles (Admin depends on roles)
+        await ShareLibrary.cs.Data.Seeder.RolesSeeder.SeedAsync(services);
+
+        // Second, seed the Admin user
+        await ShareLibrary.cs.Data.Seeder.UsersSeeder.SeedAdminAsync(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
 }
 
 
@@ -233,6 +310,7 @@ app.UseCookiePolicy(new CookiePolicyOptions
     Secure = CookieSecurePolicy.Always
 });
 
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

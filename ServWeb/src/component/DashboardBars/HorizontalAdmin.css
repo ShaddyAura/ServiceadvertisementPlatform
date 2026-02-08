@@ -1,0 +1,96 @@
+/* Existing horizontalbar styles stay same */
+
+.admin-tag {
+  position: static; 
+  background-color: #2d3436;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.profile-container {
+  position: relative; /* Essential for the absolute box */
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* The box is hidden by default */
+.profile-hover-box {
+  display: none; 
+  position: absolute;
+  top: 50px; /* Adjust based on your bar height */
+  right: 0;
+  width: 220px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  padding: 15px;
+  z-index: 1000;
+  color: #333;
+  border: 1px solid #eee;
+}
+
+/* Show on hover */
+.profile-container:hover .profile-hover-box {
+  display: block;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.hover-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar-icon {
+  font-size: 32px;
+  color: #e35059; /* Your theme red */
+}
+
+.user-details {
+  overflow: hidden;
+}
+
+.user-email {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #2d3436;
+}
+
+.user-role-badge {
+  font-size: 10px;
+  background: #fdeaea;
+  color: #f72929;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+hr {
+  margin: 10px 0;
+  border: 0;
+  border-top: 1px solid #eee;
+}
+
+.hover-footer {
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.2s;
+}
+
+.hover-footer:hover {
+  color: #f72929;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

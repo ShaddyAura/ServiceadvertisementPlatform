@@ -1,0 +1,63 @@
+.admin-page-content {
+  padding: 20px;
+}
+
+.settings-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 30px;
+  border: 1px solid #eee;
+}
+
+.settings-card h5 {
+  font-weight: 700;
+  color: #2d3436;
+  border-bottom: 2px solid #f8f9fa;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #636e72;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.form-control {
+  border: 2px solid #f1f2f6;
+  border-radius: 8px;
+  padding: 12px;
+  transition: border-color 0.3s;
+}
+
+.form-control:focus {
+  border-color: #f72929;
+  box-shadow: none;
+  outline: none;
+}
+
+.btn-save-settings {
+  background: linear-gradient(to bottom, #f40606 0%, #ce240d 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-save-settings:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+.settings-info-text {
+  font-size: 0.85rem;
+  color: #b2bec3;
+  margin-top: 5px;
+}

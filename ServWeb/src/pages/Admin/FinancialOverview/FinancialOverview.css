@@ -1,0 +1,60 @@
+.admin-page-content {
+  padding: 20px;
+}
+
+.finance-card {
+  padding: 30px;
+  border-radius: 16px;
+  color: white;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.finance-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Platform Specific Colors */
+.finance-card.esewa {
+  background: linear-gradient(135deg, #60bb46 0%, #4e9a39 100%);
+  box-shadow: 0 10px 20px rgba(96, 187, 70, 0.2);
+}
+
+.finance-card.khalti {
+  background: linear-gradient(135deg, #5c2d91 0%, #4a2475 100%);
+  box-shadow: 0 10px 20px rgba(92, 45, 145, 0.2);
+}
+
+.platform-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.finance-card h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 15px 0;
+}
+
+.finance-card .small {
+  opacity: 0.9;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Background decoration for the cards */
+.finance-card::after {
+  content: "";
+  position: absolute;
+  right: -20px;
+  bottom: -20px;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}

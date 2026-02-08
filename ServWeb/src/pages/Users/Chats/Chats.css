@@ -1,0 +1,125 @@
+/* Layout Container */
+.chat-page-main {
+    display: flex;
+    flex-direction: column;
+    /* Subtract the height of your Horizontalbar (e.g., 70px) */
+    height: calc(100vh - 70px); 
+    background-color: #f0f2f5;
+    overflow: hidden;
+}
+
+/* Header */
+.chat-header-fixed {
+    background: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0; /* Prevents header from shrinking */
+}
+
+.provider-avatar {
+    width: 40px;
+    height: 40px;
+    background: #e35059;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 12px;
+}
+
+/* Middle Message Area */
+.chat-messages-viewport {
+    flex: 1; /* This is key - it grows to fill all available space */
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.message-row {
+    display: flex;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.message-row.sent { justify-content: flex-end; }
+.message-row.received { justify-content: flex-start; }
+
+.message-bubble-wrapper {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.sent .message-bubble-wrapper {
+    background-color: #e35059;
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+.received .message-bubble-wrapper {
+    background-color: white;
+    color: #333;
+    border-bottom-left-radius: 2px;
+}
+
+.bubble-time {
+    font-size: 0.65rem;
+    margin-top: 4px;
+    text-align: right;
+    opacity: 0.8;
+}
+
+/* Footer Input */
+.chat-input-footer {
+    background: white;
+    padding: 15px 25px;
+    border-top: 1px solid #e0e0e0;
+    flex-shrink: 0; /* Prevents footer from shrinking */
+}
+
+.input-group-custom {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.input-group-custom input {
+    flex: 1;
+    height: 45px;
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    padding: 0 20px;
+    background: #f8f9fa;
+    outline: none;
+}
+
+.send-circle-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #2d3436; /* Dark color from your screenshot */
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+
+.send-circle-btn:hover:not(:disabled) {
+    background-color: #e35059;
+    transform: scale(1.05);
+}
+
+.send-circle-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

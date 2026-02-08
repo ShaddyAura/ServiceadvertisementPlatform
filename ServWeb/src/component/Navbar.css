@@ -1,6 +1,11 @@
 /* NAVBAR BASE */
 .sky-navbar {
-  background: #cbe8ff !important;
+  background: linear-gradient(
+    to bottom, 
+    rgb(244, 6, 6) 0%, 
+    rgba(206, 36, 13, 0.8) 100%
+  ) !important;
+  border-bottom: 1px solid rgba(255, 18, 18, 0.1);
 }
 
 .custom-navbar {
@@ -9,12 +14,18 @@
 
 /* NAV LINKS */
 .nav-link {
-  color: #000 !important;
+  color: #ffffff !important; /* White text by default */
   font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .nav-link:hover {
-  color: #0d6efd !important;
+  color: #000000 !important; /* Black text on hover */
+}
+
+/* Fix for the hamburger icon on mobile to be white */
+.navbar-toggler-icon {
+  filter: invert(1);
 }
 
 /* SERVICES HOVER DROPDOWN */
@@ -32,10 +43,15 @@
   box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Dropdown item hover */
-.custom-hover .dropdown-item:hover {
-  background-color: #0d6efd;
-  color: white !important;
+/* Dropdown item styling */
+.dropdown-item {
+  color: #333; /* Default text for dropdown items (inside white box) */
+  transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa; /* Light grey background */
+  color: #000000 !important; /* Black text on hover */
 }
 
 /* Fix dropdown */
@@ -48,7 +64,7 @@
   min-width: 180px;
   padding: 1rem 1.5rem;
   border-radius: 10px;
-  background: #fff;
+  background: #ffffff;
   border: none;
 }
 
@@ -62,4 +78,12 @@
 .btn-light {
   border-radius: 6px;
   font-weight: 600;
+  color: rgb(244, 6, 6); /* Button text matches theme red */
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-light:hover {
+  background-color: #000000 !important; /* Button turns black on hover */
+  color: #ffffff !important; /* Text turns white on hover */
 }

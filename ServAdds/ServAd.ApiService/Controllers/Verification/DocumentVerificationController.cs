@@ -1,0 +1,80 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using ServAd.ApiService.Controllers.Verification.Dto;
+using ServAd.ApiService.Services.Verification.Interface;
+using ShareLibrary.cs.Data.Entities;
+using ShareLibrary.Data.Entities;
+
+namespace ServAd.ApiService.Controllers.Verification
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class DocumentVerificationController(
+        IDocumentVerificationService verificationService,
+        IWebHostEnvironment env) : ControllerBase
+    {
+        [HttpPost("submitdocuments")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Submit([FromForm] DocumentSubmitDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            // 1. Validation: Ensure both sides are provided
+            if (dto.DocumentFrontSide == null || dto.DocumentBackSide == null)
+            {
+                return BadRequest("Both Front and Back sides of the document are required.");
+            }
+
+            // 2. Save Both Files to Protected Folder
+            string frontPath = await SaveSecureFileAsync(dto.DocumentFrontSide, "Documents/Verification");
+            string backPath = await SaveSecureFileAsync(dto.DocumentBackSide, "Documents/Verification");
+
+            // 3. Map to Entity with split URLs
+            var document = new DocumentVerified
+            {
+                ProfileId = dto.ProfileId,
+                DocumentType = dto.DocumentType,
+                DocumentNumber = dto.DocumentNumber,
+                DocumentFrontSideUrl = frontPath, // Updated
+                DocumentBackSideUrl = backPath,   // Updated
+                ExpiryDate = dto.ExpiryDate
+            };
+
+            // 4. Call Service
+            var result = await verificationService.SubmitDocumentAsync(document);
+            return Ok(result);
+        }
+
+        [HttpPatch("reviewdocuments")]
+        public async Task<IActionResult> Review(Guid id, [FromBody] DocumentReviewDto dto)
+        {
+            var result = await verificationService.ReviewDocumentAsync(
+                id,
+                dto.Status,
+                dto.AdminRemarks,
+                dto.AdminId
+            );
+            return Ok(result);
+        }
+
+        [HttpGet("userdocuments")]
+        public async Task<IActionResult> GetUserDocs(Guid profileId)
+        {
+            return Ok(await verificationService.GetUserDocumentsAsync(profileId));
+        }
+
+        private async Task<string> SaveSecureFileAsync(IFormFile file, string folder)
+        {
+            var path = Path.Combine(env.WebRootPath, folder);
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+
+            // Security: Rename file to Guid to prevent metadata leaks or overwriting
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var fullPath = Path.Combine(path, fileName);
+
+            using var stream = new FileStream(fullPath, FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            return $"/{folder}/{fileName}";
+        }
+    }
+}
