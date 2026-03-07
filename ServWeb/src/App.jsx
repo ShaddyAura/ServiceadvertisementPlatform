@@ -4,31 +4,34 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 import DashboardLayout from "./layouts/DashboardLayout";
+import ServiceProviderRoute from './routes/ServiceProviderRoute';
+import ServiceProviderLayout from "./layouts/ServiceProviderLayout";
+import AdminLayout from "./layouts/AdminLayout";
+import Notification from "./component/Notifications/Notification";
 
 // PUBLIC
 import Home from "./pages/Home";
 import Login from "./auth/Login/Login";
 import Register from "./auth/Register/Register";
+import ProviderRegister from  "./auth/Register/ProviderRegister";
 import Authcallback from "./auth/Authcallback";
 import ForgotPassword from "./auth/Forgot password/ForgotPassword";
 import ResetPassword from "./auth/Reset Password/ResetPassword";
 import ConfirmEmail from "./auth/Confirm Email/ConfirmEmail";
 
 // USER DASHBOARD PAGES
-import UsersDashboard from "./pages/Users/UsersDashboard";
-import ManageServices from "./pages/Users/ManageService/ManageServices";
-import EditService from "./pages/Users/ManageService/EditService";   
-import DeleteService from "./pages/Users/ManageService/DeleteService";
+import UsersDashboard from "./pages/Users/UsersDashboard";   
 import MyProfile from "./pages/Users/Profile/MyProfile";
-import DocumentVerified from "./pages/Users/Profile/DocumentVerified";
 import Payments from "./pages/Users/Payments/Payments";
 import Bookings from "./pages/Users/Bookings/Bookings";
-import Boost from "./pages/Users/Boost/Boost";
 import Reviews from "./pages/Users/Reviews/Review";
 import Chats from "./pages/Users/Chats/Chats";
+import ChatList from "./pages/Users/Chats/ChatList";
+import Points from "./pages/Users/Point/PointsTrans";
+import Reedems from "./pages/Users/ReedemGifts/Reedems";
+import Gifts from "./pages/Users/Gifts/Gifts";
 
 // Admin Dashboard 
-
 import AdCampaigns from "./pages/Admin/AdCampaigns/AdCampaigns";
 import FinancialOverview from "./pages/Admin/FinancialOverview/FinancialOverviews";
 import IdentityVerification  from "./pages/Admin/IdentityVerification/IdentityVerification";
@@ -36,8 +39,25 @@ import SystemDisputes from "./pages/Admin/SystemDisputes/SystemDisputes";
 import UserManagement from "./pages/Admin/UserManagement/UserManagements";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import SystemSettings from "./pages/Admin/SystemSettings/SystemSettings";
+import Categories from "./pages/Admin/Categorys/Categories";
 
-// OTHER
+// ServiceProvider Route
+
+import ProviderDashboard from "./pages/ServiceProvider/ProviderDashboard";
+import ServiceProvider from "./pages/ServiceProvider/ManageService/ServiceProvider";
+import ServiceEditProvider from "./pages/ServiceProvider/ManageService/ServiceEditProvider";   
+import ProfileProvider from "./pages/ServiceProvider/Profile/ProfileProvider";
+import PaymentProvider from "./pages/ServiceProvider/PaymentProviders/PaymentProvider";
+import BookingsProvider from "./pages/ServiceProvider/BookingsProvider/BookingProvider";
+import BoostProvider from "./pages/ServiceProvider/Boost/BoostProvider";
+import Review from "./pages/ServiceProvider/Review/ReviewProvider";
+import ChatProvider from "./pages/ServiceProvider/ChatProvider/ChatProvider";     
+import ChatListProvider from "./pages/ServiceProvider/ChatProvider/ChatListProivider";
+import PointProvider from "./pages/ServiceProvider/Points/PointProvider";
+import ReedemGiftsProvider from "./pages/ServiceProvider/ReedemsGifts/ReedemsGiftsProvider";
+import GiftProvider from "./pages/ServiceProvider/Gifts/GiftProvider";
+
+
 import Services from "./pages/Services";
 import ContactUs from "./pages/ContactUs";
 
@@ -50,53 +70,64 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/providerregister" element= {<ProviderRegister/>}/>
         <Route path="/auth/callback" element={<Authcallback />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/confirm-email" element={<ConfirmEmail />} />
+         <Route path="/Notification" element={<Notification />} />
 
-        {/* PROTECTED NORMAL PAGES */}
+        {/* PROTECTED NORMAL PAGES (Shared) */}
         <Route path="/services" element={<ProtectedRoute><Services /></ProtectedRoute>} />
         <Route path="/contact" element={<ProtectedRoute><ContactUs /></ProtectedRoute>} />
 
-        {/* USER DASHBOARD WITH LAYOUT */}
+        {/* --- USER/CUSTOMER DASHBOARD --- */}
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="/user-dashboard" element={<UsersDashboard />} />
-          
-          {/* Services routes fixed to match your UI navigation */}
-          <Route path="/services/manage" element={<ManageServices />} />
-          <Route path="/services/edit/:id" element={<EditService />} />
-          <Route path="/services/delete/:id" element={<DeleteService />} />
-          
           <Route path="/profile" element={<MyProfile />} />
-          <Route path="/document-verified" element={<DocumentVerified />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/bookings" element={<Bookings />} />
-          <Route path="/boost" element={<Boost />} />
           <Route path="/reviews" element={<Reviews />} />
-          <Route path="/chats" element={<Chats />} />
+          <Route path="/chats/:bookingId" element={<Chats />} />
+          <Route path="/chats" element={<ChatList />} />
+          <Route path="/points" element={<Points />} />
+          <Route path="/reedems" element={<Reedems />} />
+          <Route path="/gifts" element={<Gifts />} />
         </Route>
 
-         
-          {/* ADMIN SECTION */}
-          <Route path="/admin-dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>}>
-             {/* This will render at /admin/dashboard */}
-              <Route index element={<AdminDashboard />} /> 
-              <Route path="admin-dashboard" element={<AdminDashboard />} />
-          
-              {/* Management Pages */}
-              <Route path="admin/users" element={<UserManagement />} />
-              <Route path="verifications" element={<IdentityVerification />} />
-          
-             {/* Financial & Growth */}
-              <Route path="finances" element={<FinancialOverview />} />
-              <Route path="boosts" element={<AdCampaigns />} />
-          
-             {/* Support & System */}
-              <Route path="disputes" element={<SystemDisputes />} />
+    
+     <Route element={ <ServiceProviderRoute><ServiceProviderLayout /></ServiceProviderRoute>}>
+        <Route path="/serviceproviderDashboard" element={<ProviderDashboard />} />
+        <Route path="/services/manage" element={<ServiceProvider />} />
+        <Route path="/services/edit/:id" element={<ServiceEditProvider />} />
+        <Route path="/profiles" element={<ProfileProvider />} />
+        <Route path="/payment" element={<PaymentProvider />} />
+        <Route path="/booking" element={<BookingsProvider />} />
+        <Route path="/boosts" element={<BoostProvider />} />
+        <Route path="/review" element={<Review />} />
+        <Route path="/chat/:bookingId" element={<ChatProvider />} />
+        <Route path="/chat" element={<ChatListProvider />} />
+        <Route path="/point" element={<PointProvider />} />
+        <Route path="/reedem" element={<ReedemGiftsProvider />} />
+        <Route path="/gift" element={<GiftProvider />} />
+      </Route>
 
-              <Route path="settings" element={<SystemSettings />} />
-          </Route>
+
+     <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
+  
+      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+  
+         {/* Relative paths: these combine with the parent path */}
+          <Route path="/users" element={<UserManagement />} />
+         <Route path="/verifications" element={<IdentityVerification />} />
+         <Route path="/finances" element={<FinancialOverview />} />
+          <Route path="/categories" element={<Categories />} />
+         <Route path="/boosts" element={<AdCampaigns />} />
+         <Route path="/disputes" element={<SystemDisputes />} />
+        
+         <Route path="/settings" element={<SystemSettings />} />
+     </Route>
+
       </Routes>
     </BrowserRouter>
   );

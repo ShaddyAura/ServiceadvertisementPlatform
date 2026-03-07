@@ -1,99 +1,223 @@
-.bookings-page {
-  padding: 20px;
-  color: #fff;
+/* =========================
+   PAGE CONTAINER
+========================= */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #ffffff; /* Removed ash color */
+  min-height: 100vh;
 }
 
-/* HEADER */
-.bookings-header {
-  margin-bottom: 20px;
+/* =========================
+   SECTION TITLE
+========================= */
+.section-title {
+  font-weight: 800;
+  background-color: #f7f7f7; /* Deep black */
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  border-left: 5px solid #dc3545;
+  padding-left: 15px;
 }
 
-.bookings-header h2 {
-  font-size: 26px;
-  margin-bottom: 5px;
+.mt {
+  margin-top: 50px;
+  background-color: #f7f7f7; /* Deep black */
 }
 
-.bookings-header p {
-  color: #aaa;
+.cardbooking-card{
+background-color: #f7f7f7; /* Deep black */
 }
 
-/* CARD */
-.bookings-card {
-  background: #343a40;
-  padding: 20px;
-  border-radius: 12px;
+
+/* =========================
+   GRID
+========================= */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+  background-color: #f7f7f7; /* Deep black */
 }
 
-/* TABLE */
-.bookings-table {
+/* =========================
+   CARD (White with Light Red Border)
+========================= */
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid #ffccd0; /* Light red border */
+  border-bottom: 4px solid #dc3545; /* Stronger red base */
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: #dc3545; /* Red border on hover */
+  box-shadow: 0 8px 24px rgba(220, 53, 69, 0.15); /* Reddish shadow on hover */
+}
+
+.card h5 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #000000; /* Deep black */
+}
+
+/* =========================
+   TEXT COLORS
+========================= */
+.price {
+  font-size: 1.1rem;
+  color: #28a745; /* Green */
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.small {
+  font-size: 0.9rem;
+  color: #000000; /* Black */
+}
+
+.small strong {
+  color: #0056b3; /* Blue for names/highlights */
+}
+
+/* =========================
+   ACTION ROW
+========================= */
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+  border-top: 1px solid #ffe5e7;
+  padding-top: 1rem;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.btn.primary {
+  background-color: #dc3545;
+  color: white;
   width: 100%;
-  border-collapse: collapse;
+  margin-top: auto;
+  border-radius: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.bookings-table th,
-.bookings-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #555;
+.btn.primary:hover {
+  background-color: #b21f2d;
 }
 
-.bookings-table th {
-  color: #ddd;
-  font-weight: 600;
-}
-
-.bookings-table tr:hover {
-  background: #3f464d;
-}
-
-/* STATUS BADGES */
-.status {
-  padding: 5px 10px;
+.btn-sm {
+  padding: 8px 12px;
   border-radius: 6px;
-  font-size: 12px;
   font-weight: 600;
-}
-
-.status.confirmed {
-  background: #2ecc71;
-  color: #fff;
-}
-
-.status.pending {
-  background: #f39c12;
-  color: #fff;
-}
-
-.status.completed {
-  background: #3498db;
-  color: #fff;
-}
-
-/* BUTTONS */
-.btn {
-  padding: 5px 10px;
-  border-radius: 6px;
+  font-size: 0.75rem;
   border: none;
-  cursor: pointer;
-  font-size: 12px;
-  margin-right: 5px;
+  transition: transform 0.2s;
 }
 
-.btn.view {
-  background: #2980b9;
-  color: #fff;
+.btn-sm:hover {
+  transform: scale(1.05);
 }
 
-.btn.accept {
-  background: #27ae60;
-  color: #fff;
+.btn-sm.success { background: #28a745; color: white; }
+.btn-sm.process { background: #6f42c1; color: white; }
+.btn-sm.danger { background: #dc3545; color: white; }
+.btn-sm.info { background: #007bff; color: white; }
+.btn-sm.chat { background: #17a2b8; color: white; }
+.btn-sm.trash { background: #f4d7d7; color: white; } /* Black trash button */
+
+/* =========================
+   STATUS TAGS
+========================= */
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
 }
 
-.btn.reject {
-  background: #c0392b;
-  color: #fff;
+.status-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+.status-confirmed { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+.status-process { background: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+.status-completed { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.status-cancelled { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.status-disputed { background: #000000; color: #ffffff; } /* High contrast black for dispute */
+
+/* =========================
+   LOADER
+========================= */
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #dc3545;
+  font-weight: 700;
+  font-size: 1.2rem;
 }
 
-.btn:hover {
-  opacity: 0.85;
+
+.dark-mode .card {
+    background-color: #ffffff;
+    color: #d21010;
+}
+
+/* Force the popup to be white */
+.white-background-popup {
+  background-color: #ffffff !important;
+  border: 1px solid #ffccd0 !important;
+  border-radius: 20px !important;
+}
+
+/* Make Title and Labels Black */
+.black-title-text, 
+.swal-label {
+  color: #000000 !important;
+  font-weight: 700 !important;
+  display: block;
+  text-align: left;
+  margin-top: 10px;
+}
+
+/* Style the input fields */
+.custom-input {
+  background-color: #ffffff !important;
+  color: #000000 !important; /* Text you type will be black */
+  border: 1px solid #ffccd0 !important;
+  border-radius: 8px !important;
+  margin: 10px 0 !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Fix for the placeholder text */
+.custom-input::placeholder {
+  color: #999999 !important;
+}
+
+/* Ensure the Cancel button is visible */
+.swal2-cancel {
+  background: transparent !important;
+  color: #666666 !important;
+  font-weight: 600 !important;
 }

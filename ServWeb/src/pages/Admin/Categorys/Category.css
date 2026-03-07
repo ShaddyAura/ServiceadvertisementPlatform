@@ -1,0 +1,157 @@
+/* Container & Layout */
+.category-page {
+  font-family: 'Inter', sans-serif;
+  color: #333;
+}
+
+.loader-container {
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Header & Buttons */
+.add-btn {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.add-btn:hover {
+  background-color: #4338ca;
+  transform: translateY(-1px);
+}
+
+/* Search Box */
+.search-box {
+  position: relative;
+  max-width: 400px;
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.search-box input {
+  padding-left: 48px; /* increases gap between icon and placeholder */
+}
+
+/* Table Card */
+.category-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden; /* Keeps content inside */
+  border: 1px solid #f0f0f0;
+}
+
+.table { margin-bottom: 0; }
+
+.icon-box {
+  width: 40px;
+  height: 40px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #4f46e5;
+}
+
+/* Fixed Status Badge Logic */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap; /* Prevents text breaking */
+}
+
+.status-badge.active {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.status-badge.inactive {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+/* Action Buttons */
+.btn-action {
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 6px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.btn-edit { background: #eff6ff; color: #2563eb; }
+.btn-edit:hover { background: #2563eb; color: white; }
+
+.btn-delete { background: #fef2f2; color: #dc2626; }
+.btn-delete:hover { background: #dc2626; color: white; }
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050; /* Ensure it's on top */
+}
+
+.modal-content-custom {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header-custom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}

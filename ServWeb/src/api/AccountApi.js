@@ -84,8 +84,13 @@ export const fetchAllServices = () =>
 
 // GET: api/ServiceListing/getservice/guid
 export const fetchServiceById = (id) => 
-  api.get(`/ServiceListing/getservice/${id}`);
+  api.get(`/ServiceListing/getservice?id=${id}`);
 
+// Example in AccountApi.js
+// export const fetchServiceById = (id) => {
+//   return axios.get(`${BASE_URL}/api/services/${id}`); 
+//   // Make sure this matches your .NET controller route exactly
+// };
 // POST: api/ServiceListing/createservice
 export const createService = (formData) => 
   api.post("/ServiceListing/createservice", formData, {
@@ -93,14 +98,26 @@ export const createService = (formData) =>
   });
 
 // PUT: api/ServiceListing/updateservice/guid
+// export const updateService = (id, formData) => 
+//   api.put(`/ServiceListing/updateservice/${id}`, formData, {
+//     headers: { "Content-Type": "multipart/form-data" }
+//   });
+
+export const fetchServicesByProfile = (profileId) =>
+  api.get("/ServiceListing/profileservices", {
+    params: { profileId }
+  });
+
+
+  // Change this in your API file
 export const updateService = (id, formData) => 
-  api.put(`/ServiceListing/updateservice/${id}`, formData, {
+  api.put(`/ServiceListing/updateservice?id=${id}`, formData, {
     headers: { "Content-Type": "multipart/form-data" }
   });
 
 // DELETE: api/ServiceListing/deleteservice/guid
 export const deleteService = (id) => 
-  api.delete(`/ServiceListing/deleteservice/${id}`);
+  api.delete(`/ServiceListing/deleteservice?id=${id}`);
 
 
 
@@ -152,37 +169,27 @@ export const fetchPendingVerifications = () =>
 
 
 
-
-
-
-
 // GET: api/Booking
 export const fetchAllBookings = () => 
     api.get("/Booking");
 
-// GET: api/Booking/getbooking?id=...
-// Matches [HttpGet("getbooking")]
-export const fetchBookingById = (id) => 
-    api.get("/Booking/getbooking", { params: { id } });
+
+    export const getBooking = (id) => 
+    api.delete(`/Booking/getbooking?id=${id}`);
 
 // POST: api/Booking/savebooking
-// Matches [HttpPost("savebooking")]
 export const createBooking = (bookingData) => 
     api.post("/Booking/savebooking", bookingData);
 
-// PATCH: api/Booking/bookingstatus?id=...
-// Matches [HttpPatch("bookingstatus")]
+// ✅ Correct: 'id' is defined as a parameter and used in the URL
 export const updateBookingStatus = (id, status) => 
-    api.patch("/Booking/bookingstatus", status, {
-        params: { id },
-        headers: { "Content-Type": "application/json" }
+    api.patch(`/Booking/bookingstatus?id=${id}`, status, {
+        headers: { 'Content-Type': 'application/json' }
     });
 
-// DELETE: api/Booking/deletebooking?id=...
-// Matches [HttpDelete("deletebooking")]
+// ✅ Correct: 'id' is defined as a parameter
 export const deleteBooking = (id) => 
-    api.delete("/Booking/deletebooking", { params: { id } });
-
+    api.delete(`/Booking/deletebooking?id=${id}`);
 
 // boostings 
 
@@ -199,19 +206,17 @@ export const fetchBoostHistory = (serviceId) =>
 export const fetchBoostStatus = (serviceId) => 
     api.get(`/Boosting/status/${serviceId}`);
 
-
+export const cancelBoost = (serviceId) =>
+  axios.post(`/Boosting/cancel/${serviceId}`);
 
 // chats 
 
 
-// POST: api/Chat/send
-export const sendMessage = (messageDto) => 
-    api.post("/Chat/send", messageDto);
+export const sendMessage = (data) =>
+  api.post(`/Chat/sendmessage`, data);
 
-// GET: api/Chat/history/{bookingId}
-export const fetchChatHistory = (bookingId) => 
-    api.get(`/Chat/history/${bookingId}`);
-
+export const getChatHistory = (bookingId) =>
+  api.get(`/Chat/gethistory/${bookingId}`);
 
 
 
@@ -255,22 +260,148 @@ export const uploadProfileImage = (id, file) => {
     });
 };
 
+export const getAddressHierarchy = () => 
+    api.get(`Profile/addresshierarchy`);
+
 /* ===================== DOCUMENT VERIFICATION ===================== */
 
 // SUBMIT documents
-export const submitVerificationDocs = (formData) =>
-    api.post("/DocumentVerification/submitdocuments", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-    });
+// export const submitVerificationDocs = (formData) =>
+//     api.post("/DocumentVerification/submitdocuments", formData, {
+//         headers: { "Content-Type": "multipart/form-data" }
+//     });
 
 // REVIEW document (admin)
 export const reviewDocument = (id, reviewDto) =>
     api.patch("/DocumentVerification/reviewdocuments", reviewDto, {
-        params: { id }
+        params: { id } // This puts ?id=... in the URL
     });
 
 // GET documents by PROFILE ID
-export const fetchUserDocuments = (profileId) =>
-    api.get("/DocumentVerification/userdocuments", {
+// export const fetchUserDocuments = (profileId) =>
+//     api.get("/DocumentVerification/userdocuments", {
+//         params: { profileId }
+//     });
+  
+export const DeleteDocuments = (profileId) =>
+    api.get("/DocumentVerification/deletedocuments", {
         params: { profileId }
     });
+
+
+// export const updateDocument = (id, formData) =>
+//   api.put(`/DocumentVerification/updatedocument/${id}`, formData, {
+//     headers: { "Content-Type": "multipart/form-data" },
+//   });
+
+
+export const submitVerificationDocs = (formData) =>
+  api.post("/DocumentVerification/submitdocuments", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+
+// Matches PUT /api/DocumentVerification/updatedocument/{id}
+// The {id} must be in the URL path, not after a '?'
+export const updateDocument = (id, formData) =>
+  api.put(`/DocumentVerification/updatedocument/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+// Matches GET /api/DocumentVerification/userdocuments?profileId=...
+export const fetchUserDocuments = (profileId) =>
+  api.get("/DocumentVerification/userdocuments", {
+    params: { profileId }
+  });
+
+
+
+
+
+
+    // POints .......................
+    // ...............................
+
+
+    // Get the user's points ledger/history
+export const GetHistoryPoints = (walletId) =>
+    api.get("/PointTransection/historypoints", {
+        params: { walletId }
+    });
+
+// Check eligibility for daily strike and see lifetime gift progress
+export const GetStrikeStatus = (walletId) =>
+    api.get("/PointTransection/strikestatus", {
+        params: { walletId }
+    });
+
+// Deduct points when a user boosts an ad
+export const SpendForBoost = (walletId, points) =>
+    api.post("/PointTransection/spendforboost", null, {
+        params: { walletId, points }
+    });
+
+
+//................................
+//. Gifts
+//..................
+    
+// Get list of all active gifts/vouchers
+export const GetGifts = () => 
+    api.get("/Gifts/Gift");
+
+// ........................................
+//. reedems gifts
+//..................... 
+
+// Claim a voucher (triggers the backend check against LifetimePurchasedPoints)
+export const ClaimVoucher = (redeemRequest) =>
+    api.post("/ReedemGifts/claim", redeemRequest);
+
+// Get all vouchers earned by the user (Active and Used)
+export const GetMyVouchers = (profileId) =>
+    api.get("/ReedemGifts/myvouchers", {
+        params: { profileId }
+    });
+
+
+
+    //..................
+    // Wallet
+    //..............
+
+  // 1. Make sure 'export' is written clearly
+export const getWallet = (profileId) =>
+    api.get(`/Wallets/getwallet/${profileId}`);
+
+export const purchasePoints = (data) =>
+    api.post(`/Wallets/purchasepoints`, data);
+
+
+// Reviews
+
+export const createReview = (data) => 
+    api.post(`/Reviews/Review`, data);
+
+export const getServiceReviews = (serviceId) => 
+    api.get(`/Reviews/serviceReview?serviceId=${serviceId}`);
+
+
+// Fetch all profiles (User list)
+export const fetchAllProfiles = () => 
+    api.get(`Profile/allprofiles`);
+
+// Fetch all documents (Verification queue)
+export const fetchAllDocuments = () => 
+    api.get(`DocumentVerification/alldocuments`);
+
+
+// Notification 
+
+export const getUserNotifications = (profileId) => 
+    api.get(`/Notification/${profileId}`);
+
+export const markNotificationAsRead = (id) => 
+    api.patch(`/Notification/markread/${id}`);
+
+export const sendManualNotification = (data) => 
+    api.post(`/Notification/sendmanual`, data);

@@ -44,7 +44,7 @@
 .register-wrapper {
   width: 100%;
   min-height: calc(100vh - 70px);
-  background-color: #1b1f24;
+  background-color: #f6f6f7;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -195,3 +195,48 @@
 
   
 }
+
+/* 
+.role-selection {
+  margin-bottom: 20px;
+}
+
+.role-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.role-options {
+  display: flex;
+  gap: 15px;
+}
+
+.role-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.role-item input {
+  display: none; /* Hide original radio button */
+/* }
+
+.role-item span {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.role-item.active {
+  border-color: #4F46E5;
+  background-color: #f5f3ff;
+  color: #4F46E5;
+  box-shadow: 0 0 0 1px #4F46E5;
+}  */

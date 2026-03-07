@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import "./Verticalbar.css"; // Reuse exactly the same CSS
+import "./VerticalAdmin.css"; // Reuse exactly the same CSS
 import {
   FaTachometerAlt,
   FaUsers,
@@ -10,19 +10,21 @@ import {
   FaCogs,
   FaExclamationTriangle,
   FaSignOutAlt,
+  FaList,
 } from "react-icons/fa";
 
 const VerticalAdmin = () => {
-  const adminMenuItems = [
-    { to: "/admin-dashboard", label: "Overview", icon: <FaTachometerAlt /> },
-    { to: "admin/users", label: "Manage Users", icon: <FaUsers /> },
-    { to: "/admin/verifications", label: "Verify IDs", icon: <FaShieldAlt /> }, // Verification Logic
-    { to: "/admin/finances", label: "Platform Cash", icon: <FaFileInvoiceDollar /> }, // Wallet Logic
-    { to: "/admin/boosts", label: "Ad Campaigns", icon: <FaChartLine /> }, // Boosting Logic
-    { to: "/admin/disputes", label: "Disputes", icon: <FaExclamationTriangle /> },
-    { to: "/admin/settings", label: "System Setup", icon: <FaCogs /> },
-    { to: "/login", label: "Logout", icon: <FaSignOutAlt />, className: "logout" },
-  ];
+const adminMenuItems = [
+  { to: "/admin-dashboard", label: "Overview", icon: <FaTachometerAlt /> },
+  { to: "/users", label: "Manage Users", icon: <FaUsers /> }, 
+  { to: "/verifications", label: "Verify IDs", icon: <FaShieldAlt /> }, 
+  { to: "/finances", label: "Platform Cash", icon: <FaFileInvoiceDollar /> },
+  { to: "/boosts", label: "Ad Campaigns", icon: <FaChartLine /> },
+  { to: "/disputes", label: "Disputes", icon: <FaExclamationTriangle /> },
+  { to: "/categories", label: "Categories", icon: <FaList /> },
+  { to: "/settings", label: "System Setup", icon: <FaCogs /> },
+  { to: "/login", label: "Logout", icon: <FaSignOutAlt />, className: "logout" },
+];
 
   return (
     <aside className="verticalbar">

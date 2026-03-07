@@ -1,0 +1,95 @@
+/* Container and Heading */
+.manage-services-container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.main-heading {
+    color: #333;
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 5px;
+}
+
+/* Custom Table Styling to match your theme */
+.table-red-border {
+    border-top: 3px solid #dc3545; /* Red accent matching your delete icons */
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.custom-data-table thead th {
+    background-color: #ffffff;
+    border-bottom: 2px solid #dee2e6;
+    color: #495057;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.custom-data-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.custom-data-table tbody tr:hover {
+    background-color: #fcfcfc;
+}
+
+/* Star Rating Styling */
+.star-rating {
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.text-warning {
+    color: #ffc107 !important; /* Gold stars */
+}
+
+/* Review Comment Styling */
+.review-comment-text {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.5;
+    word-break: break-word;
+    white-space: normal;
+}
+
+/* Back Button Styling */
+.btn-outline-secondary {
+    border-color: #ced4da;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: #fff;
+    transform: translateX(-3px);
+}
+
+/* Customer Info */
+.font-weight-bold {
+    font-weight: 600 !important;
+    color: #2d3436;
+}
+
+.text-muted {
+    font-size: 0.8rem;
+}
+
+/* Animation for table rows */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.custom-data-table tbody tr {
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.dark-mode .text-muted {
+    color: #090909 !important;
+}

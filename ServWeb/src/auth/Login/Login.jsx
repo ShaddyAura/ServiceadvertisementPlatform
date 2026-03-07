@@ -47,7 +47,6 @@ export default function Login() {
       });
     }
 
-    // Clean URL so alert doesn't repeat
     if (error) {
       window.history.replaceState({}, document.title, "/login");
     }
@@ -78,22 +77,31 @@ export default function Login() {
         didOpen: () => Swal.showLoading(),
       });
 
-      // Login
+      // 1. Call Backend Login
       const res = await loginUser(form);
-      const role = res.data?.role || "User";
+      
+      // 2. Extract Role from Response (Returned by your C# login action)
+      const role = res.data?.role;
 
-      // Fetch current user
+      // 3. Fetch current user context
       const user = await getCurrentUser();
       setUser(user);
 
       Swal.close();
 
-      // Redirect
-      navigate(role === "Admin" ? "/admin-dashboard" : "/user-dashboard");
+      // --------------------------------------------------------------
+      // ✅ MULTI-ROLE REDIRECT LOGIC
+      // --------------------------------------------------------------
+if (role === "Admin") {
+    navigate("/admin-dashboard");
+} else if (role === "ServiceProvider") {
+   navigate("/serviceproviderDashboard"); 
+} else {
+    navigate("/user-dashboard");
+}
 
     } catch (err) {
       Swal.close();
-
       Swal.fire({
         icon: "error",
         title: "Login Failed",
@@ -114,12 +122,10 @@ export default function Login() {
 
       <div className="login-wrapper">
         <div className="login-card">
-
           <div className="login-form">
             <h2>Sign in</h2>
 
             <div className="input-box">
-              <i className="fa fa-envelope"></i>
               <input
                 name="email"
                 value={form.email}
@@ -130,7 +136,6 @@ export default function Login() {
             </div>
 
             <div className="input-box">
-              <i className="fa fa-lock"></i>
               <input
                 name="password"
                 value={form.password}
@@ -158,7 +163,7 @@ export default function Login() {
             <button
               onClick={() =>
                 (window.location.href =
-                  "https://localhost:7065/api/account/google-login")
+                  "https://localhost:7065/api/account/google-login?userType=User")
               }
               className="google-btn"
             >
@@ -176,7 +181,6 @@ export default function Login() {
           <div className="login-img">
             <img src="/assets/Login.jpg" alt="Login Visual" />
           </div>
-
         </div>
       </div>
     </div>

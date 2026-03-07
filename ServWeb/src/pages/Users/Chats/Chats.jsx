@@ -1,113 +1,185 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import * as signalR from "@microsoft/signalr";
-import { FaPaperPlane, FaArrowLeft, FaCircle } from "react-icons/fa";
 import { useAuth } from "../../../context/AuthContext";
+import {
+  sendMessage,
+  getChatHistory,
+  fetchAllBookings
+} from "../../../api/AccountApi";
 import "./Chats.css";
 
 export default function Chats() {
   const { bookingId } = useParams();
-  const { state } = useLocation();
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   const [messages, setMessages] = useState([]);
+  const [booking, setBooking] = useState(null);
   const [input, setInput] = useState("");
   const [connection, setConnection] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const scrollRef = useRef();
 
-  // Mock Data for Initial UI
+  // ✅ LOAD BOOKING + HISTORY
   useEffect(() => {
-    const mockHistory = [
-      {
-        senderProfileId: "provider-123",
-        messageText: "Hello! I received your booking for the house cleaning service.",
-        sentAt: new Date(Date.now() - 3600000)
-      },
-      {
-        senderProfileId: user?.profileId,
-        messageText: "Hi! Yes, I was wondering if you could come around 10 AM?",
-        sentAt: new Date(Date.now() - 3000000)
-      },
-      {
-        senderProfileId: "provider-123",
-        messageText: "10 AM works perfectly for me. See you then!",
-        sentAt: new Date(Date.now() - 2000000)
+    if (!bookingId) return;
+
+    const loadChat = async () => {
+      try {
+        setLoading(true);
+
+        const [historyRes, bookingsRes] = await Promise.all([
+          getChatHistory(bookingId),
+          fetchAllBookings()
+        ]);
+
+        const mappedHistory = (historyRes.data || []).map(m => ({
+          id: m.id || m.Id,
+          messageText: m.messageText || m.MessageText,
+          senderProfileId: m.senderProfileId || m.SenderProfileId,
+          sentAt: m.sentAt || m.SentAt
+        }));
+
+        setMessages(mappedHistory);
+
+        const currentBooking = (bookingsRes.data || []).find(
+          b => String(b.id || b.Id) === String(bookingId)
+        );
+
+        setBooking(currentBooking || null);
+      } catch (err) {
+        console.error("Chat load failed:", err);
+      } finally {
+        setLoading(false);
       }
-    ];
-    setMessages(mockHistory);
-  }, [user]);
-
-  // SignalR Connection
-  useEffect(() => {
-    const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:7065/chatHub") 
-      .withAutomaticReconnect()
-      .build();
-    setConnection(newConnection);
-  }, []);
-
-  useEffect(() => {
-    if (connection && bookingId) {
-      connection.start()
-        .then(() => {
-          connection.invoke("JoinBookingGroup", bookingId);
-          connection.on("ReceiveMessage", (msg) => {
-            setMessages(prev => [...prev, msg]);
-          });
-        })
-        .catch(err => console.error("SignalR Error: ", err));
-    }
-  }, [connection, bookingId]);
-
-  const handleSend = (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
-    const newMessage = {
-      senderProfileId: user?.profileId,
-      messageText: input,
-      sentAt: new Date()
     };
 
-    setMessages(prev => [...prev, newMessage]);
-    // API Call would happen here
-    setInput("");
-  };
+    loadChat();
+  }, [bookingId]);
 
+  // ✅ SIGNALR HUB SETUP
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    const newConnection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:7065/chatHub", {
+        accessTokenFactory: () => token
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    setConnection(newConnection);
+
+    return () => {
+      newConnection.stop();
+    };
+  }, []);
+
+  // ✅ CONNECT AND LISTEN
+  useEffect(() => {
+    if (!connection || !bookingId) return;
+
+    const startConnection = async () => {
+      try {
+        if (connection.state === "Disconnected") {
+          await connection.start();
+          await connection.invoke("JoinBookingGroup", bookingId);
+
+          connection.on("ReceiveMessage", msg => {
+            const msgId = msg.id || msg.Id;
+
+            setMessages(prev => {
+              if (prev.find(m => String(m.id) === String(msgId)))
+                return prev;
+
+              return [
+                ...prev,
+                {
+                  id: msgId,
+                  messageText: msg.messageText || msg.MessageText,
+                  // ✅ Matches standard key from backend
+                  senderProfileId: msg.senderProfileId || msg.SenderProfileId,
+                  sentAt: msg.sentAt || msg.SentAt || new Date().toISOString()
+                }
+              ];
+            });
+          });
+        }
+      } catch (err) {
+        console.error("SignalR error:", err);
+      }
+    };
+
+    startConnection();
+  }, [connection, bookingId]);
+
+  // ✅ AUTO SCROLL
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  return (
-    <div className="chat-page-main">
-      {/* 1. Chat Header */}
-      <div className="chat-header-fixed shadow-sm">
-        <button className="btn btn-link text-dark" onClick={() => navigate(-1)}>
-          <FaArrowLeft />
-        </button>
-        <div className="ml-3 d-flex align-items-center">
-          <div className="provider-avatar">
-            {state?.booking?.service?.title?.charAt(0) || "S"}
-          </div>
-          <div className="header-info">
-            <h6 className="mb-0 font-weight-bold">{state?.booking?.service?.title || "Service Chat"}</h6>
-            <small className="text-success"><FaCircle size={8} className="mr-1" /> Active Now</small>
-          </div>
-        </div>
-      </div>
+  // ✅ SEND HANDLER (FIXED)
+  const handleSend = async e => {
+    e.preventDefault();
+    if (!input.trim() || !booking || !user) return;
 
-      {/* 2. Scrollable Message Area */}
-      <div className="chat-messages-viewport">
-        {messages.map((m, i) => {
-          const isMe = m.senderProfileId === user?.profileId;
+    // Determine who is receiving the message
+    const providerId = booking.providerProfileId || booking.ProviderProfileId;
+    const customerId = booking.profileId || booking.ProfileId; // This is the Booker/Customer
+    
+    const isMeProvider = String(providerId) === String(user.profileId);
+    
+    // If I am provider, receiver is customer. If I am customer, receiver is provider.
+    const receiverId = isMeProvider ? customerId : providerId;
+
+    try {
+      await sendMessage({
+        BookingId: bookingId,
+        SenderProfileId: user.profileId,
+        ReceiverProfileId: receiverId, // ✅ Added Receiver mapping
+        MessageText: input.trim()
+      });
+
+      setInput("");
+    } catch (err) {
+      console.error("Send error:", err);
+    }
+  };
+
+  if (loading) return <div className="loading-screen">Loading Conversation...</div>;
+
+  // ✅ HEADER LOGIC
+  let chatUserName = "";
+  if (booking && user) {
+    const providerId = booking.providerProfileId || booking.ProviderProfileId;
+    const isProvider = String(providerId) === String(user.profileId);
+    chatUserName = isProvider 
+        ? (booking.fullName || booking.FullName) 
+        : (booking.providerFullName || booking.ProviderFullName);
+  }
+
+  return (
+    <div className="chat-container">
+      <header className="chat-header">
+        <button className="back-btn" onClick={() => navigate(-1)}>Back</button>
+        <div className="user-info">
+          <h3>{chatUserName || "Chat"}</h3>
+          <span className="online-status">Online</span>
+        </div>
+      </header>
+
+      <div className="chat-body">
+        {messages.map(m => {
+          const isMe = String(m.senderProfileId) === String(user?.profileId);
           return (
-            <div key={i} className={`message-row ${isMe ? 'sent' : 'received'}`}>
-              <div className="message-bubble-wrapper">
-                <div className="bubble-content">{m.messageText}</div>
-                <div className="bubble-time">
+            <div key={m.id} className={isMe ? "msg-row me" : "msg-row them"}>
+              <div className="msg-bubble">
+                <p>{m.messageText}</p>
+                <small>
                   {new Date(m.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
+                </small>
               </div>
             </div>
           );
@@ -115,20 +187,15 @@ export default function Chats() {
         <div ref={scrollRef} />
       </div>
 
-      {/* 3. Fixed Bottom Input Area */}
-      <form className="chat-input-footer" onSubmit={handleSend}>
-        <div className="input-group-custom">
-          <input 
-            type="text" 
-            placeholder="Type your message here..." 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-          />
-          <button type="submit" className="send-circle-btn" disabled={!input.trim()}>
-            <FaPaperPlane />
-          </button>
-        </div>
+      <form className="chat-footer" onSubmit={handleSend}>
+        <input
+          type="text"
+          placeholder="Type a message..."
+          value={input}
+          onChange={e => setInput(e.target.value)}
+        />
+        <button type="submit" className="send-btn">Send</button>
       </form>
     </div>
   );
-}
+} 

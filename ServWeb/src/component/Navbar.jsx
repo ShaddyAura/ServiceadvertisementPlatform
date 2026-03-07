@@ -22,7 +22,6 @@ export default function Navbar() {
       <div className="collapse navbar-collapse" id="navMenu">
         
         <ul className="navbar-nav ms-5 mb-2 mb-lg-0">
-
           <li className="nav-item mx-3">
             <Link className="nav-link" to="/">Home</Link>
           </li>
@@ -49,7 +48,6 @@ export default function Navbar() {
                     <i className="bi bi-house-door me-2"></i> Home Service
                   </Link>
                 </li>
-
                 <li>
                   <Link className="dropdown-item" to="/services/personal">
                     <i className="bi bi-person me-2"></i> Personal Service
@@ -74,15 +72,23 @@ export default function Navbar() {
           <li className="nav-item mx-3">
             <Link className="nav-link" to="/payment">Payment</Link>
           </li>
-
         </ul>
 
         {/* RIGHT SIDE BUTTONS */}
-        <ul className="navbar-nav ms-auto">
+        <ul className="navbar-nav ms-auto align-items-center">
+          
+          {/* BECOME A SELLER - Path to Provider Registration */}
+          <li className="nav-item mx-2">
+            <Link className="nav-link fw-bold text-primary" to="/providerregister">
+              Become a Seller
+            </Link>
+          </li>
+
           <li className="nav-item mx-2">
             <Link className="nav-link" to="/login">Login</Link>
           </li>
 
+          {/* REGISTER - Path to Standard Registration */}
           <li className="nav-item mx-2">
             <Link className="btn btn-light text-primary fw-bold px-3 py-1" to="/register">
               Register

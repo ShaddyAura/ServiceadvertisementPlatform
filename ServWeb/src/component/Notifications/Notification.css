@@ -1,0 +1,213 @@
+/* Container Logic */
+.notification-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+.notification-bell-btn {
+    position: relative;
+    padding: 8px;
+    color: #4b5563;
+    border-radius: 9999px;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.notification-bell-btn:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.unread-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    height: 18px;
+    width: 18px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: #ef4444;
+    font-size: 10px;
+    font-weight: bold;
+    color: white;
+    border: 2px solid white;
+}
+
+/* 🚀 Sizing Requirements: 30% Width / 40% Height */
+.notification-dropdown {
+    position: absolute;
+    right: 0;
+    margin-top: 12px;
+    width: 30vw; /* 30% of viewport width */
+    min-width: 320px; /* fallback for small screens */
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f3f4f6;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.notification-header {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.mark-all-btn {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #2563eb;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.mark-all-btn:hover {
+    text-decoration: underline;
+}
+
+/* 🚀 Height Limitation */
+.notification-list-container {
+    max-height: 40vh; /* 40% of viewport height */
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #f9fafb;
+    position: relative;
+}
+
+.notification-item.active {
+    background-color: #f9fafb;
+}
+
+.notification-item.unread {
+    background-color: rgba(37, 99, 235, 0.03);
+}
+
+.icon-box {
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+
+.content-box {
+    flex: 1;
+}
+
+.notif-title {
+    font-size: 14px;
+    margin: 0;
+}
+
+.unread .notif-title {
+    font-weight: 700;
+    color: #111827;
+}
+
+.notif-message {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 2px 0 0 0;
+    display: -webkit-box;
+    
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notif-time {
+    font-size: 10px;
+    color: #9ca3af;
+    margin-top: 4px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.action-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 20px;
+}
+
+.unread-dot {
+    height: 8px;
+    width: 8px;
+    background-color: #2563eb;
+    border-radius: 9999px;
+}
+
+.delete-btn {
+    color: #d1d5db;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    opacity: 0; /* Hidden by default, shows on hover */
+    transition: all 0.2s;
+}
+
+.notification-item:hover .delete-btn {
+    opacity: 1;
+    color: #ef4444;
+}
+
+.empty-state {
+    padding: 40px 16px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.notification-footer {
+    padding: 8px;
+    background-color: #f9fafb;
+}
+
+.view-all-btn {
+    width: 100%;
+    padding: 8px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: #4b5563;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-all-btn:hover {
+    background-color: #f3f4f6;
+}
+
+/* Custom Scrollbar for better look */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
+}

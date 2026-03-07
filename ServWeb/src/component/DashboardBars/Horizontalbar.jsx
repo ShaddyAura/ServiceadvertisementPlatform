@@ -2,13 +2,36 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Horizontalbar.css";
 import Logo from "../Logo";
-import { FaBell, FaUserCircle, FaCommentDots } from "react-icons/fa";
-import { useAuth } from "../../context/AuthContext"; //
+import { FaUserCircle, FaCommentDots } from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
+import Notification from "../../component/Notifications/Notification"; 
+// 1. Ensure you import the hook and the API
+import { useNotifications } from "../../component/Notifications/useNotifications"; 
+import { getUserNotifications } from "../../api/AccountApi";
 
 const Horizontalbar = () => {
   const [nepalTime, setNepalTime] = useState("");
-  const { user } = useAuth(); // Access { email, role }
+  const { user } = useAuth(); 
   const navigate = useNavigate();
+
+  // 2. Initialize Real-time Notifications state/socket
+  const { notifications, setNotifications } = useNotifications(user?.profileId);
+
+  // 3. Fetch initial notifications from the database on mount
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      if (user?.profileId) {
+        try {
+          const response = await getUserNotifications(user.profileId);
+          setNotifications(response.data);
+        } catch (err) {
+          console.error("Failed to load notifications history:", err);
+        }
+      }
+    };
+
+    fetchInitialData();
+  }, [user?.profileId, setNotifications]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -42,21 +65,23 @@ const Horizontalbar = () => {
         <div className="time">🇳🇵 {nepalTime}</div>
 
         <div className="icon chat-icon" onClick={() => navigate("/chats")} title="Messages">
-          <FaCommentDots />
+          <FaCommentDots size={22} />
           <span className="badge">3</span> 
         </div>
 
-        <div className="icon notification">
-          <FaBell />
+        <div className="notification-wrapper">
+          <Notification 
+            notifications={notifications} 
+            setNotifications={setNotifications} 
+            profileId={user?.profileId}
+          />
         </div>
 
-        {/* Profile Container with Hover Logic */}
         <div className="profile-container">
           <div className="icon profile" onClick={() => navigate("/profile")}>
-            <FaUserCircle />
+            <FaUserCircle size={25} />
           </div>
 
-          {/* Hover Information Box */}
           <div className="profile-hover-box">
             <div className="hover-header">
               <FaUserCircle className="user-avatar-icon" />

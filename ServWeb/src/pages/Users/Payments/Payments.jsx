@@ -1,173 +1,172 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { FaWallet, FaArrowLeft, FaShieldAlt, FaLock, FaUser, FaKey } from "react-icons/fa";
+import { FaArrowLeft, FaShieldAlt, FaWallet } from "react-icons/fa";
+import { useAuth } from "../../../context/AuthContext";
+import { getWallet } from "../../../api/AccountApi"; // Ensure this path is correct
 import "./Payments.css";
 
 export default function Payment() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { serviceId, planType, amount } = location.state || { amount: 0, planType: "N/A" };
-
-  const [selectedGateway, setSelectedGateway] = useState(""); // 'eSewa' or 'Khalti'
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { user } = useAuth();
   
-  // Credentials state
-  const [credentials, setCredentials] = useState({ identifier: "", pin: "" });
+  const { amount, planType } = location.state || { amount: 0, planType: "N/A" };
+
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [wallet, setWallet] = useState(null);
+  const [credentials, setCredentials] = useState({ 
+    esewaId: "", esewaPw: "", 
+    khaltiId: "", khaltiPw: "" 
+  });
+
+  // Fetch Wallet Balance on mount
+  useEffect(() => {
+    if (user?.profileId) {
+      fetchWalletDetails();
+    }
+  }, [user]);
+
+  const fetchWalletDetails = async () => {
+    try {
+      const res = await getWallet(user.profileId);
+      setWallet(res.data);
+    } catch (err) {
+      console.error("Error fetching wallet:", err);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCredentials(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePayment = async (e) => {
-    e.preventDefault();
-    
-    if (!credentials.identifier || !credentials.pin) {
-      return Swal.fire("Input Required", `Please enter your ${selectedGateway} ID and PIN.`, "warning");
+  const handlePayment = async (gateway) => {
+    const isEsewa = gateway === "eSewa";
+    const id = isEsewa ? credentials.esewaId : credentials.khaltiId;
+    const pw = isEsewa ? credentials.esewaPw : credentials.khaltiPw;
+
+    if (!id || !pw) {
+      return Swal.fire("Required", `Please enter your ${gateway} credentials.`, "warning");
     }
 
     const result = await Swal.fire({
-      title: "Authorize Transaction",
-      text: `Confirm payment of Rs. ${amount} for ${planType} plan?`,
-      icon: "question",
+      title: "Confirm Payment",
+      text: `Confirm payment of Rs. ${amount} via ${gateway}?`,
+      icon: "info",
       showCancelButton: true,
-      confirmButtonText: "Authorize",
-      confirmButtonColor: selectedGateway === "eSewa" ? "#60bb46" : "#5c2d91",
-      cancelButtonColor: "#d33",
+      confirmButtonText: "Confirm",
+      confirmButtonColor: isEsewa ? "#60bb46" : "#5c2d91",
     });
 
     if (result.isConfirmed) {
       setIsProcessing(true);
+      try {
+        // Mock API call for payment
+        // await processPayment({ profileId: user.profileId, amount, gateway });
 
-      // Simulate API verification (Checking credentials & Balance in backend later)
-      setTimeout(() => {
-        setIsProcessing(false);
-        Swal.fire({
-          title: "Payment Successful!",
-          html: `<div class="text-success"><b>Transaction ID:</b> #TXN-${Math.floor(Math.random()*1000000)}</div>`,
-          icon: "success",
-          confirmButtonText: "Back to Dashboard",
-          confirmButtonColor: "#e35059"
-        }).then(() => {
-          navigate("/dashboard/manage-services");
+        await Swal.fire({
+            title: "Success!",
+            text: "Transaction completed successfully.",
+            icon: "success",
+            timer: 2000
         });
-      }, 2500);
+        navigate("/dashboard"); 
+      } catch (error) {
+        Swal.fire("Error", "Transaction could not be completed.", "error");
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
-  if (!location.state) {
-    return (
-      <div className="text-center p-5">
-        <h4>No payment details found.</h4>
-        <button className="btn btn-danger mt-3" onClick={() => navigate(-1)}>Go Back</button>
-      </div>
-    );
-  }
-
   return (
-    <div className="payment-page-container p-4 animate-slide-down">
-      <div className="row justify-content-center">
-        <div className="col-lg-6 col-md-8">
-          <button className="btn btn-link text-dark pl-0 mb-3 text-decoration-none" onClick={() => navigate(-1)}>
-            <FaArrowLeft className="mr-2" /> Back to Plans
-          </button>
+    <div className="payment-page-wrapper">
+      <div className="container py-5">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+            <button className="back-link btn btn-link text-dark p-0" onClick={() => navigate(-1)}>
+                <FaArrowLeft /> Back
+            </button>
+            <div className="badge bg-light text-dark p-2 border shadow-sm">
+                <FaShieldAlt className="text-success me-1" /> Secure SSL Encrypted
+            </div>
+        </div>
 
-          <div className="card shadow-lg border-0 payment-card overflow-hidden">
-            {/* Header */}
-            <div className={`payment-header text-center py-4 ${selectedGateway.toLowerCase()}`}>
-               <div className="payment-icon-circle shadow-sm">
-                  <FaShieldAlt />
-               </div>
-               <h4 className="font-weight-bold mt-3 mb-0">Secure Payment</h4>
-               <p className="small opacity-75">Service Boost Authorization</p>
+        <div className="row justify-content-center">
+          <div className="col-lg-9">
+            {/* Summary Row */}
+            <div className="alert alert-secondary border-0 shadow-sm d-flex justify-content-between align-items-center p-3 mb-4">
+                <div>
+                    <span className="text-muted small d-block">Subscribing to</span>
+                    <strong className="h5 mb-0">{planType} Plan</strong>
+                </div>
+                <div className="text-end">
+                    <span className="text-muted small d-block">Total Payable</span>
+                    <strong className="h4 mb-0 text-danger">Rs. {amount}</strong>
+                </div>
             </div>
 
-            <div className="card-body px-4">
-              {/* Summary Section */}
-              <div className="summary-pill d-flex justify-content-between align-items-center mb-4">
-                 <div>
-                    <span className="d-block x-small text-muted text-uppercase">Total Payable</span>
-                    <span className="h4 font-weight-bold mb-0">Rs. {amount}</span>
-                 </div>
-                 <div className="text-right">
-                    <span className="badge badge-danger px-3 py-2">{planType} Plan</span>
-                 </div>
-              </div>
-
-              <h6 className="font-weight-bold mb-3"><FaLock className="mr-2 text-muted" /> Choose Gateway</h6>
-              
-              <div className="row no-gutters mb-4">
-                <div className="col-6 pr-2">
-                  <div 
-                    className={`gateway-selector ${selectedGateway === "eSewa" ? "active-esewa" : ""}`}
-                    onClick={() => { setSelectedGateway("eSewa"); setCredentials({identifier: "", pin: ""}); }}
-                  >
-                    <img src="https://itunestime.com/wp-content/uploads/2021/04/esewa_logo-1.png" alt="eSewa" />
-                  </div>
+            <div className="payment-grid">
+              {/* eSewa Card */}
+              <div className="payment-card esewa-theme shadow-sm border-0">
+                <div className="card-top p-3 text-center border-bottom">
+                  <img src="/assets/esewa.png" alt="eSewa" style={{ height: "40px" }} />
                 </div>
-                <div className="col-6 pl-2">
-                  <div 
-                    className={`gateway-selector ${selectedGateway === "Khalti" ? "active-khalti" : ""}`}
-                    onClick={() => { setSelectedGateway("Khalti"); setCredentials({identifier: "", pin: ""}); }}
-                  >
-                    <img src="https://khalti.com/static/img/logo1.png" alt="Khalti" />
+                <div className="card-body-custom p-4">
+                  <div className="input-box mb-3">
+                    <label className="small fw-bold">eSewa ID (Mobile Number)</label>
+                    <input type="text" name="esewaId" className="form-control" value={credentials.esewaId} onChange={handleInputChange} placeholder="98XXXXXXXX" />
                   </div>
-                </div>
-              </div>
-
-              {/* DYNAMIC CREDENTIALS FORM */}
-              {selectedGateway && (
-                <div className="credentials-section animate-slide-up">
-                  <div className="gateway-badge mb-3" style={{ color: selectedGateway === 'eSewa' ? '#60bb46' : '#5c2d91' }}>
-                    Logging into <strong>{selectedGateway}</strong>
+                  <div className="input-box mb-4">
+                    <label className="small fw-bold">Password / MPIN</label>
+                    <input type="password" name="esewaPw" className="form-control" value={credentials.esewaPw} onChange={handleInputChange} placeholder="****" />
                   </div>
-                  
-                  <div className="form-group mb-3 position-relative">
-                    <FaUser className="input-icon" />
-                    <input 
-                      type="text" 
-                      className="form-control auth-input" 
-                      placeholder={selectedGateway === "eSewa" ? "eSewa ID (Mobile/Email)" : "Khalti ID (Mobile Number)"}
-                      name="identifier"
-                      value={credentials.identifier}
-                      onChange={handleInputChange}
-                      autoComplete="off"
-                    />
-                  </div>
-
-                  <div className="form-group mb-4 position-relative">
-                    <FaKey className="input-icon" />
-                    <input 
-                      type="password" 
-                      className="form-control auth-input" 
-                      placeholder={selectedGateway === "eSewa" ? "eSewa MPIN" : "Khalti PIN"}
-                      name="pin"
-                      value={credentials.pin}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-
-                  <button 
-                    className={`btn btn-block py-3 font-weight-bold payment-submit-btn ${selectedGateway.toLowerCase()}-btn`}
-                    disabled={isProcessing}
-                    onClick={handlePayment}
-                  >
-                    {isProcessing ? (
-                      <span className="spinner-border spinner-border-sm"></span>
-                    ) : (
-                      `Securely Pay Rs. ${amount}`
-                    )}
+                  <button className="btn w-100 pay-btn esewa text-white fw-bold py-2" onClick={() => handlePayment("eSewa")} disabled={isProcessing}>
+                    {isProcessing ? "Processing..." : `Pay Rs. ${amount}`}
                   </button>
                 </div>
-              )}
+              </div>
+
+              {/* Khalti Card */}
+              <div className="payment-card khalti-theme shadow-sm border-0">
+                <div className="card-top p-3 text-center border-bottom">
+                  <img src="/assets/khelti.png" alt="Khalti" style={{ height: "40px" }} />
+                </div>
+                <div className="card-body-custom p-4">
+                  <div className="input-box mb-3">
+                    <label className="small fw-bold">Khalti ID (Mobile Number)</label>
+                    <input type="text" name="khaltiId" className="form-control" value={credentials.khaltiId} onChange={handleInputChange} placeholder="98XXXXXXXX" />
+                  </div>
+                  <div className="input-box mb-4">
+                    <label className="small fw-bold">Khalti PIN</label>
+                    <input type="password" name="khaltiPw" className="form-control" value={credentials.khaltiPw} onChange={handleInputChange} placeholder="****" />
+                  </div>
+                  <button className="btn w-100 pay-btn khalti text-white fw-bold py-2" onClick={() => handlePayment("Khalti")} disabled={isProcessing}>
+                    {isProcessing ? "Processing..." : `Pay Rs. ${amount}`}
+                  </button>
+                </div>
+              </div>
             </div>
-            
-            <div className="card-footer bg-light border-0 text-center py-3">
-               <span className="text-muted x-small uppercase">
-                  Your credentials are never stored. Verified by {selectedGateway || "Merchant"} API.
-               </span>
+
+            {/* --- NEW: Wallet Balance Footer Card --- */}
+            <div className="wallet-balance-footer mt-5 p-4 bg-white rounded shadow-sm border d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center">
+                    <div className="wallet-icon-circle me-3">
+                        <FaWallet className="text-danger h4 m-0" />
+                    </div>
+                    <div>
+                        <h6 className="mb-0 fw-bold">System Wallet</h6>
+                        <small className="text-muted">Available balance for boosting</small>
+                    </div>
+                </div>
+                <div className="text-end">
+                    <h4 className="mb-0 fw-bold text-dark">
+                        {wallet ? `Rs. ${wallet.balance}` : "Loading..."}
+                    </h4>
+                    <span className="badge bg-success-soft text-success small">Verified Account</span>
+                </div>
             </div>
+
           </div>
         </div>
       </div>

@@ -16,11 +16,17 @@ const Verticalbar = () => {
   const menuItems = [
     { to: "/user-dashboard", label: "Dashboard", icon: <FaTachometerAlt /> },
     { to: "/profile", label: "My Profile", icon: <FaUser /> },
-    { to: "/services/manage", label: "My Services", icon: <FaTools /> },
-    { to: "/boost", label: "Boost Services", icon: <FaRocket /> },
+   
+    // { to: "/boost", label: "Boost Services", icon: <FaRocket /> },
     { to: "/bookings", label: "Bookings", icon: <FaCalendarCheck /> },
-    { to: "/payments", label: "Payments", icon: <FaMoneyBill /> },
-    { to: "/reviews", label: "Reviews", icon: <FaStar /> },
+    // { to: "/payments", label: "Payments", icon: <FaMoneyBill /> },
+    // { to: "/reviews", label: "Reviews", icon: <FaStar /> },
+    // { to: "/points", label: "points", icon: <FaStar /> },
+    { to: "/payments", label: "Payments", icon: <FaStar /> },
+    { to: "/reedems", label: "ReedemGifts", icon: <FaStar /> },
+    { to: "/gifts", label: "Gifts", icon: <FaStar /> },
+
+
     { to: "/login", label: "Logout", icon: <FaSignOutAlt />, className: "logout" },
   ];
 

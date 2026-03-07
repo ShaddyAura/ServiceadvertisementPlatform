@@ -11,12 +11,13 @@ export function AuthProvider({ children }) {
     try {
       const res = await getCurrentUser();
       
-      // 'res' now contains { id, email, role, profileId } from your backend
+      // 'res' now contains { id, email, role, profileId , fullname} from your backend
       if (res) {
         setUser({
           ...res,
-          id: res.id || res.Id, // Normalizing ID for consistency
-          profileId: res.profileId || res.ProfileId
+          id: res.id || res.Id, 
+          profileId: res.profileId || res.ProfileId,
+          fullname: res.fullname || res.Fullname
         });
       } else {
         setUser(null);

@@ -1,0 +1,30 @@
+.star-rating {
+  display: flex;
+  align-items: center;
+}
+
+.btn-star {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1.8rem;
+  transition: transform 0.1s ease;
+}
+
+.btn-star:hover {
+  transform: scale(1.1);
+}
+
+.btn-star.on {
+  color: #ffc107; /* Gold */
+}
+
+.btn-star.off {
+  color: #e4e5e9; /* Gray */
+}
+
+.star {
+  margin-right: 5px;
+}

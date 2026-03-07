@@ -1,51 +1,58 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaComments, FaClock, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaTrash } from "react-icons/fa";
-// Centralized API imports from AccountApi as requested
-import { 
-  fetchAllBookings, 
-  fetchAllServices, 
-  updateBookingStatus, 
-  deleteBooking 
-} from "../../../api/AccountApi"; 
+import {
+  fetchAllServices,
+  fetchAllBookings,
+  createBooking,
+  updateBookingStatus,
+  deleteBooking
+} from "../../../api/AccountApi";
+import {
+  FaPlus,
+  FaTrash,
+  FaClock,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaComments,
+  FaSpinner,
+  FaHandshake,
+  FaExclamationTriangle,
+  FaInfoCircle
+} from "react-icons/fa";
 import "./Bookings.css";
 
-export default function Bookings() {
-  const navigate = useNavigate();
+export default function ServicesAndBookings() {
   const Swal = window.Swal;
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const [services, setServices] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const loadData = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
-
-      // 1. Parallel fetch for Bookings and Services from AccountApi
-      const [bookingRes, serviceRes] = await Promise.all([
-        fetchAllBookings(),
-        fetchAllServices()
+      const [serviceRes, bookingRes] = await Promise.all([
+        fetchAllServices(),
+        fetchAllBookings()
       ]);
 
-      const rawBookings = bookingRes.data || [];
       const allServices = serviceRes.data || [];
+      const rawBookings = bookingRes.data || [];
 
-      // 2. Map Service details into Bookings for full data availability
-      const combinedData = rawBookings.map(b => {
-        const sId = b.serviceId || b.ServiceId;
-        const serviceInfo = (b.service || b.Service) || allServices.find(s => (s.id || s.Id) === sId);
-        
-        return {
-          ...b,
-          displayService: serviceInfo || { title: "Service Unavailable", price: "N/A" }
-        };
+      const combinedBookings = rawBookings.map(b => {
+        const service = allServices.find(
+          s => String(s.id || s.Id) === String(b.serviceId || b.ServiceId)
+        );
+        return { ...b, service };
       });
 
-      setBookings(combinedData);
-    } catch (err) {
-      console.error("❌ API Fetch Error:", err);
-      setError("Failed to load your activity. Please check your connection.");
+      setServices(allServices);
+      setBookings(combinedBookings);
+    } catch (error) {
+      console.error("Error loading data", error);
     } finally {
       setLoading(false);
     }
@@ -55,110 +62,214 @@ export default function Bookings() {
     loadData();
   }, []);
 
-  const handleUpdateStatus = async (id, newStatus) => {
-    try {
-      await updateBookingStatus(id, newStatus);
-      Swal.fire({ icon: 'success', title: 'Status Updated', timer: 1000, showConfirmButton: false });
-      loadData(); // Refresh list to sync with RabbitMQ/DB updates
-    } catch (err) {
-      Swal.fire('Error', 'Could not update status.', 'error');
+  // --- 1. HANDLE NEW BOOKING ---
+  const handleAddBooking = async (service) => {
+    if (String(user.profileId) === String(service.profileId || service.ProfileId)) {
+      return Swal.fire("Invalid Action", "You cannot book your own service.", "warning");
     }
-  };
 
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: 'Remove Booking?',
-      text: "This will delete the booking record permanently.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete'
-    });
+    const { value: formValues } = await Swal.fire({
+  title: 'Booking Details',
+  // 1. Force White Background and Black Text
+  background: '#ffffff', // Force white background
+  html: `
+    <div style="text-align:left; font-family: 'Inter', sans-serif; padding: 10px;">
+      <label style="display:block; margin-bottom: 5px; font-weight: 700;">Agreed Price (Rs.)</label>
+      <input id="swal-price" class="swal2-input custom-swal-input" type="number" value="${service.price || service.Price}" style="margin-top:0;">
+      
+      <label style="display:block; margin-top: 15px; margin-bottom: 5px; font-weight: 700;">Scheduled Start</label>
+      <input id="swal-start" class="swal2-input custom-swal-input" type="datetime-local" style="margin-top:0;">
+      
+      <label style="display:block; margin-top: 15px; margin-bottom: 5px; font-weight: 700;">Scheduled End</label>
+      <input id="swal-end" class="swal2-input custom-swal-input" type="datetime-local" style="margin-top:0;">
+      
+      <label style="display:block; margin-top: 15px; margin-bottom: 5px; font-weight: 700;">Notes for Provider</label>
+      <textarea id="swal-notes" class="swal2-textarea" placeholder="E.g. Address or specific instructions..." style="margin-top:0; border-radius: 8px;"></textarea>
+    </div>`,
+  focusConfirm: false,
+  showCancelButton: true,
+  confirmButtonText: 'Confirm Booking',
+  confirmButtonColor: '#dc3545', // Matches your red theme
+  cancelButtonColor: '#000000',   // Matches your black theme
+  preConfirm: () => {
+    const price = document.getElementById('swal-price').value;
+    const start = document.getElementById('swal-start').value;
+    const end = document.getElementById('swal-end').value;
+    const notes = document.getElementById('swal-notes').value;
+    if (!price || !start || !end) {
+      Swal.showValidationMessage('Please fill in Price, Start, and End dates');
+      return false;
+    }
+    return { price, start, end, notes };
+  },
+  // 2. Add custom class for more styling control
+  customClass: {
+    popup: 'white-background-popup',
+    title: 'black-title'
+  }
+});
 
-    if (result.isConfirmed) {
+    if (formValues) {
       try {
-        await deleteBooking(id);
-        setBookings(prev => prev.filter(b => (b.id || b.Id) !== id));
-        Swal.fire('Deleted', 'Booking has been removed.', 'success');
-      } catch (err) {
-        Swal.fire('Error', 'Delete failed.', 'error');
+        const bookingData = {
+          serviceId: service.id || service.Id,
+          profileId: user.profileId, // Booker
+          providerProfileId: service.profileId || service.ProfileId, // Owner
+          agreedPrice: parseFloat(formValues.price),
+          scheduledStart: new Date(formValues.start).toISOString(),
+          scheduledEnd: new Date(formValues.end).toISOString(),
+          notes: formValues.notes || "No additional notes"
+        };
+
+        await createBooking(bookingData);
+        Swal.fire("Success", "Booking request sent to provider.", "success");
+        loadData();
+      } catch (error) {
+        Swal.fire("Error", "Failed to create booking.", "error");
       }
     }
   };
 
-  const getStatusDetails = (status) => {
-    switch (status) {
-      case 0: return { bg: "#fff3cd", text: "#856404", label: "Pending", icon: <FaClock className="me-1" /> };
-      case 1: return { bg: "#d4edda", text: "#155724", label: "Confirmed", icon: <FaCheckCircle className="me-1" /> };
-      case 2: return { bg: "#f8d7da", text: "#721c24", label: "Cancelled", icon: <FaTimesCircle className="me-1" /> };
-      default: return { bg: "#e2e3e5", text: "#383d41", label: "Updated", icon: <FaClock className="me-1" /> };
+  // --- 2. HANDLE STATUS UPDATES (Customer Actions Only) ---
+  const handleUpdate = async (id, status, statusName) => {
+    if (!id) return;
+
+    if (status === 5) {
+      const confirm = await Swal.fire({
+        title: 'Raise Dispute?',
+        text: "This flags the booking for intervention.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33'
+      });
+      if (!confirm.isConfirmed) return;
+    }
+
+    try {
+      await updateBookingStatus(id, status);
+      Swal.fire("Updated", `Status is now: ${statusName}`, "success");
+      loadData();
+    } catch (error) {
+      Swal.fire("Error", "Could not update status.", "error");
     }
   };
 
-  if (loading) return (
-    <div className="text-center p-5">
-      <div className="spinner-border text-danger" role="status"></div>
-      <p className="mt-2 text-muted">Loading your bookings...</p>
-    </div>
-  );
+  // --- 3. HANDLE DELETE ---
+  const handleDeleteBooking = async (id) => {
+    const res = await Swal.fire({
+      title: "Delete Record?",
+      text: "This removes the history permanently.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545"
+    });
+
+    if (res.isConfirmed) {
+      try {
+        await deleteBooking(id);
+        Swal.fire("Deleted", "Record removed.", "success");
+        loadData();
+      } catch (error) {
+        Swal.fire("Error", "Failed to delete.", "error");
+      }
+    }
+  };
+
+  // --- 4. VIEW DETAILS ---
+  const viewDetails = (b) => {
+    Swal.fire({
+      title: 'Booking Info',
+      html: `
+        <div style="text-align:left;">
+          <p><b>Price:</b> Rs. ${b.agreedPrice || b.AgreedPrice}</p>
+          <p><b>Start:</b> ${new Date(b.scheduledStart || b.ScheduledStart).toLocaleString()}</p>
+          <p><b>End:</b> ${new Date(b.scheduledEnd || b.ScheduledEnd).toLocaleString()}</p>
+          <p><b>Notes:</b> ${b.notes || b.Notes || 'None'}</p>
+        </div>`,
+      icon: 'info'
+    });
+  };
+
+  const getStatusDisplay = status => {
+    switch (status) {
+      case 0: return { text: "Pending", icon: <FaClock />, cls: "status-pending" };
+      case 1: return { text: "Confirmed", icon: <FaCheckCircle />, cls: "status-confirmed" };
+      case 2: return { text: "In Process", icon: <FaSpinner className="fa-spin" />, cls: "status-process" };
+      case 3: return { text: "Completed", icon: <FaHandshake />, cls: "status-completed" };
+      case 4: return { text: "Cancelled", icon: <FaTimesCircle />, cls: "status-cancelled" };
+      case 5: return { text: "Disputed", icon: <FaExclamationTriangle />, cls: "status-disputed" };
+      default: return { text: "Unknown", icon: null, cls: "" };
+    }
+  };
+
+  if (loading) return <div className="loader">Loading Services...</div>;
+
+  const exploreServices = services.filter(s => String(s.profileId || s.ProfileId) !== String(user.profileId));
+  const myBookings = bookings.filter(b => String(b.profileId || b.ProfileId) === String(user.profileId));
 
   return (
-    <div className="bookings-page p-4">
-      <div className="header-section mb-4">
-        <h2 className="main-heading">
-          <FaCalendarAlt className="text-danger me-2" /> My Activity
-        </h2>
+    <div className="page-container">
+      
+      {/* SECTION 1: ALL SERVICES (EXPLORE) */}
+      <h3 className="section-title">Explore & Book Services</h3>
+      <div className="grid">
+        {exploreServices.length > 0 ? (
+          exploreServices.map(s => (
+            <div className="card service-card" key={s.id || s.Id}>
+              <h5>{s.title || s.Title}</h5>
+              <p className="price">Rs. {s.price || s.Price}</p>
+              <button className="btn primary" onClick={() => handleAddBooking(s)}>
+                <FaPlus /> Book Now
+              </button>
+            </div>
+          ))
+        ) : (
+          <p className="muted">No services available to book at the moment.</p>
+        )}
       </div>
 
-      <div className="row">
-        {bookings.map((b) => {
-          const bId = b.id || b.Id;
-          const status = b.status !== undefined ? b.status : b.Status;
-          const details = getStatusDetails(status);
-          const service = b.displayService;
-
-          return (
-            <div className="col-md-6 col-lg-4 mb-4" key={bId}>
-              <div className="card booking-card border-0 shadow-sm h-100">
-                <div className="card-body d-flex flex-column">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <span className="status-badge" style={{ backgroundColor: details.bg, color: details.text }}>
-                      {details.icon} {details.label}
-                    </span>
-                    <button className="btn btn-link text-muted p-0" onClick={() => handleDelete(bId)}>
-                       <FaTrash size={14} />
+      {/* SECTION 2: MY BOOKINGS (OUTGOING) */}
+      <h3 className="section-title mt">Your Bookings</h3>
+      <div className="grid">
+        {myBookings.length > 0 ? (
+          myBookings.map(b => {
+            const id = b.id || b.Id;
+            const currentStatus = b.status ?? b.Status;
+            const statusInfo = getStatusDisplay(currentStatus);
+            return (
+              <div className="card booking-card" key={id}>
+                <div className={`status-tag ${statusInfo.cls}`}>{statusInfo.icon} {statusInfo.text}</div>
+                <h5>{b.service?.title || "Service Title"}</h5>
+                <p className="small">Provider: {b.service?.profile?.fullName || "Service Provider"}</p>
+                
+                <div className="action-row">
+                  {currentStatus === 0 && (
+                    <button className="btn-sm danger" onClick={() => handleUpdate(id, 4, "Cancelled")}>
+                      Cancel Request
                     </button>
-                  </div>
-
-                  <h5 className="service-title mb-1 fw-bold">{service.title || service.Title}</h5>
-                  <p className="text-muted small mb-3">ID: #{bId.substring(0, 8)}</p>
+                  )}
+                  {currentStatus === 2 && (
+                    <button className="btn-sm danger" onClick={() => handleUpdate(id, 5, "Disputed")}>
+                      Dispute
+                    </button>
+                  )}
                   
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <span className="booking-date text-muted small">
-                      {new Date(b.scheduledAt || b.ScheduledAt).toLocaleDateString()}
-                    </span>
-                    <span className="price-tag fw-bold text-success">Rs. {service.price || service.Price}</span>
-                  </div>
-
-                  <div className="mt-auto">
-                    {status === 0 && (
-                      <div className="d-flex gap-2 mb-2">
-                        <button className="btn btn-sm btn-success flex-grow-1" onClick={() => handleUpdateStatus(bId, 1)}>Accept</button>
-                        <button className="btn btn-sm btn-outline-danger flex-grow-1" onClick={() => handleUpdateStatus(bId, 2)}>Reject</button>
-                      </div>
-                    )}
-                    <button 
-                      className="btn btn-danger w-100 py-2 fw-bold" 
-                      onClick={() => navigate(`/Chats`, { state: { booking: b } })}
-                    >
-                      <FaComments className="me-2" /> Message
-                    </button>
-                  </div>
+                  <button className="btn-sm info" onClick={() => viewDetails(b)} title="Details">
+                    <FaInfoCircle />
+                  </button>
+                  <button className="btn-sm trash" onClick={() => handleDeleteBooking(id)} title="Delete">
+                    <FaTrash />
+                  </button>
+                  <button className="btn-sm chat" onClick={() => navigate(`/chats/${id}`)} title="Chat">
+                    <FaComments />
+                  </button>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <p className="muted">You haven't made any bookings yet.</p>
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,339 @@
+/* =========================
+   PAGE CONTAINER
+========================= */
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+
+/* =========================
+   SECTION TITLE
+========================= */
+
+.section-title {
+  font-weight: 800;
+  color: #2d3436;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  border-left: 5px solid #dc3545;
+  padding-left: 15px;
+}
+
+.mt {
+  margin-top: 50px;
+}
+
+
+/* =========================
+   GRID
+========================= */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+
+/* =========================
+   CARD
+========================= */
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border-bottom: 3px solid #dc3545;
+  transition: 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.card h5 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2d3436;
+}
+
+
+/* =========================
+   PRICE
+========================= */
+
+.price {
+  font-size: 1rem;
+  color: #28a745;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+
+/* =========================
+   STATUS BADGE
+========================= */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: fit-content;
+  margin-bottom: 15px;
+}
+
+.status.pending {
+  background: #fff4e6;
+  color: #d9480f;
+}
+
+.status.confirmed {
+  background: #ebfbee;
+  color: #087f5b;
+}
+
+.status.cancelled {
+  background: #fff5f5;
+  color: #c92a2a;
+}
+
+
+/* =========================
+   ACTION ROW
+========================= */
+
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+.btn {
+  padding: 0.6rem 1rem;
+  border-radius: 25px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+.btn.primary {
+  background-color: #dc3545;
+  color: white;
+  width: 100%;
+  margin-top: auto;
+}
+
+.btn.primary:hover {
+  background-color: #c82333;
+}
+
+.btn.success {
+  background: #28a745;
+  color: white;
+  flex: 1;
+}
+
+.btn.success:hover {
+  background: #218838;
+}
+
+.btn.danger {
+  background: #f8d7da;
+  color: #dc3545;
+  flex: 1;
+}
+
+.btn.danger:hover {
+  background: #f1b0b7;
+}
+
+.btn.danger-outline {
+  background: transparent;
+  border: 1px solid #dc3545;
+  color: #dc3545;
+}
+
+
+/* =========================
+   UTILITIES
+========================= */
+
+.muted {
+  color: #636e72;
+  font-size: 0.85rem;
+}
+
+.small {
+  font-size: 0.9rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+  color: #636e72;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================
+   DARK MODE FIX
+========================= */
+
+.dark-mode {
+  background-color: #111213 !important;
+  color: #121111 !important;
+}
+
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+
+.status-pending { background: #fff4e6; color: #d9480f; }
+.status-confirmed { background: #e7f5ff; color: #1971c2; }
+.status-process { background: #f3f0ff; color: #6741d9; }
+.status-completed { background: #ebfbee; color: #2f9e44; }
+.status-cancelled { background: #fff5f5; color: #c92a2a; }
+.status-disputed { background: #fff0f6; color: #a61e4d; border: 1px solid #ff8787; }
+
+.btn-sm {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  transition: opacity 0.2s;
+}
+
+.btn-sm:hover { opacity: 0.8; }
+.btn-sm.success { background: #2f9e44; color: white; }
+.btn-sm.process { background: #6741d9; color: white; }
+.btn-sm.danger { background: #e03131; color: white; }
+.btn-sm.info { background: #1971c2; color: white; }
+.btn-sm.trash { background: #ced4da; color: #495057; }
+.btn-sm.chat { background: #1098ad; color: white; }
+
+/* Container for horizontal stacking */
+.horizontal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Space between rows */
+  width: 100%;
+}
+
+/* The Horizontal Card */
+.horizontal-card {
+  background: #ffffff; /* White Background */
+  border-radius: 12px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center; /* Center items vertically */
+  justify-content: space-between; /* Space out info and buttons */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.horizontal-card:hover {
+  transform: translateX(8px); /* Slide right instead of up */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Layout Blocks inside the card */
+.card-main-content {
+  flex: 2; /* Takes up most space on the left */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-details-content {
+  flex: 1;
+  text-align: center;
+}
+
+.action-row-horizontal {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Typography Adjustments */
+.card-main-content h5 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000000; /* Deep black text */
+}
+
+.price-bold {
+  color: #28a745;
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Badge and Button Consistency */
+.status-tag {
+  margin-bottom: 5px; /* Adjusting for horizontal layout */
+  font-size: 0.75rem;
+  padding: 3px 10px;
+}
+
+.btn-sm {
+  height: 36px;
+  width: 36px;
+  justify-content: center;
+  border-radius: 8px;
+}

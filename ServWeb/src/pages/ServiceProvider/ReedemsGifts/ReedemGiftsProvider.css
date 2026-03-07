@@ -1,0 +1,89 @@
+/* Reedems.css */
+.redeems-page {
+    background-color: #6ca8e4;
+    padding: 40px 20px;
+}
+
+.voucher-card {
+    background: white;
+    filter: drop-shadow(0 10px 15px rgba(255, 254, 254, 0.1));
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    max-width: 400px;
+    margin: 0 auto 30px;
+}
+
+/* The Ticket "Cut" Effect */
+.voucher-card::before, .voucher-card::after {
+    content: '';
+    position: absolute;
+    top: 35%; /* Where the ticket splits */
+    width: 24px;
+    height: 24px;
+    background-color: #f1f5f9; /* Matches page background */
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.voucher-card::before { left: -12px; }
+.voucher-card::after { right: -12px; }
+
+.voucher-status-strip {
+    background: #0f172a;
+    color: #fbbf24;
+    text-align: center;
+    padding: 8px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.voucher-content {
+    padding: 25px;
+    padding-top: 10px;
+}
+
+.code-box {
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+code.blurred {
+    filter: blur(8px);
+    background: #e2e8f0;
+    color: transparent;
+    border-radius: 4px;
+}
+
+code.visible {
+    filter: blur(0);
+    color: #1e293b;
+    font-size: 1.2rem;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+/* Used State */
+.voucher-card.used {
+    filter: grayscale(1) opacity(0.7);
+}
+
+.voucher-card.used::after {
+    content: 'REDEEMED';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    border: 4px solid #ef4444;
+    color: #ef4444;
+    padding: 10px 20px;
+    font-weight: 900;
+    font-size: 2rem;
+    opacity: 0.4;
+    border-radius: 8px;
+}
