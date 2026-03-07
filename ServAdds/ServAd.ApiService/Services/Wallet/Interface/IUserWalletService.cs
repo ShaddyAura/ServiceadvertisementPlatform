@@ -1,11 +1,13 @@
-﻿using ShareLibrary.cs.Data.Entities;
+﻿    using ShareLibrary.cs.Data.Entities;
 
-namespace ServAd.ApiService.Services.Wallet.Interface
-{
-    public interface IUserWalletService
+    namespace ServAd.ApiService.Services.Wallet.Interface
     {
-        Task<UserWallet> GetWalletByProfileIdAsync(Guid profileId);
-        Task<UserWallet> UpdateBalanceAsync(Guid profileId, decimal amount, string gateway, bool isCredit);
-        Task AddBoostingPointsAsync(Guid profileId, int points);
+        public interface IUserWalletService
+        {
+            Task<UserWallet> GetWalletByProfileIdAsync(Guid profileId);
+
+            // Specifically for buying points: Increments both current balance and lifetime target
+            Task<UserWallet> PurchasePointsAsync(Guid profileId, decimal amount, int pointsToGive, string gateway);
+        }
     }
-}
+

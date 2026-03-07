@@ -8,11 +8,11 @@ namespace ShareLibrary.cs.Data.Enums
 {
     public enum VerificationStatus
     {
-        NotSubmitted,
+        
         Pending,    
-        Verified,   // Approved; "Trust Badge" active
-        Rejected,   // Admin declined (bad photo, expired ID)
+        Verified,   
+        Rejected,   
         Suspended,
-        Approved// User banned by moderator
+        Approved
     }
 }

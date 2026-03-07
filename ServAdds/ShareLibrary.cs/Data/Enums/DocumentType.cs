@@ -12,6 +12,5 @@ namespace ShareLibrary.cs.Data.Enums
         Passport,
         License,
         NIN,         
-        BusinessReg  
     }
 }

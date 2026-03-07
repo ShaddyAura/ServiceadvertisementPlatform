@@ -12,7 +12,8 @@ namespace ShareLibrary.cs.Data.Seeder
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("RolesSeeder");
 
-            var roles = new[] { "Admin", "User" };
+            // Inside RolesSeeder.cs
+            var roles = new[] { "Admin", "User", "ServiceProvider" }; 
 
             foreach (var roleName in roles)
             {

@@ -1,10 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using ShareLibrary.cs.Data.Enums;
 
 namespace ServAd.ApiService.Controllers.Boosting.Dto
-{ 
- public record BoostRequestDto(
-    [Required] Guid ServiceId,
-    [Required, Range(1, 1000)] int PointsToSpend,
-    [Required, Range(1, 30)] int Days
- );
+{
+    public class BoostRequestDto
+    {
+        [Required]
+        public Guid ServiceId { get; set; }
+
+        [Required]
+        public BoostLevel BoostLevel { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int PointsToSpend { get; set; }
+
+        [Range(1, 365)]
+        public int Days { get; set; }
+    }
 }

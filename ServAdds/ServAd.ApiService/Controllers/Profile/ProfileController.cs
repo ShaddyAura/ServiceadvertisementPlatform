@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ServAd.ApiService.Controllers.Profile.Dto;
 using ServAd.ApiService.Services.Profile.Interface;
-using ShareLibrary.cs.Data.Entities;
-using ShareLibrary.Data.Entities;
-using System.Security.Claims;
+using ServAd.ApiService.Services.Profile.Service;
 
 namespace ServAd.ApiService.Controllers.Profile
 {
@@ -10,63 +10,98 @@ namespace ServAd.ApiService.Controllers.Profile
     [Route("api/[controller]")]
     public class ProfileController(IProfileService profileService) : ControllerBase
     {
-        // GET: api/Profile/user/{userId}
+        // GET: api/Profile/userprofile?userId={guid}
         [HttpGet("userprofile")]
-        public async Task<IActionResult> GetByUserId(Guid userId)
+        public async Task<ActionResult<ProfileReadDto>> GetByUserId([FromQuery] Guid userId)
         {
             var profile = await profileService.GetByUserIdAsync(userId);
-            return Ok(profile);
+            return Ok(MapToReadDto(profile));
         }
 
-        // GET: api/Profile/{id}
+        // GET: api/Profile/addresshierarchy
+        [HttpGet("addresshierarchy")]
+        public IActionResult GetAddressHierarchy()
+        {
+            var hierarchy = profileService.GetNepalAddressHierarchy();
+            return Ok(hierarchy);
+        }
+
+        // GET: api/Profile/getprofile?id={guid}
         [HttpGet("getprofile")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<ActionResult<ProfileReadDto>> GetById([FromQuery] Guid id)
         {
             var profile = await profileService.GetByIdAsync(id);
-            return Ok(profile);
+            return Ok(MapToReadDto(profile));
         }
 
-        // PUT: api/Profile/{id}
+        // PUT: api/Profile/updateprofile
         [HttpPut("updateprofile")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] Profiles profile)
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProfileDto updateDto)
         {
-            if (id != profile.Id)
-            {
-                return BadRequest("ID mismatch between URL and body.");
-            }
+            if (id != updateDto.Id)
+                return BadRequest("ID mismatch.");
 
-            var updatedProfile = await profileService.UpdateProfileAsync(profile);
-            return Ok(updatedProfile);
+            var existingProfile = await profileService.GetByIdAsync(id);
+
+            if (existingProfile == null)
+                return NotFound();
+
+            existingProfile.PhoneNumber = updateDto.PhoneNumber;
+            existingProfile.Address = updateDto.Address;
+            existingProfile.DateOfBirth = updateDto.DateOfBirth;
+
+            var result = await profileService.UpdateProfileAsync(existingProfile);
+
+            return Ok(MapToReadDto(result));
         }
 
-        // PATCH: api/Profile/verify/{id}
+        // PATCH: api/Profile/verifyprofile?id={guid}
         [HttpPatch("verifyprofile")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> VerifyProfile(Guid id)
         {
             var success = await profileService.MarkAsVerifiedAsync(id);
-            if (!success) return BadRequest("Verification failed.");
+
+            if (!success)
+                return BadRequest("Verification failed.");
 
             return Ok(new { message = "Profile verified successfully." });
         }
 
-        // POST: api/Profile/{id}/upload-image
-        // NEW: Endpoint to handle profile picture uploads
+        [HttpGet("allprofiles")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<ProfileReadDto>>> GetAll()
+        {
+            var profiles = await profileService.GetAllProfilesAsync();
+
+            // Map to DTO for the frontend table
+            var result = profiles.Select(p => new ProfileReadDto
+            {
+                Id = p.Id,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                PhoneNumber = p.PhoneNumber,
+                Address = p.Address,
+                IsVerified = p.IsVerified,
+                ProfileImageUrl = p.ProfileImageUrl,
+                CreatedAt = p.CreatedAt
+            });
+
+            return Ok(result);
+        }
+
+        // POST: api/Profile/uploadimageprofile?id={guid}
         [HttpPost("uploadimageprofile")]
         public async Task<IActionResult> UploadImage(Guid id, IFormFile file)
         {
             if (file == null || file.Length == 0)
-            {
                 return BadRequest("No file was uploaded.");
-            }
 
-            // Optional: Add file type/size validation here
             var permittedExtensions = new[] { ".jpg", ".jpeg", ".png" };
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
             if (string.IsNullOrEmpty(extension) || !permittedExtensions.Contains(extension))
-            {
                 return BadRequest("Invalid file type. Only JPG and PNG are allowed.");
-            }
 
             var imageUrl = await profileService.UploadProfileImageAsync(id, file);
 
@@ -75,6 +110,24 @@ namespace ServAd.ApiService.Controllers.Profile
                 message = "Image uploaded successfully.",
                 url = imageUrl
             });
+        }
+
+        private ProfileReadDto MapToReadDto(ShareLibrary.Data.Entities.Profiles p)
+        {
+            return new ProfileReadDto
+            {
+                Id = p.Id,
+                UserId = p.UserId,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                PhoneNumber = p.PhoneNumber,
+                Address = p.Address,
+                DateOfBirth = p.DateOfBirth,
+                ProfileImageUrl = p.ProfileImageUrl,
+                IsVerified = p.IsVerified,
+                BoostingPoints = p.BoostingPoints,
+                CreatedAt = p.CreatedAt
+            };
         }
     }
 }

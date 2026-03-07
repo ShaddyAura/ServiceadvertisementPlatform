@@ -55,9 +55,11 @@
 
 	<ItemGroup>
 	  <None Include="Controllers\Booking\Dto\BookingReadDto.cs" />
+	  <None Include="Services\PointTransaction\Interface\IPointTransactionService.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="wwwroot\CSV\" />
 	  <Folder Include="wwwroot\uploads\services\" />
 	</ItemGroup>
 

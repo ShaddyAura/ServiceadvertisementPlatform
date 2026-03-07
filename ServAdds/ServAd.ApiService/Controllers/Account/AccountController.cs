@@ -57,6 +57,13 @@ namespace ServAd.ApiService.Controllers.Account
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // 1. Validate that the requested role is allowed for public registration
+            var allowedRoles = new[] { "User", "ServiceProvider" };
+            if (!allowedRoles.Contains(request.UserType))
+            {
+                return BadRequest(new { Message = "Invalid UserType. Must be 'User' or 'ServiceProvider'." });
+            }
+
             var user = new IdentityUser<Guid>
             {
                 UserName = request.Email,
@@ -64,11 +71,22 @@ namespace ServAd.ApiService.Controllers.Account
                 EmailConfirmed = false
             };
 
+            // 2. Create the User
             var result = await userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            // Save profile
+            // 3. ✅ ASSIGN ROLE
+            // This adds an entry to the AspNetUserRoles table
+            var roleResult = await userManager.AddToRoleAsync(user, request.UserType);
+            if (!roleResult.Succeeded)
+            {
+                // Optional: Delete user if role assignment fails to maintain data integrity
+                await userManager.DeleteAsync(user);
+                return BadRequest(roleResult.Errors);
+            }
+
+            // 4. Save profile
             var profile = new Profiles
             {
                 Id = Guid.NewGuid(),
@@ -82,39 +100,37 @@ namespace ServAd.ApiService.Controllers.Account
             await _context.SaveChangesAsync();
 
             // --------------------------------------------------------------
-            // ✅ Generate 6-digit verification code (NEW)
+            // ✅ Generate 6-digit verification code
             // --------------------------------------------------------------
             var code = new Random().Next(100000, 999999).ToString();
 
             // Store OTP in Identity token storage
             await userManager.SetAuthenticationTokenAsync(
                 user,
-                "EmailVerification",   // Provider
-                "Code",                // Token name
-                code                   // Token value
+                "EmailVerification",
+                "Code",
+                code
             );
 
             // --------------------------------------------------------------
-            // ✅ Send OTP Email (NEW)
+            // ✅ Send OTP Email
             // --------------------------------------------------------------
             await emailService.SendEmailAsync(
                 to: request.Email,
                 subject: "Your Verification Code",
                 body: $@"
-               <h2>Welcome, {request.FirstName}!</h2>
-               <p>Your verification code is:</p>
-               <h1 style='font-size:32px;letter-spacing:4px;color:#4F46E5'>{code}</h1>
-               <p>Please enter this code in the app to verify your account.</p>
-                "
+        <h2>Welcome, {request.FirstName}!</h2>
+        <p>You have successfully registered as a <strong>{request.UserType}</strong>.</p>
+        <p>Your verification code is:</p>
+        <h1 style='font-size:32px;letter-spacing:4px;color:#4F46E5'>{code}</h1>
+        <p>Please enter this code in the app to verify your account.</p>"
             );
 
-            // --------------------------------------------------------------
-            // ✅ Response
-            // --------------------------------------------------------------
             return Ok(new
             {
                 Message = "User registered successfully. Verification code sent.",
-                Email = request.Email
+                Email = request.Email,
+                Role = request.UserType
             });
         }
 
@@ -151,7 +167,9 @@ namespace ServAd.ApiService.Controllers.Account
                     {
                         new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                         new Claim(ClaimTypes.Email, user.Email!),
-                       new Claim(ClaimTypes.Role, role) // 🔥 Now JWT contains the role!
+                        new Claim(ClaimTypes.Role, role),
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                        //new Claim(ClaimTypes.Role, role) // 🔥 Now JWT contains the role!
                     };
 
                     // ✅ CREATE JWT TOKEN INCLUDING ROLE CLAIM
@@ -308,13 +326,17 @@ namespace ServAd.ApiService.Controllers.Account
 
 
         [HttpGet("google-login")]
-        public IActionResult GoogleLogin()
+        public IActionResult GoogleLogin(string userType = "User") // Default to User
         {
             var redirectUrl = Url.Action("ExternalLoginCallback", "Account", null, Request.Scheme);
+
             var properties = signInManager.ConfigureExternalAuthenticationProperties(
                 GoogleDefaults.AuthenticationScheme,
                 redirectUrl
             );
+
+            // 🔥 Store the role in the 'Items' dictionary so it survives the round-trip to Google
+            properties.Items["UserType"] = userType;
 
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
@@ -323,25 +345,21 @@ namespace ServAd.ApiService.Controllers.Account
         public async Task<IActionResult> ExternalLoginCallback(string? error = null)
         {
             if (!string.IsNullOrEmpty(error))
-            {
-                // Handle error when user denies the login or cancels
                 return Redirect("https://localhost:5173/login?error=access_denied");
-            }
 
             var info = await signInManager.GetExternalLoginInfoAsync();
             if (info == null)
-            {
-                // Handle case where info is null (user canceled the login)
                 return Redirect("https://localhost:5173/login?error=google_failed");
-            }
+
+            // 🔥 Retrieve the role we stored earlier
+            var requestedRole = info.AuthenticationProperties?.Items["UserType"] ?? "User";
 
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
             if (string.IsNullOrEmpty(email))
-            {
                 return Redirect("https://localhost:5173/login?error=email_missing");
-            }
 
             var user = await userManager.FindByEmailAsync(email);
+
             if (user == null)
             {
                 user = new IdentityUser<Guid>
@@ -353,23 +371,24 @@ namespace ServAd.ApiService.Controllers.Account
 
                 var createRes = await userManager.CreateAsync(user);
                 if (!createRes.Succeeded)
-                {
                     return Redirect("https://localhost:5173/login?error=server_error");
-                }
 
                 await userManager.AddLoginAsync(user, info);
+
+                // ✅ ASSIGN THE ROLE TO NEW USER
+                await userManager.AddToRoleAsync(user, requestedRole);
             }
 
+            // Existing logic to get roles for the JWT
             var roles = await userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault() ?? "User";
 
             var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-
-              new Claim(ClaimTypes.Email, email),
-              new Claim(ClaimTypes.Role, role)
-           };
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+        new Claim(ClaimTypes.Email, email),
+        new Claim(ClaimTypes.Role, role)
+    };
 
             var (jwt, expiresInSeconds) = jwtTokenService.CreateToken(claims);
 
@@ -445,6 +464,7 @@ namespace ServAd.ApiService.Controllers.Account
                 ValidateLifetime = true,
                 ValidIssuer = settings.Issuer,
                 ValidAudience = settings.Audience,
+                RoleClaimType = ClaimTypes.Role,
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(settings.SigningKey)
                 ),
@@ -459,40 +479,42 @@ namespace ServAd.ApiService.Controllers.Account
 
                 var email = principal.FindFirst(ClaimTypes.Email)?.Value;
                 var role = principal.FindFirst(ClaimTypes.Role)?.Value;
-
+                //new Claim(ClaimTypes.Role, "Admin");
                 var userIdClaim =
                 principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
                 principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
 
                 if (userIdClaim == null)
                     return Unauthorized();
 
                 var userId = Guid.Parse(userIdClaim);
 
-                var profileId = await _context.Profiles
-                    .Where(p => p.UserId == userId)
-                    .Select(p => p.Id)
-                    .FirstOrDefaultAsync();
+                var profile = await _context.Profiles
+               .Where(p => p.UserId == userId)
+               .Select(p => new
+               {
+                      p.Id,
+                       FullName = p.FirstName + " " + p.LastName
+               })
+                .FirstOrDefaultAsync();
 
                 return Ok(new
                 {
                     id = userId,
+                    
                     email,
                     role,
-                    profileId
+                    profileId = profile?.Id,
+                    fullName = profile?.FullName
                 });
+
             }
             catch
             {
                 return Unauthorized(new { message = "Session expired" });
             }
         }
-
-
-
-
-
-
 
     }
 }

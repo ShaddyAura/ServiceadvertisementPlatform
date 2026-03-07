@@ -5,14 +5,11 @@ using System.ComponentModel.DataAnnotations;
 namespace ServAd.ApiService.Controllers.Verification.Dto
 {
     public record DocumentSubmitDto(
-        [Required] Guid ProfileId,
-        [Required] DocumentType DocumentType,
-        [Required] string DocumentNumber,
+         Guid ProfileId,
+        DocumentType DocumentType,
+        string DocumentNumber,
+        IFormFile DocumentFrontSide,
+        IFormFile DocumentBackSide
 
-        // Split into Front and Back files
-        [Required] IFormFile DocumentFrontSide,
-        [Required] IFormFile DocumentBackSide,
-
-        DateTime? ExpiryDate
     );
 }

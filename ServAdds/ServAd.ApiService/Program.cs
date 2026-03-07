@@ -8,6 +8,8 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ServAd.ApiService.Configuration;
+using ServAd.ApiService.Exceptions;
+using ServAd.ApiService.Hubs;
 using ServAd.ApiService.Services.Booking.Interface;
 using ServAd.ApiService.Services.Booking.Service;
 using ServAd.ApiService.Services.Boosting.Interface;
@@ -19,21 +21,25 @@ using ServAd.ApiService.Services.Chat.Service;
 using ServAd.ApiService.Services.CurrentUser;
 using ServAd.ApiService.Services.Email;
 using ServAd.ApiService.Services.Jwt;
+using ServAd.ApiService.Services.Notifications.Interface;
+using ServAd.ApiService.Services.Notifications.Service;
 using ServAd.ApiService.Services.Profile.Interface;
 using ServAd.ApiService.Services.Profile.Service;
 using ServAd.ApiService.Services.RabbitMq.Interface;
 using ServAd.ApiService.Services.RabbitMq.Service;
+using ServAd.ApiService.Services.Reviews.Interface;
+using ServAd.ApiService.Services.Reviews.Service;
 using ServAd.ApiService.Services.ServiceListing.Interface;
 using ServAd.ApiService.Services.ServiceListing.Service;
 using ServAd.ApiService.Services.Verification.Interface;
 using ServAd.ApiService.Services.Verification.Service;
 using ServAd.ApiService.Services.Wallet.Interface;
 using ServAd.ApiService.Services.Wallet.Service;
+using ServAd.ApiService.Workers;
 using ShareLibrary.cs.Data;
-using ShareLibrary.Data;
-using System;
 using System.Net;
 using System.Net.Mail;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -101,13 +107,12 @@ var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Sig
 // 5. Authentication Schemes (Cookie + Google + JWT)
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
-    options.RequireHttpsMetadata = false; // Docker localhost
+    options.RequireHttpsMetadata = false;
     options.SaveToken = true;
 
     options.TokenValidationParameters = new TokenValidationParameters
@@ -119,16 +124,32 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings.Issuer,
         ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = signingKey,
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+        RoleClaimType = ClaimTypes.Role,
+
+       
+        TokenDecryptionKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtSettings.EncryptingKey))
     };
+
 
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
+            // 1️⃣ Check Authorization header
             var header = context.Request.Headers["Authorization"].ToString();
-            if (header.StartsWith("Bearer "))
+            if (!string.IsNullOrEmpty(header) && header.StartsWith("Bearer "))
+            {
                 context.Token = header["Bearer ".Length..];
+            }
+
+            // 2️⃣ If no header, check cookie
+            if (string.IsNullOrEmpty(context.Token))
+            {
+                context.Token = context.Request.Cookies["jwt"];
+            }
+
             return Task.CompletedTask;
         }
     };
@@ -164,6 +185,9 @@ builder.Services.AddFluentEmail(
     EnableSsl = true
 });
 
+
+
+
 // ============================================================================
 // 7. Custom Services
 builder.Services.AddScoped<EmailService>();
@@ -175,7 +199,7 @@ builder.Services.AddHttpContextAccessor();
 // Register all service
 
 builder.Services.AddSignalR();
-builder.Services.AddHttpClient(); // Required for Payment Gateway API calls (Khalti/eSewa)
+builder.Services.AddHttpClient(); 
 builder.Services.AddScoped<IRabbitmqService, RabbitmqService>();
 
 // --- Business Logic Services ---
@@ -199,6 +223,9 @@ builder.Services.AddScoped<IChatService, ChatService>();
 
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddHostedService<NotificationConsumerWorker>();
 
 // ============================================================================
 // 8. Controllers & Swagger
@@ -260,6 +287,9 @@ builder.Services.AddCors(options =>
 // Build App
 var app = builder.Build();
 
+
+app.UseMiddleware<GlobalExceptionMiddleware>(); // 👈 MUST be here
+
 // ============================================================================
 // 10. HealthChecks Endpoint (CRITICAL for Docker)
 app.MapHealthChecks("/health");
@@ -292,6 +322,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 
+
 // ============================================================================
 // 12. Middleware Pipeline
 if (app.Environment.IsDevelopment())
@@ -301,6 +332,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowReact");
+
 
 // Cookie policy for Google OAuth
 app.UseCookiePolicy(new CookiePolicyOptions
@@ -314,5 +346,8 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapHub<ChatHub>("/chatHub");
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();

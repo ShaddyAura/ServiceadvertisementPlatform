@@ -20,7 +20,6 @@ namespace ShareLibrary.Data.Entities
         [Required]
         public DocumentType DocumentType { get; set; }
 
-        // UPDATED: Split single URL into Front and Back sides
         [Required]
         public string DocumentFrontSideUrl { get; set; } = string.Empty;
 
@@ -28,20 +27,15 @@ namespace ShareLibrary.Data.Entities
         public string DocumentBackSideUrl { get; set; } = string.Empty;
 
         [MaxLength(100)]
-        public string? DocumentNumber { get; set; } // ID number on the card
+        public string? DocumentNumber { get; set; } 
 
-        // Verification Logic
         public VerificationStatus Status { get; set; } = VerificationStatus.Pending;
-
-        public string? AdminRemarks { get; set; } // Reason for rejection if applicable
-
-        public DateTime? ExpiryDate { get; set; }
 
         // Audit Fields
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 
-        public Guid? VerifiedByAdminId { get; set; } // Reference to admin who reviewed it
-
         public DateTime? VerifiedAt { get; set; }
+
+        public string? Message { get; set; }
     }
 }

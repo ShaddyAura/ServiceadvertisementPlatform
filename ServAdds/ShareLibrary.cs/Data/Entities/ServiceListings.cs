@@ -31,6 +31,19 @@ namespace ShareLibrary.cs.Data.Entities
         public string? VideoUrl { get; set; }
 
         public bool IsBoosted { get; set; } = false;
+
+        // 🔥 Use ENUM instead of int
+        public BoostLevel BoostLevel { get; set; } = BoostLevel.None;
         public DateTime? BoostExpiry { get; set; }
+
+        // 🔥 Computed Property (NOT mapped to DB)
+        [NotMapped]
+        public bool IsCurrentlyBoosted =>
+            BoostLevel != BoostLevel.None &&
+            BoostExpiry.HasValue &&
+            BoostExpiry > DateTime.UtcNow;
+
+        [JsonIgnore]
+        public virtual ICollection<Bookings> Bookings { get; set; } = new List<Bookings>();
     }
 }

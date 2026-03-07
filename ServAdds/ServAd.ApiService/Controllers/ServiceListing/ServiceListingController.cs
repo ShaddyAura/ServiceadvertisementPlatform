@@ -32,6 +32,14 @@ namespace ServAd.ApiService.Controllers.ServiceListing
             return Ok(service);
         }
 
+        [HttpGet("profileservices")]
+        public async Task<IActionResult> GetServicesByProfile(Guid profileId)
+        {
+            var services = await _serviceListingService.GetByProfileIdAsync(profileId);
+            return Ok(services);
+        }
+
+
         // POST: api/ServiceListing/create-service
         [HttpPost("createservice")]
         [Consumes("multipart/form-data")]

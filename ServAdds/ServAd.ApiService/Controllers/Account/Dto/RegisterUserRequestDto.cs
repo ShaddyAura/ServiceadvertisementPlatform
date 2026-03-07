@@ -25,6 +25,9 @@ namespace ServAd.ApiService.Controllers.Account.Dto
         public string Email { get; init; } = null!;
 
         [Required]
+        public string UserType { get; set; } = null!;
+
+        [Required]
         [MinLength(6, ErrorMessage = "Password must be at least 6 characters long.")]
         public string Password { get; init; } = null!;
 

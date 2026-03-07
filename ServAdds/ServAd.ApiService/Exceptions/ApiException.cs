@@ -1,6 +1,14 @@
-﻿namespace ServAd.ApiService.Exceptions;
-
-public class ApiException(string message, int statusCode = 400) : Exception(message)
+﻿namespace ServAd.ApiService.Exceptions
 {
-    public int StatusCode { get; } = statusCode;
+
+    public class ApiException : Exception
+    {
+        public int StatusCode { get; }
+
+        public ApiException(string message, int statusCode = 400)
+            : base(message)
+        {
+            StatusCode = statusCode;
+        }
+    }
 }

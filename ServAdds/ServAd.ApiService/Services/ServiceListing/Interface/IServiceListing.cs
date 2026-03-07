@@ -12,5 +12,7 @@ namespace ServAd.ApiService.Services.ServiceListing.Interface
         Task DeleteAsync(Guid id);
         Task AddViewPointsAsync(Guid profileId);
 
+        Task<IEnumerable<ServiceListings>> GetByProfileIdAsync(Guid profileId);
+
     }
 }

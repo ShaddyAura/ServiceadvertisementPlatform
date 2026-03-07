@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ServAd.ApiService.Controllers.Chat.Dto;
 using ServAd.ApiService.Services.Chat.Interface;
 using ShareLibrary.cs.Data.Entities;
@@ -10,20 +9,29 @@ namespace ServAd.ApiService.Controllers.Chat
     [Route("api/[controller]")]
     public class ChatController(IChatService chatService) : ControllerBase
     {
-        [HttpPost("send")]
+        /// <summary>
+        /// Send chat message
+        /// </summary>
+        [HttpPost("sendmessage")]
         public async Task<IActionResult> SendMessage([FromBody] ChatMessageDto dto)
         {
+            // Map the DTO to the updated ChatMessage model
             var model = new ChatMessage
             {
                 BookingId = dto.BookingId,
-                SenderProfileId = dto.SenderProfileId,
+                SenderProfileId = dto.SenderProfileId,   // Updated property name
+                ReceiverProfileId = dto.ReceiverProfileId, // New property
                 MessageText = dto.MessageText
             };
 
-            return Ok(await chatService.SaveAndSendMessageAsync(model));
+            var result = await chatService.SaveAndSendMessageAsync(model);
+            return Ok(result);
         }
 
-        [HttpGet("history/{bookingId:guid}")]
+        /// <summary>
+        /// Get chat history by bookingId
+        /// </summary>
+        [HttpGet("gethistory/{bookingId:guid}")]
         public async Task<IActionResult> GetHistory(Guid bookingId)
             => Ok(await chatService.GetChatHistoryAsync(bookingId));
     }

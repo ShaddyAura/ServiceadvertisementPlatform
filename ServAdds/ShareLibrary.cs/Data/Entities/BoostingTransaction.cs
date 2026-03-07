@@ -16,8 +16,10 @@ namespace ShareLibrary.cs.Data.Entities
         [ForeignKey("ServiceId")]
         public virtual ServiceListings Service { get; set; } = null!;
 
-        public int PointsSpent { get; set; }
+        public int PointsSpent { get; set; } = 10000;
         public DateTime BoostStartDate { get; set; } = DateTime.UtcNow;
         public DateTime BoostEndDate { get; set; }
+
+
     }
 }

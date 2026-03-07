@@ -8,7 +8,11 @@ namespace ServAd.ApiService.Services.Profile.Interface
         Task<Profiles> GetByIdAsync(Guid id);
         Task<Profiles> UpdateProfileAsync(Profiles profile);
         Task<bool> MarkAsVerifiedAsync(Guid profileId);
-        // NEW: Method to handle profile picture upload
         Task<string> UploadProfileImageAsync(Guid profileId, IFormFile file);
+        Task<IEnumerable<Profiles>> GetAllProfilesAsync();
+
+
+        // New method for cascading dropdown data
+        Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> GetNepalAddressHierarchy();
     }
 }

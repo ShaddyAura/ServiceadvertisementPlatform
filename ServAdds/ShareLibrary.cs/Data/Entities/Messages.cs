@@ -1,25 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ShareLibrary.cs.Data.Entities
+﻿namespace ShareLibrary.cs.Data.Entities
 {
     public class Messages
     {
-        public record BookingNotification(Guid BookingId, string CustomerEmail, string ProviderEmail, string Status);
+        // Matches your 'Bookings' model
+        public record BookingNotification(
+            Guid BookingId,
+            Guid ProfileId,         // Customer
+            Guid ProviderProfileId, // Provider
+            string Status,
+            decimal AgreedPrice
+        );
 
-        // --- Financial & Wallet Messages ---
-        public record PaymentProcessedMessage(Guid ProfileId, decimal Amount, string Gateway, string TransactionId);
-        public record WalletBalanceUpdateMessage(Guid ProfileId, decimal NewBalance, string CurrencyType);
+        // Matches your 'ChatMessage' model
+        public record ChatNotification(
+            Guid MessageId,
+            Guid BookingId,
+            Guid SenderProfileId,
+            Guid ReceiverProfileId,
+            string MessageText
+        );
 
-        // --- Boosting & Marketing Messages ---
-        public record BoostingActivatedMessage(Guid ServiceId, DateTime ExpiryDate, int PointsSpent);
+        // Matches 'BoostingTransaction' & 'ServiceListings'
+        public record BoostNotification(
+            Guid ServiceId,
+            string ServiceTitle,
+            int PointsSpent,
+            DateTime Expiry
+        );
 
-        // --- System & Security Messages ---
-        public record EmailVerificationMessage(Guid UserId, string Email, string Token);
-        public record UserLockoutMessage(Guid UserId, string Email, DateTime LockoutEnd);
+        // Matches 'RedeemedGift' & 'Gift'
+        public record GiftNotification(
+            Guid RedemptionId,
+            Guid ProfileId,
+            string GiftTitle,
+            string VoucherCode
+        );
+
+        // Matches 'UserWallet'
+        public record WalletNotification(
+            Guid ProfileId,
+            int NewPointsBalance,
+            decimal NewCashBalance,
+            string Type // "PointEarned", "PaymentReceived", etc.
+        );
     }
 }
-

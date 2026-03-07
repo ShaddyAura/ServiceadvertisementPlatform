@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ServAd.ApiService.Controllers.Verification.Dto
 {
-    public record DocumentReviewDto(
-    [Required] VerificationStatus Status,
-    string? AdminRemarks,
-    [Required] Guid AdminId
-);
+    public class DocumentReviewDto
+    {
+        public VerificationStatus Status { get; set; }
+        public string? Message { get; set; } // This is the "Admin Remarks"
+    }
 }

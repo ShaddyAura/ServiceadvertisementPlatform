@@ -6,7 +6,6 @@ using ShareLibrary.cs.Data.Enums;
 
 namespace ServAd.ApiService.Controllers.Booking
 {
-
     [ApiController]
     [Route("api/[controller]")]
     public class BookingController(IServAddBooking bookingService) : ControllerBase
@@ -31,17 +30,22 @@ namespace ServAd.ApiService.Controllers.Booking
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // ✅ Mapping DTO to Entity Model here in the Controller
+            // Mapping DTO to Entity
             var bookingModel = new Bookings
             {
+                Id = Guid.NewGuid(),
                 ServiceId = dto.ServiceId,
-                CustomerProfileId = dto.CustomerProfileId,
+                ProfileId = dto.ProfileId,
                 ProviderProfileId = dto.ProviderProfileId,
-                ScheduledAt = dto.ScheduledAt,
-                Status = BookingStatus.Pending // Default status
+                AgreedPrice = dto.AgreedPrice,
+                ScheduledStart = dto.ScheduledStart,
+                ScheduledEnd = dto.ScheduledEnd,
+                Notes = dto.Notes,
+                Status = BookingStatus.Pending,
+                CreatedAt = DateTime.UtcNow
             };
 
-            // ✅ Call Service with the Entity Model directly
+            // This call now triggers: DB Save -> SignalR Notification -> RabbitMQ Message
             var result = await bookingService.CreateAsync(bookingModel);
 
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
@@ -50,6 +54,7 @@ namespace ServAd.ApiService.Controllers.Booking
         [HttpPatch("bookingstatus")]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] BookingStatus status)
         {
+            // This call now triggers: DB Update -> SignalR Status Notification -> RabbitMQ Update
             await bookingService.UpdateStatusAsync(id, status);
             return NoContent();
         }

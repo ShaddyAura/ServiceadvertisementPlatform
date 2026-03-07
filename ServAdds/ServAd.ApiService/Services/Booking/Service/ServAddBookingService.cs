@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Booking.Interface;
+using ServAd.ApiService.Services.Notifications.Interface; // Added
 using ServAd.ApiService.Services.RabbitMq.Interface;
 using ShareLibrary.cs.Data;
 using ShareLibrary.cs.Data.Entities;
@@ -9,37 +10,44 @@ using ShareLibrary.cs.Data.Message;
 
 namespace ServAd.ApiService.Services.Booking.Service
 {
-
     public class ServAddBookingService(
         ServiceDbContext context,
         IRabbitmqService rabbitMQ,
+        INotificationService notification, 
         ILogger<ServAddBookingService> logger) : IServAddBooking
     {
         public async Task<Bookings> CreateAsync(Bookings booking)
         {
+            // 1. Check if the service actually exists in the DB
+            var serviceExists = await context.ServiceListings.AnyAsync(s => s.Id == booking.ServiceId);
+
+            if (!serviceExists)
+            {
+                throw new ApiException($"The Service ID {booking.ServiceId} does not exist in the database. Please provide a valid Service ID.", 400);
+            }
+
             try
             {
-                // Ensure ID and default status are set if not provided
                 if (booking.Id == Guid.Empty) booking.Id = Guid.NewGuid();
-                booking.Status = BookingStatus.Pending;
-
                 context.Bookings.Add(booking);
                 await context.SaveChangesAsync();
 
-                // Notify RabbitMQ
-                await rabbitMQ.PublishMessageAsync(new BookingNotification(
+                // --- Notification Added ---
+                await notification.NotifyBookingUpdate(
                     booking.Id,
-                    "customer@email.com", // These should ideally come from profile lookups
-                    "provider@email.com",
-                    booking.Status.ToString()
-                ));
+                    booking.ProfileId,
+                    booking.ProviderProfileId,
+                    booking.Status.ToString(),
+                    booking.AgreedPrice);
 
+                // ... RabbitMQ logic ...
                 return booking;
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to persist booking for Service {ServiceId}", booking.ServiceId);
-                throw new ApiException("Database error during booking creation.", 500);
+                var sqlError = ex.InnerException?.Message ?? ex.Message;
+                logger.LogError(ex, "Database Failure: {SqlError}", sqlError);
+                throw new ApiException($"Database error: {sqlError}", 500);
             }
         }
 
@@ -55,6 +63,14 @@ namespace ServAd.ApiService.Services.Booking.Service
             var booking = await GetByIdAsync(id);
             booking.Status = status;
             await context.SaveChangesAsync();
+
+            // --- Notification Added ---
+            await notification.NotifyBookingUpdate(
+                booking.Id,
+                booking.ProfileId,
+                booking.ProviderProfileId,
+                status.ToString(),
+                booking.AgreedPrice);
 
             await rabbitMQ.PublishMessageAsync(new { BookingId = id, Status = status.ToString() });
         }
