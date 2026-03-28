@@ -1,14 +1,14 @@
-﻿using ShareLibrary.cs.Data.Entities;
+
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace ShareLibrary.Data.Entities
+namespace ShareLibrary.cs.Data.Entities
 {
     public class Review
     {
         public Guid Id { get; set; }
         public int Rating { get; set; } 
-        public string Comment { get; set; }
+        public string Comment { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
 
         // Foreign Keys (Examples)

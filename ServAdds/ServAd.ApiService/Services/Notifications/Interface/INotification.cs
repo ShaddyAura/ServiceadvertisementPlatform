@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace ServAd.ApiService.Services.Notifications.Interface
 {
@@ -12,14 +12,14 @@ namespace ServAd.ApiService.Services.Notifications.Interface
 
         // Wallet & Payment (Matches UserWallet Entity)
         Task NotifyWalletUpdate(Guid profileId, decimal amount, string gateway, string transactionId);
-        Task NotifyPointWalletUpdate(Guid profileId, int pointsBalance, decimal cashBalance, string updateType);
+        Task NotifyPointWalletUpdate(Guid profileId, decimal pointsBalance, decimal cashBalance, string updateType);
 
         // Points & Rewards (Matches RedeemedGift & Gift Entities)
-        Task NotifyPointsEarned(Guid profileId, int pointsAdded, string reason);
+        Task NotifyPointsEarned(Guid profileId, decimal pointsAdded, string reason);
         Task NotifyGiftRedeemed(Guid profileId, string giftTitle, string voucherCode);
 
         // Boosting (Matches BoostingTransaction & ServiceListings Entities)
-        Task NotifyBoostingActivated(Guid serviceId, Guid profileId, DateTime expiry, int pointsSpent);
+        Task NotifyBoostingActivated(Guid serviceId, Guid profileId, DateTime expiry, decimal pointsSpent);
 
         // Service Management
         Task NotifyServiceAdded(Guid profileId, string serviceName);

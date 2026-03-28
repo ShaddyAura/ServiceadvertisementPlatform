@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.RabbitMq.Interface;
 using ServAd.ApiService.Services.ServiceListing.Interface;
@@ -42,7 +42,7 @@ namespace ServAd.ApiService.Services.ServiceListing.Service
                 .ToListAsync();
         }
 
-        public async Task<ServiceListings> GetByIdAsync(Guid id)
+        public async Task<ServiceListings?> GetByIdAsync(Guid id)
         {
             return await _context.ServiceListings
                 .Include(s => s.Profile)

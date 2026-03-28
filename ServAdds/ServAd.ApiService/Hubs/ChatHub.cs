@@ -1,10 +1,36 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using ShareLibrary.cs.Data.Entities; // Ensure this points to your ChatMessage model
 
 namespace ServAd.ApiService.Hubs
 {
     public partial class ChatHub : Hub
     {
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> OnlineUsers = new();
+
+        public async Task RegisterOnline(string profileId)
+        {
+            if (string.IsNullOrEmpty(profileId)) return;
+            OnlineUsers[Context.ConnectionId] = profileId;
+            await Clients.All.SendAsync("UserStatusChanged", profileId, true);
+        }
+
+        public bool IsUserOnline(string profileId)
+        {
+            return OnlineUsers.Values.Contains(profileId);
+        }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            if (OnlineUsers.TryRemove(Context.ConnectionId, out var profileId))
+            {
+                if (!OnlineUsers.Values.Contains(profileId))
+                {
+                    await Clients.All.SendAsync("UserStatusChanged", profileId, false);
+                }
+            }
+            await base.OnDisconnectedAsync(exception);
+        }
+
         public async Task JoinBookingGroup(string bookingId)
         {
             if (string.IsNullOrEmpty(bookingId)) return;

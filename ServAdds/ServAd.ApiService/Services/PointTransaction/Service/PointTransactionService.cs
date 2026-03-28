@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Notifications.Interface; // Added
 using ServAd.ApiService.Services.PointTransaction.Interface;
@@ -15,7 +15,7 @@ namespace ServAd.ApiService.Services.PointTransaction.Service
         IRabbitmqService rabbitMQ,
         ILogger<PointTransactionService> logger) : IPointTransactionService
     {
-        public async Task<PointsTransaction> RecordTransactionAsync(Guid walletId, int amount, PointsSource source)
+        public async Task<PointsTransaction> RecordTransactionAsync(Guid walletId, decimal amount, PointsSource source)
         {
             var wallet = await context.Wallets.FindAsync(walletId)
                 ?? throw new ApiException("Wallet not found.", 404);
@@ -47,7 +47,7 @@ namespace ServAd.ApiService.Services.PointTransaction.Service
             return transaction;
         }
 
-        public async Task<PointsTransaction> SpendPointsAsync(Guid walletId, int amount, PointsSource source)
+        public async Task<PointsTransaction> SpendPointsAsync(Guid walletId, decimal amount, PointsSource source)
         {
             var wallet = await context.Wallets.FindAsync(walletId)
                 ?? throw new ApiException("Wallet not found.", 404);
@@ -106,10 +106,10 @@ namespace ServAd.ApiService.Services.PointTransaction.Service
                                t.TransactionDate.Date == today);
         }
 
-        public async Task<int> GetTotalPurchasedPointsAsync(Guid walletId)
+        public async Task<decimal> GetTotalPurchasedPointsAsync(Guid walletId)
         {
             var wallet = await context.Wallets.FindAsync(walletId);
-            return wallet?.LifetimePurchasedPoints ?? 0;
+            return wallet?.LifetimePurchasedPoints ?? 0m;
         }
     }
 }

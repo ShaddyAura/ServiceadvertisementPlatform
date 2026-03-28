@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Notifications.Interface; // Added
 using ServAd.ApiService.Services.RabbitMq.Interface;
@@ -16,12 +16,26 @@ namespace ServAd.ApiService.Services.Wallet.Service
     {
         public async Task<UserWallet> GetWalletByProfileIdAsync(Guid profileId)
         {
-            return await context.Wallets
-                .FirstOrDefaultAsync(w => w.ProfileId == profileId)
-                ?? throw new ApiException("Wallet not found.", 404);
+            var wallet = await context.Wallets.FirstOrDefaultAsync(w => w.ProfileId == profileId);
+            if (wallet == null)
+            {
+                wallet = new UserWallet
+                {
+                    Id = Guid.NewGuid(),
+                    ProfileId = profileId,
+                    PointsBalance = 0,
+                    LifetimePurchasedPoints = 0,
+                    ESewaBalance = 0,
+                    KhaltiBalance = 0,
+                    LastUpdated = DateTime.UtcNow
+                };
+                context.Wallets.Add(wallet);
+                await context.SaveChangesAsync();
+            }
+            return wallet;
         }
 
-        public async Task<UserWallet> PurchasePointsAsync(Guid profileId, decimal amount, int pointsToGive, string gateway)
+        public async Task<UserWallet> PurchasePointsAsync(Guid profileId, decimal amount, decimal pointsToGive, string gateway)
         {
             try
             {
@@ -32,19 +46,31 @@ namespace ServAd.ApiService.Services.Wallet.Service
                 wallet.LifetimePurchasedPoints += pointsToGive;
 
                 // 2. Gateway Revenue Tracking
-                switch (gateway.ToLower())
+                if (string.Equals(gateway, "esewa", StringComparison.OrdinalIgnoreCase))
                 {
-                    case "esewa":
-                        wallet.eSewaBalance += amount;
-                        break;
-                    case "khalti":
-                        wallet.KhaltiBalance += amount;
-                        break;
-                    default:
-                        throw new ApiException("Invalid payment gateway provider.", 400);
+                    wallet.ESewaBalance += amount;
+                }
+                else if (string.Equals(gateway, "khalti", StringComparison.OrdinalIgnoreCase))
+                {
+                    wallet.KhaltiBalance += amount;
+                }
+                else
+                {
+                    throw new ApiException("Invalid payment gateway provider.", 400);
                 }
 
                 wallet.LastUpdated = DateTime.UtcNow;
+
+                var transaction = new PointsTransaction
+                {
+                    Id = Guid.NewGuid(),
+                    WalletId = wallet.Id,
+                    Amount = pointsToGive,
+                    Source = ShareLibrary.cs.Data.Enums.PointsSource.Purchase,
+                    TransactionDate = DateTime.UtcNow
+                };
+                context.PointsTransactions.Add(transaction);
+
                 await context.SaveChangesAsync();
 
                 // --- Notification Added ---
@@ -76,6 +102,82 @@ namespace ServAd.ApiService.Services.Wallet.Service
                 logger.LogError(ex, "Failed to process point purchase for Profile {Id}", profileId);
                 throw new ApiException("An error occurred while updating the wallet.", 500);
             }
+        }
+
+        private static DateTime _currentDate = DateTime.UtcNow.Date;
+        private static readonly HashSet<Guid> _claimedProviders = [];
+        private static readonly System.Threading.Lock _lockObj = new();
+
+        public async Task<UserWallet> ClaimDailyLoginRewardAsync(Guid profileId)
+        {
+            lock (_lockObj)
+            {
+                if (DateTime.UtcNow.Date > _currentDate)
+                {
+                    _currentDate = DateTime.UtcNow.Date;
+                    _claimedProviders.Clear();
+                }
+
+                if (_claimedProviders.Count >= 10 || _claimedProviders.Contains(profileId))
+                {
+                    throw new ApiException("Daily limit reached or reward already claimed.", 400);
+                }
+
+                _claimedProviders.Add(profileId);
+            }
+
+            var wallet = await GetWalletByProfileIdAsync(profileId);
+            decimal pointsToGive = 2.0m;
+            
+            wallet.PointsBalance += pointsToGive;
+            wallet.LifetimePurchasedPoints += pointsToGive;
+            wallet.LastUpdated = DateTime.UtcNow;
+
+            var transaction = new PointsTransaction
+            {
+                Id = Guid.NewGuid(),
+                WalletId = wallet.Id,
+                Amount = pointsToGive,
+                Source = ShareLibrary.cs.Data.Enums.PointsSource.DailyStrike,
+                TransactionDate = DateTime.UtcNow
+            };
+            context.PointsTransactions.Add(transaction);
+
+            await context.SaveChangesAsync();
+
+            await notification.NotifyPointWalletUpdate(
+                profileId, wallet.PointsBalance, pointsToGive, "Daily Login Reward"
+            );
+
+            return wallet;
+        }
+
+        public async Task<UserWallet> ClaimWatchTimeRewardAsync(Guid profileId, decimal secondsWatched)
+        {
+            if (secondsWatched < 10) throw new ApiException("Not enough watch time for a reward.", 400);
+
+            var wallet = await GetWalletByProfileIdAsync(profileId);
+            
+            // Give 10.0m points per watch session as specified
+            decimal pointsToGive = 10.0m;
+            
+            wallet.PointsBalance += pointsToGive;
+            wallet.LifetimePurchasedPoints += pointsToGive;
+            wallet.LastUpdated = DateTime.UtcNow;
+
+            var transaction = new PointsTransaction
+            {
+                Id = Guid.NewGuid(),
+                WalletId = wallet.Id,
+                Amount = pointsToGive,
+                Source = ShareLibrary.cs.Data.Enums.PointsSource.AdWatch,
+                TransactionDate = DateTime.UtcNow
+            };
+            context.PointsTransactions.Add(transaction);
+
+            await context.SaveChangesAsync();
+
+            return wallet;
         }
     }
 }

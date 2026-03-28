@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ServAd.ApiService.Controllers.Review.Dto;
 using ServAd.ApiService.Services.Reviews.Interface;
 
@@ -12,7 +12,7 @@ namespace ServAd.ApiService.Controllers.Review
         [HttpPost("Review")]
         public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto dto)
         {
-            var review = new ShareLibrary.Data.Entities.Review
+            var review = new ShareLibrary.cs.Data.Entities.Review
             {
                 Id = Guid.NewGuid(),
                 Rating = dto.Rating,

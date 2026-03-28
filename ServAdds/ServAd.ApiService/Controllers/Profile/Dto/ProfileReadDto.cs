@@ -1,4 +1,4 @@
-﻿using ShareLibrary.Data.Entities;
+using ShareLibrary.cs.Data.Entities;
 
 namespace ServAd.ApiService.Controllers.Profile.Dto
 {
@@ -13,7 +13,8 @@ namespace ServAd.ApiService.Controllers.Profile.Dto
         public DateTime? DateOfBirth { get; set; } = DateTime.Now;
         public string? ProfileImageUrl { get; set; }
         public bool IsVerified { get; set; }
-        public int BoostingPoints { get; set; }
+        public decimal BoostingPoints { get; set; }
+        public decimal LifetimePoints { get; set; }
         public DateTime CreatedAt { get; set; }
 
         // 🔥 ADD THIS

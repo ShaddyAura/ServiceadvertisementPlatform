@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServAd.ApiService.Controllers.Profile.Dto;
 using ServAd.ApiService.Services.Profile.Interface;
@@ -112,7 +112,7 @@ namespace ServAd.ApiService.Controllers.Profile
             });
         }
 
-        private ProfileReadDto MapToReadDto(ShareLibrary.Data.Entities.Profiles p)
+        private static ProfileReadDto MapToReadDto(ShareLibrary.cs.Data.Entities.Profiles p)
         {
             return new ProfileReadDto
             {
@@ -126,6 +126,7 @@ namespace ServAd.ApiService.Controllers.Profile
                 ProfileImageUrl = p.ProfileImageUrl,
                 IsVerified = p.IsVerified,
                 BoostingPoints = p.BoostingPoints,
+                LifetimePoints = p.LifetimePoints,
                 CreatedAt = p.CreatedAt
             };
         }

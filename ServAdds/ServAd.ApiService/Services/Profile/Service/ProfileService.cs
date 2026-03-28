@@ -1,10 +1,10 @@
-﻿
+
 using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Profile.Interface;
 using ServAd.ApiService.Services.RabbitMq.Interface;
 using ShareLibrary.cs.Data;
-using ShareLibrary.Data.Entities;
+using ShareLibrary.cs.Data.Entities;
 
 namespace ServAd.ApiService.Services.Profile.Service
 {
@@ -57,9 +57,9 @@ namespace ServAd.ApiService.Services.Profile.Service
                     if (isCorrupted) continue;
 
                     // Process valid data
-                    if (!hierarchy.ContainsKey(p)) hierarchy[p] = new();
-                    if (!hierarchy[p].ContainsKey(d)) hierarchy[p][d] = new();
-                    if (!hierarchy[p][d].ContainsKey(m)) hierarchy[p][d][m] = new List<string>();
+                    if (!hierarchy.TryGetValue(p, out var pDict)) { pDict = new(); hierarchy[p] = pDict; }
+                    if (!pDict.TryGetValue(d, out var dDict)) { dDict = new(); pDict[d] = dDict; }
+                    if (!dDict.TryGetValue(m, out var mList)) { mList = new List<string>(); dDict[m] = mList; }
 
                     // WARD COLLECTION: Skip the first 3 columns (P, D, M) and treat the rest as wards
                     string rawWards = string.Join(",", line.Skip(3)).Trim('"').Trim();

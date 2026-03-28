@@ -1,4 +1,4 @@
-﻿using ShareLibrary.Data.Entities;
+using ShareLibrary.cs.Data.Entities;
 
 namespace ServAd.ApiService.Services.Profile.Interface
 {

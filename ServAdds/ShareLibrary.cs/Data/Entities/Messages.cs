@@ -1,4 +1,4 @@
-﻿namespace ShareLibrary.cs.Data.Entities
+namespace ShareLibrary.cs.Data.Entities
 {
     public class Messages
     {
@@ -24,7 +24,7 @@
         public record BoostNotification(
             Guid ServiceId,
             string ServiceTitle,
-            int PointsSpent,
+            decimal PointsSpent,
             DateTime Expiry
         );
 
@@ -39,7 +39,7 @@
         // Matches 'UserWallet'
         public record WalletNotification(
             Guid ProfileId,
-            int NewPointsBalance,
+            decimal NewPointsBalance,
             decimal NewCashBalance,
             string Type // "PointEarned", "PaymentReceived", etc.
         );

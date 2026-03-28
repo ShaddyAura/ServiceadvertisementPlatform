@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ServAd.ApiService.Hubs;
@@ -68,7 +68,7 @@ namespace ServAd.ApiService.Services.Notifications.Service
                 Title = "Booking Update",
                 Message = $"Booking is {status}. Price: {price}",
                 ActionUrl = $"/bookings/{bookingId}",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             await SaveAndNotify(notif, new { bookingId, status }, "booking_notifications");
@@ -86,7 +86,7 @@ namespace ServAd.ApiService.Services.Notifications.Service
                 Title = "New Message",
                 Message = preview,
                 ActionUrl = $"/chats/{bookingId}",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             var rabbitMessage = new ChatNotification(Guid.NewGuid(), bookingId, senderId, receiverId, preview);
@@ -101,14 +101,14 @@ namespace ServAd.ApiService.Services.Notifications.Service
                 CustomerId = profileId,
                 Title = "Payment Successful",
                 Message = $"NPR {amount} added via {gateway}. Transaction ID: {transactionId}",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             var rabbitMessage = new WalletNotification(profileId, 0, amount, $"Payment via {gateway}");
             await SaveAndNotify(notif, rabbitMessage, "payment_notifications");
         }
 
-        public async Task NotifyPointWalletUpdate(Guid profileId, int pointsBalance, decimal cashBalance, string updateType)
+        public async Task NotifyPointWalletUpdate(Guid profileId, decimal pointsBalance, decimal cashBalance, string updateType)
         {
             var notif = new Notification
             {
@@ -116,14 +116,14 @@ namespace ServAd.ApiService.Services.Notifications.Service
                 CustomerId = profileId,
                 Title = "Wallet Balance Updated",
                 Message = $"Transaction type: {updateType}. New Balance: {pointsBalance} points / NPR {cashBalance}",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             var rabbitMessage = new WalletNotification(profileId, pointsBalance, cashBalance, updateType);
             await SaveAndNotify(notif, rabbitMessage, "wallet_notifications");
         }
 
-        public async Task NotifyPointsEarned(Guid profileId, int pointsAdded, string reason)
+        public async Task NotifyPointsEarned(Guid profileId, decimal pointsAdded, string reason)
         {
             var notif = new Notification
             {
@@ -131,7 +131,7 @@ namespace ServAd.ApiService.Services.Notifications.Service
                 CustomerId = profileId,
                 Title = "Points Earned!",
                 Message = $"You've received {pointsAdded} points for: {reason}",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             var rabbitMessage = new WalletNotification(profileId, pointsAdded, 0, reason);
@@ -146,14 +146,14 @@ namespace ServAd.ApiService.Services.Notifications.Service
                 CustomerId = profileId,
                 Title = "Reward Redeemed",
                 Message = $"Gift: {giftTitle}. Your code is: {voucherCode}",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             var rabbitMessage = new GiftNotification(Guid.NewGuid(), profileId, giftTitle, voucherCode);
             await SaveAndNotify(notif, rabbitMessage, "reward_notifications");
         }
 
-        public async Task NotifyBoostingActivated(Guid serviceId, Guid profileId, DateTime expiry, int pointsSpent)
+        public async Task NotifyBoostingActivated(Guid serviceId, Guid profileId, DateTime expiry, decimal pointsSpent)
         {
             var notif = new Notification
             {
@@ -162,7 +162,7 @@ namespace ServAd.ApiService.Services.Notifications.Service
                 Title = "Service Boost Active",
                 Message = $"Your service is now boosted until {expiry:g}. Points used: {pointsSpent}",
                 ActionUrl = $"/services/{serviceId}",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             var rabbitMessage = new BoostNotification(serviceId, "Service Boosted", pointsSpent, expiry);
@@ -177,7 +177,7 @@ namespace ServAd.ApiService.Services.Notifications.Service
                 ProviderId = profileId,
                 Title = "Listing Approved",
                 Message = $"Your service '{serviceName}' is now live on the platform!",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             var rabbitMessage = new { ProfileId = profileId, Title = "Service Added", Content = $"{serviceName} is now live!" };

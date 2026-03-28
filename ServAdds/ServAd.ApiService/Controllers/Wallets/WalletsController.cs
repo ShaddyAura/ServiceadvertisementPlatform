@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ServAd.ApiService.Controllers.Wallets.Dto;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Wallet.Interface;
@@ -6,7 +6,7 @@ using ShareLibrary.cs.Data.Entities;
 
 namespace ServAd.ApiService.Controllers.Wallets
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class WalletsController(IUserWalletService walletService) : ControllerBase
     {
@@ -56,5 +56,50 @@ namespace ServAd.ApiService.Controllers.Wallets
                 return StatusCode(ex.StatusCode, new { message = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Claim daily login reward if eligible (first 10 users daily)
+        /// </summary>
+        [HttpPost("claim-daily-reward")]
+        public async Task<IActionResult> ClaimDailyReward([FromBody] ClaimRewardDto dto)
+        {
+            try
+            {
+                var wallet = await walletService.ClaimDailyLoginRewardAsync(dto.ProfileId);
+                return Ok(wallet);
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Claim watch time reward based on seconds watched
+        /// </summary>
+        [HttpPost("claim-watch-time")]
+        public async Task<IActionResult> ClaimWatchTimeReward([FromBody] ClaimWatchTimeDto dto)
+        {
+            try
+            {
+                var wallet = await walletService.ClaimWatchTimeRewardAsync(dto.ProfileId, dto.SecondsWatched);
+                return Ok(wallet);
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+        }
+    }
+
+    public class ClaimRewardDto
+    {
+        public Guid ProfileId { get; set; }
+    }
+
+    public class ClaimWatchTimeDto
+    {
+        public Guid ProfileId { get; set; }
+        public int SecondsWatched { get; set; }
     }
 }

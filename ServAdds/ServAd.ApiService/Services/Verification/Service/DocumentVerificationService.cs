@@ -1,11 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.RabbitMq.Interface;
 using ServAd.ApiService.Services.Verification.Interface;
 using ShareLibrary.cs.Data;
 using ShareLibrary.cs.Data.Entities;
 using ShareLibrary.cs.Data.Enums;
-using ShareLibrary.Data.Entities;
 
 namespace ServAd.ApiService.Services.Verification.Service
 {

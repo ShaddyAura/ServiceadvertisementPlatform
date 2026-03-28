@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Notifications.Interface; // Added
 using ServAd.ApiService.Services.RedeemGift.Interface;
@@ -16,18 +16,17 @@ namespace ServAd.ApiService.Services.RedeemGift.Service
     {
         public async Task<RedeemedGift> ClaimGiftVoucherAsync(Guid profileId, Guid giftId)
         {
-            // 1. Validate Wallet and Eligibility
-            var wallet = await context.Wallets
-                .FirstOrDefaultAsync(w => w.ProfileId == profileId)
-                ?? throw new ApiException("Wallet not found.", 404);
+            // 1. Fetch Profile to check progress
+            var profile = await context.Profiles.FindAsync(profileId)
+                ?? throw new ApiException("Profile not found.", 404);
 
             var gift = await context.Gifts.FindAsync(giftId)
                 ?? throw new ApiException("Gift item not found.", 404);
 
-            // 2. Logic: Target Progress Check
-            if (wallet.LifetimePurchasedPoints < gift.PointsRequired)
+            // 2. Logic Check: Verify if Lifetime Points have hit the Target
+            if (profile.LifetimePoints < gift.PointsRequired)
             {
-                throw new ApiException($"Target not met. You need {gift.PointsRequired} purchased points.", 400);
+                throw new ApiException($"Target not met. You need {gift.PointsRequired} lifetime points.", 400);
             }
 
             // 3. Generate the Voucher

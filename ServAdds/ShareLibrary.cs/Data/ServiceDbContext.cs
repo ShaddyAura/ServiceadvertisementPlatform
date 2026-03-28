@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ShareLibrary.cs.Data.Entities;
-using ShareLibrary.Data.Entities;
 using System.Reflection.Emit;
 
 namespace ShareLibrary.cs.Data
@@ -62,8 +61,16 @@ namespace ShareLibrary.cs.Data
             // Fix Decimal Precision
             // -----------------------------------------------------------
             builder.Entity<ServiceListings>().Property(s => s.Price).HasPrecision(18, 2);
-            builder.Entity<UserWallet>().Property(w => w.eSewaBalance).HasPrecision(18, 2);
+            builder.Entity<UserWallet>().Property(w => w.ESewaBalance).HasPrecision(18, 2);
             builder.Entity<UserWallet>().Property(w => w.KhaltiBalance).HasPrecision(18, 2);
+            
+            // Gamification decimals
+            builder.Entity<BoostingTransaction>().Property(bt => bt.PointsSpent).HasPrecision(18, 2);
+            builder.Entity<Gift>().Property(g => g.PointsRequired).HasPrecision(18, 2);
+            builder.Entity<PointsTransaction>().Property(pt => pt.Amount).HasPrecision(18, 2);
+            builder.Entity<Profiles>().Property(p => p.BoostingPoints).HasPrecision(18, 2);
+            builder.Entity<UserWallet>().Property(w => w.LifetimePurchasedPoints).HasPrecision(18, 2);
+            builder.Entity<UserWallet>().Property(w => w.PointsBalance).HasPrecision(18, 2);
 
             // Fixed the "AgreedPrice" warning here:
             builder.Entity<Bookings>().Property(b => b.AgreedPrice).HasPrecision(18, 2);

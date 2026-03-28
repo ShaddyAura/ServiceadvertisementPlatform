@@ -1,18 +1,39 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using ShareLibrary.cs.Data;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace ServAd.ApiService.Hubs
 {
     public class NotificationHub : Hub
     {
+        private readonly ServiceDbContext _context;
+
+        public NotificationHub(ServiceDbContext context)
+        {
+            _context = context;
+        }
+
         public override async Task OnConnectedAsync()
         {
-            var profileId = Context.User?.FindFirst("ProfileId")?.Value
-                         ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            // 1. Get the UserId from the JWT token
+            var userIdString = Context.User?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                            ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (!string.IsNullOrEmpty(profileId))
+            if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, profileId);
+                // 2. Look up the actual ProfileId from the database
+                var profileId = await _context.Profiles
+                    .Where(p => p.UserId == userId)
+                    .Select(p => p.Id)
+                    .FirstOrDefaultAsync();
+
+                if (profileId != Guid.Empty)
+                {
+                    // 3. Add user to the ProfileId group (this matches what NotificationService sends to)
+                    await Groups.AddToGroupAsync(Context.ConnectionId, profileId.ToString());
+                }
             }
 
             await base.OnConnectedAsync();
@@ -21,30 +42,36 @@ namespace ServAd.ApiService.Hubs
         // Allow the user to mark a specific notification as read from the UI
         public async Task MarkAsRead(Guid notificationId)
         {
-            var profileId = Context.User?.FindFirst("ProfileId")?.Value;
+            var userIdString = Context.User?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                            ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            // We broadcast back to the user's other devices that this is now read
-            if (!string.IsNullOrEmpty(profileId))
+            if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
             {
-                await Clients.Group(profileId).SendAsync("NotificationRead", notificationId);
+                var profileId = await _context.Profiles
+                    .Where(p => p.UserId == userId)
+                    .Select(p => p.Id)
+                    .FirstOrDefaultAsync();
+
+                if (profileId != Guid.Empty)
+                {
+                    await Clients.Group(profileId.ToString()).SendAsync("NotificationRead", notificationId);
+                }
             }
         }
 
         // Useful for the Chat feature: Notify the other person that the user is typing
         public async Task SendTypingIndicator(Guid receiverProfileId, Guid bookingId)
         {
-            var senderId = Context.User?.FindFirst("ProfileId")?.Value;
+            var senderId = Context.User?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                        ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             await Clients.Group(receiverProfileId.ToString())
                          .SendAsync("UserTyping", new { senderId, bookingId });
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var profileId = Context.User?.FindFirst("ProfileId")?.Value;
-            if (!string.IsNullOrEmpty(profileId))
-            {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, profileId);
-            }
+            // Groups are automatically cleaned up by SignalR on disconnect
             await base.OnDisconnectedAsync(exception);
         }
     }

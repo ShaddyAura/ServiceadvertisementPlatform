@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using RabbitMQ.Client;
@@ -90,7 +90,7 @@ public class NotificationConsumerWorker(
             ProfileId = payload.ProfileId,
             Title = payload.Title,
             Message = payload.Message,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now,
             IsRead = false
         };
 

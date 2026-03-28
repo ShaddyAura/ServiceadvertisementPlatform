@@ -1,4 +1,3 @@
-﻿using ShareLibrary.Data.Entities;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -29,7 +28,7 @@ namespace ShareLibrary.cs.Data.Entities
 
         // State & Timing
         public bool IsRead { get; set; } = false;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? ReadAt { get; set; }
 
         // Optional: Store the raw JSON payload

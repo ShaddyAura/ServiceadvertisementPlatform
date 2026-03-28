@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,8 +11,6 @@ using ServAd.ApiService.Services.Email;
 using ServAd.ApiService.Services.Jwt;
 using ShareLibrary.cs.Data;
 using ShareLibrary.cs.Data.Entities;
-using ShareLibrary.Data;
-using ShareLibrary.Data.Entities;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
@@ -379,6 +377,26 @@ namespace ServAd.ApiService.Controllers.Account
                 await userManager.AddToRoleAsync(user, requestedRole);
             }
 
+            // ✅ ENSURE PROFILE EXISTS (Fixes missing Profile crashes)
+            var profileExists = await _context.Profiles.AnyAsync(p => p.UserId == user.Id);
+            if (!profileExists)
+            {
+                var firstName = info.Principal.FindFirstValue(ClaimTypes.GivenName) ?? email.Split('@')[0];
+                var lastName = info.Principal.FindFirstValue(ClaimTypes.Surname) ?? "";
+
+                var profile = new Profiles
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Profiles.Add(profile);
+                await _context.SaveChangesAsync();
+            }
+
             // Existing logic to get roles for the JWT
             var roles = await userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault() ?? "User";
@@ -469,7 +487,7 @@ namespace ServAd.ApiService.Controllers.Account
                     Encoding.UTF8.GetBytes(settings.SigningKey)
                 ),
                 TokenDecryptionKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(settings.EncryptingKey)
+                    Encoding.UTF8.GetBytes(settings.EncryptingKey ?? string.Empty)
                 )
             };
 

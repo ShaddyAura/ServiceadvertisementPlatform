@@ -1,4 +1,4 @@
-﻿using ShareLibrary.cs.Data.Enums;
+using ShareLibrary.cs.Data.Enums;
 
 using System.ComponentModel.DataAnnotations;
 
@@ -11,7 +11,7 @@ namespace ShareLibrary.cs.Data.Entities
         public string Title { get; set; } = string.Empty;       
         public string Description { get; set; } = string.Empty; 
 
-        public int PointsRequired { get; set; }
+        public decimal PointsRequired { get; set; }
 
         public GiftType Type { get; set; } = GiftType.Voucher;
         public string? ImageUrl { get; set; } 

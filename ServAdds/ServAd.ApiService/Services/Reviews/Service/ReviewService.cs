@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 using ServAd.ApiService.Services.Reviews.Interface;
 using ShareLibrary.cs.Data;
-using ShareLibrary.Data.Entities;
+using ShareLibrary.cs.Data.Entities;
 
 namespace ServAd.ApiService.Services.Reviews.Service
 {

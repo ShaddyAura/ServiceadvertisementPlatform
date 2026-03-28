@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace ServAd.ApiService.Controllers.Review.Dto
 {
@@ -9,7 +9,7 @@ namespace ServAd.ApiService.Controllers.Review.Dto
 
         [Required]
         [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters.")]
-        public string Comment { get; set; }
+        public string Comment { get; set; } = string.Empty;
 
         [Required]
         public Guid ProfileId { get; set; }

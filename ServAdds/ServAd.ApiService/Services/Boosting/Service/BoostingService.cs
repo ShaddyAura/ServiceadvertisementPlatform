@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Boosting.Interface;
 using ServAd.ApiService.Services.Notifications.Interface; // Added
@@ -18,23 +18,26 @@ namespace ServAd.ApiService.Services.Boosting.Service
         public async Task<BoostingTransaction> BoostServiceAsync(
             Guid serviceId,
             BoostLevel level,
-            int pointsToSpend,
+            decimal pointsToSpend,
             int days)
         {
             var service = await context.ServiceListings
                 .Include(s => s.Profile)
+                .ThenInclude(p => p.Wallet)
                 .FirstOrDefaultAsync(s => s.Id == serviceId)
                 ?? throw new ApiException("Service not found.", 404);
 
             var profile = service.Profile;
+            var wallet = profile.Wallet ?? throw new ApiException("User wallet not found.", 404);
 
-            if (profile.BoostingPoints < pointsToSpend)
+            if (wallet.PointsBalance < pointsToSpend)
                 throw new ApiException(
-                    $"Insufficient boosting points. You have {profile.BoostingPoints} points.", 400);
+                    $"Insufficient boosting points. You have {wallet.PointsBalance} points.", 400);
 
             try
             {
-                profile.BoostingPoints -= pointsToSpend;
+                wallet.PointsBalance -= pointsToSpend;
+                wallet.LastUpdated = DateTime.UtcNow;
 
                 DateTime now = DateTime.UtcNow;
 

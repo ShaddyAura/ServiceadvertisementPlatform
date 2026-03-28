@@ -1,5 +1,4 @@
-﻿using ShareLibrary.cs.Data.Enums;
-using ShareLibrary.Data.Entities;
+using ShareLibrary.cs.Data.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization; // Required for JsonIgnore

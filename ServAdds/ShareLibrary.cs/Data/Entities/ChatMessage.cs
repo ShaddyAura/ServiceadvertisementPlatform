@@ -1,4 +1,3 @@
-﻿using ShareLibrary.Data.Entities;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -31,5 +30,9 @@ namespace ShareLibrary.cs.Data.Entities
 
         public string MessageText { get; set; } = string.Empty;
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
+
+        // --- SOFT DELETE ---
+        public bool IsDeletedBySender { get; set; } = false;
+        public bool IsDeletedByReceiver { get; set; } = false;
     }
 }

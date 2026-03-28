@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ServAd.ApiService.Controllers.Booking.Dto;
 using ServAd.ApiService.Services.Booking.Interface;
 using ShareLibrary.cs.Data.Entities;
@@ -52,7 +52,7 @@ namespace ServAd.ApiService.Controllers.Booking
         }
 
         [HttpPatch("bookingstatus")]
-        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] BookingStatus status)
+        public async Task<IActionResult> UpdateStatus([FromQuery] Guid id, [FromQuery] BookingStatus status)
         {
             // This call now triggers: DB Update -> SignalR Status Notification -> RabbitMQ Update
             await bookingService.UpdateStatusAsync(id, status);

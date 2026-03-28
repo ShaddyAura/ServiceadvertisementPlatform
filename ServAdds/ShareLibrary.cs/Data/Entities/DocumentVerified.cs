@@ -1,9 +1,9 @@
-﻿using ShareLibrary.cs.Data.Entities;
+
 using ShareLibrary.cs.Data.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ShareLibrary.Data.Entities
+namespace ShareLibrary.cs.Data.Entities
 {
     public class DocumentVerified
     {

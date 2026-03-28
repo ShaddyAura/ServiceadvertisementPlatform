@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ServAd.ApiService.Controllers.Verification.Dto;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Verification.Interface;
 using ShareLibrary.cs.Data.Entities;
-using ShareLibrary.Data.Entities;
 
 namespace ServAd.ApiService.Controllers.Verification
 {
@@ -95,7 +94,7 @@ namespace ServAd.ApiService.Controllers.Verification
                 // Returns the specific 400, 404, or 500 status set in the service
                 return StatusCode(ex.StatusCode, new { message = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 
                 return StatusCode(500, new { message = "An unexpected error occurred." });

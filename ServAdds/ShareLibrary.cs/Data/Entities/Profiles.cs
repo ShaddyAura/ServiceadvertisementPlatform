@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
-using ShareLibrary.cs.Data.Entities;
+using Microsoft.AspNetCore.Identity;
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
-namespace ShareLibrary.Data.Entities
+namespace ShareLibrary.cs.Data.Entities
 {
     public class Profiles
     {
@@ -14,10 +15,10 @@ namespace ShareLibrary.Data.Entities
         public Guid UserId { get; set; }
 
         [Required, MaxLength(50)]
-        public string FirstName { get; set; } = null!;
+        public string FirstName { get; set; } = string.Empty;
 
         [Required, MaxLength(50)]
-        public string LastName { get; set; } = null!;
+        public string LastName { get; set; } = string.Empty;
 
         // --- NEW FIELDS START ---
 
@@ -41,16 +42,17 @@ namespace ShareLibrary.Data.Entities
         public DateTime? UpdatedAt { get; set; }
 
         // Navigation Properties
-        public int BoostingPoints { get; set; } = 10000;
-        public virtual ICollection<ServiceListings> Services { get; set; } = new List<ServiceListings>();
-        public virtual ICollection<DocumentVerified> VerifiedDocuments { get; set; } = new List<DocumentVerified>();
+        public decimal BoostingPoints { get; set; } 
+        public decimal LifetimePoints { get; set; }
+        public virtual ICollection<ServiceListings> Services { get; set; } = [];
+        public virtual ICollection<DocumentVerified> VerifiedDocuments { get; set; } = [];
         public virtual UserWallet? Wallet { get; set; }
 
         // Helper for UI
         [NotMapped]
         public string FullName => $"{FirstName} {LastName}";
 
-        // Inside Profiles.cs
-        public virtual ICollection<Bookings> Bookings { get; set; } = new List<Bookings>();
+        [JsonIgnore]
+        public virtual ICollection<Bookings> Bookings { get; set; } = [];
     }
 }

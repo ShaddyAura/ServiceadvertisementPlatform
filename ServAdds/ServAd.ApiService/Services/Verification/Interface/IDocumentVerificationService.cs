@@ -1,5 +1,5 @@
-﻿using ShareLibrary.cs.Data.Enums;
-using ShareLibrary.Data.Entities;
+using ShareLibrary.cs.Data.Enums;
+using ShareLibrary.cs.Data.Entities;
 
 namespace ServAd.ApiService.Services.Verification.Interface
 {

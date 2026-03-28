@@ -22,49 +22,6 @@ namespace ShareLibrary.cs.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Bookings", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("AgreedPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ProviderProfileId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("ScheduledEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ScheduledStart")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("ServiceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfileId");
-
-                    b.HasIndex("ServiceId");
-
-                    b.ToTable("Bookings");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -262,7 +219,115 @@ namespace ShareLibrary.cs.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ShareLibrary.Data.Entities.DocumentVerified", b =>
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Bookings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("AgreedPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProviderProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ScheduledEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ScheduledStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfileId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.BoostingTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("BoostEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("BoostStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("PointsSpent")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("BoostingTransactions");
+                });
+
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeletedByReceiver")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeletedBySender")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MessageText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ReceiverProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SenderProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("ReceiverProfileId");
+
+                    b.HasIndex("SenderProfileId");
+
+                    b.ToTable("ChatMessages");
+                });
+
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.DocumentVerified", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -305,149 +370,6 @@ namespace ShareLibrary.cs.Migrations
                     b.ToTable("DocumentVerifieds");
                 });
 
-            modelBuilder.Entity("ShareLibrary.Data.Entities.Profiles", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<int>("BoostingPoints")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsVerified")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("ProfileImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Profiles");
-                });
-
-            modelBuilder.Entity("ShareLibrary.Data.Entities.Review", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("ServiceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfileId");
-
-                    b.HasIndex("ServiceId");
-
-                    b.ToTable("Reviews");
-                });
-
-            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.BoostingTransaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("BoostEndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("BoostStartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PointsSpent")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("ServiceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ServiceId");
-
-                    b.ToTable("BoostingTransactions");
-                });
-
-            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.ChatMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("MessageText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("ReceiverProfileId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SenderProfileId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("ReceiverProfileId");
-
-                    b.HasIndex("SenderProfileId");
-
-                    b.ToTable("ChatMessages");
-                });
-
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Gift", b =>
                 {
                     b.Property<Guid>("Id")
@@ -467,8 +389,9 @@ namespace ShareLibrary.cs.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<int>("PointsRequired")
-                        .HasColumnType("int");
+                    b.Property<decimal>("PointsRequired")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -533,8 +456,9 @@ namespace ShareLibrary.cs.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("int");
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Source")
                         .HasColumnType("int");
@@ -550,6 +474,63 @@ namespace ShareLibrary.cs.Migrations
                     b.HasIndex("WalletId");
 
                     b.ToTable("PointsTransactions");
+                });
+
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Profiles", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<decimal>("BoostingPoints")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("LifetimePoints")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Profiles");
                 });
 
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.RedeemedGift", b =>
@@ -581,6 +562,38 @@ namespace ShareLibrary.cs.Migrations
                     b.HasIndex("ProfileId");
 
                     b.ToTable("RedeemedGifts");
+                });
+
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Review", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfileId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.ServiceCategory", b =>
@@ -669,6 +682,10 @@ namespace ShareLibrary.cs.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("ESewaBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("KhaltiBalance")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -676,18 +693,16 @@ namespace ShareLibrary.cs.Migrations
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("LifetimePurchasedPoints")
-                        .HasColumnType("int");
+                    b.Property<decimal>("LifetimePurchasedPoints")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("PointsBalance")
-                        .HasColumnType("int");
+                    b.Property<decimal>("PointsBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("ProfileId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("eSewaBalance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -695,25 +710,6 @@ namespace ShareLibrary.cs.Migrations
                         .IsUnique();
 
                     b.ToTable("Wallets");
-                });
-
-            modelBuilder.Entity("Bookings", b =>
-                {
-                    b.HasOne("ShareLibrary.Data.Entities.Profiles", "Profile")
-                        .WithMany("Bookings")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ShareLibrary.cs.Data.Entities.ServiceListings", "Service")
-                        .WithMany("Bookings")
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Profile");
-
-                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -767,36 +763,16 @@ namespace ShareLibrary.cs.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ShareLibrary.Data.Entities.DocumentVerified", b =>
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Bookings", b =>
                 {
-                    b.HasOne("ShareLibrary.Data.Entities.Profiles", "Profile")
-                        .WithMany("VerifiedDocuments")
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
+                        .WithMany("Bookings")
                         .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Profile");
-                });
-
-            modelBuilder.Entity("ShareLibrary.Data.Entities.Profiles", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser<System.Guid>", null)
-                        .WithOne()
-                        .HasForeignKey("ShareLibrary.Data.Entities.Profiles", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ShareLibrary.Data.Entities.Review", b =>
-                {
-                    b.HasOne("ShareLibrary.Data.Entities.Profiles", "Profile")
-                        .WithMany()
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ShareLibrary.cs.Data.Entities.ServiceListings", "Service")
-                        .WithMany()
+                        .WithMany("Bookings")
                         .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -819,19 +795,19 @@ namespace ShareLibrary.cs.Migrations
 
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.ChatMessage", b =>
                 {
-                    b.HasOne("Bookings", "Booking")
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Bookings", "Booking")
                         .WithMany()
                         .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ShareLibrary.Data.Entities.Profiles", "ReceiverProfile")
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "ReceiverProfile")
                         .WithMany()
                         .HasForeignKey("ReceiverProfileId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ShareLibrary.Data.Entities.Profiles", "SenderProfile")
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "SenderProfile")
                         .WithMany()
                         .HasForeignKey("SenderProfileId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -844,9 +820,20 @@ namespace ShareLibrary.cs.Migrations
                     b.Navigation("SenderProfile");
                 });
 
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.DocumentVerified", b =>
+                {
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
+                        .WithMany("VerifiedDocuments")
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Profile");
+                });
+
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Notification", b =>
                 {
-                    b.HasOne("ShareLibrary.Data.Entities.Profiles", "Profile")
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
                         .WithMany()
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -866,6 +853,15 @@ namespace ShareLibrary.cs.Migrations
                     b.Navigation("Wallet");
                 });
 
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Profiles", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser<System.Guid>", null)
+                        .WithOne()
+                        .HasForeignKey("ShareLibrary.cs.Data.Entities.Profiles", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.RedeemedGift", b =>
                 {
                     b.HasOne("ShareLibrary.cs.Data.Entities.Gift", "Gift")
@@ -874,7 +870,7 @@ namespace ShareLibrary.cs.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ShareLibrary.Data.Entities.Profiles", null)
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", null)
                         .WithMany()
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -883,9 +879,28 @@ namespace ShareLibrary.cs.Migrations
                     b.Navigation("Gift");
                 });
 
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Review", b =>
+                {
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
+                        .WithMany()
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ShareLibrary.cs.Data.Entities.ServiceListings", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Profile");
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.ServiceListings", b =>
                 {
-                    b.HasOne("ShareLibrary.Data.Entities.Profiles", "Profile")
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
                         .WithMany("Services")
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -896,7 +911,7 @@ namespace ShareLibrary.cs.Migrations
 
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.UserWallet", b =>
                 {
-                    b.HasOne("ShareLibrary.Data.Entities.Profiles", "Profile")
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
                         .WithOne("Wallet")
                         .HasForeignKey("ShareLibrary.cs.Data.Entities.UserWallet", "ProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -905,7 +920,7 @@ namespace ShareLibrary.cs.Migrations
                     b.Navigation("Profile");
                 });
 
-            modelBuilder.Entity("ShareLibrary.Data.Entities.Profiles", b =>
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Profiles", b =>
                 {
                     b.Navigation("Bookings");
 

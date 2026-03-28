@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +12,7 @@ namespace ShareLibrary.cs.Data.Enums
         Confirmed,  // Provider accepted the booking
         InProcess,  // Service is currently being delivered
         Completed,  // Service finished and payment released
+        Paid,       // Payment received
         Cancelled,  // Either party cancelled
         Disputed
     }

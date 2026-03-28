@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Booking.Interface;
 using ServAd.ApiService.Services.Notifications.Interface; // Added
@@ -52,10 +52,17 @@ namespace ServAd.ApiService.Services.Booking.Service
         }
 
         public async Task<IEnumerable<Bookings>> GetAllAsync() =>
-            await context.Bookings.Include(b => b.Service).AsNoTracking().ToListAsync();
+            await context.Bookings
+                .Include(b => b.Service)
+                .Include(b => b.Profile)
+                .AsNoTracking()
+                .ToListAsync();
 
         public async Task<Bookings> GetByIdAsync(Guid id) =>
-            await context.Bookings.Include(b => b.Service).FirstOrDefaultAsync(b => b.Id == id)
+            await context.Bookings
+                .Include(b => b.Service)
+                .Include(b => b.Profile)
+                .FirstOrDefaultAsync(b => b.Id == id)
             ?? throw new ApiException($"Booking {id} not found.", 404);
 
         public async Task UpdateStatusAsync(Guid id, BookingStatus status)

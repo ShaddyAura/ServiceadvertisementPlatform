@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Gift.Interface;
 using ServAd.ApiService.Services.Notifications.Interface; // Added
@@ -24,19 +24,18 @@ namespace ServAd.ApiService.Services.Gift.Service
 
         public async Task<RedeemedGift> RedeemVoucherAsync(Guid profileId, Guid giftId)
         {
-            // 1. Fetch User Wallet to check progress
-            var wallet = await context.Wallets
-                .FirstOrDefaultAsync(w => w.ProfileId == profileId)
-                ?? throw new ApiException("User wallet not found.", 404);
+            // 1. Fetch Profile to check progress
+            var profile = await context.Profiles.FindAsync(profileId)
+                ?? throw new ApiException("Profile not found.", 404);
 
             // 2. Fetch the Gift details
             var gift = await context.Gifts.FindAsync(giftId)
                 ?? throw new ApiException("Gift item not found.", 404);
 
-            // 3. Logic Check: Verify if Lifetime Purchased Points have hit the Target
-            if (wallet.LifetimePurchasedPoints < gift.PointsRequired)
+            // 3. Logic Check: Verify if Lifetime Points have hit the Target
+            if (profile.LifetimePoints < gift.PointsRequired)
             {
-                throw new ApiException($"Ineligible. You need {gift.PointsRequired} lifetime purchased points.", 400);
+                throw new ApiException($"Ineligible. You need {gift.PointsRequired} lifetime points.", 400);
             }
 
             // 4. Check if user already redeemed this specific gift

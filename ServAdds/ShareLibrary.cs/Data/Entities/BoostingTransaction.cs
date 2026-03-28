@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,7 +16,7 @@ namespace ShareLibrary.cs.Data.Entities
         [ForeignKey("ServiceId")]
         public virtual ServiceListings Service { get; set; } = null!;
 
-        public int PointsSpent { get; set; } = 10000;
+        public decimal PointsSpent { get; set; } 
         public DateTime BoostStartDate { get; set; } = DateTime.UtcNow;
         public DateTime BoostEndDate { get; set; }
 

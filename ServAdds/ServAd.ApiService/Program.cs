@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.CookiePolicy;
@@ -31,8 +31,11 @@ using ServAd.ApiService.Services.Reviews.Interface;
 using ServAd.ApiService.Services.Reviews.Service;
 using ServAd.ApiService.Services.ServiceListing.Interface;
 using ServAd.ApiService.Services.ServiceListing.Service;
-using ServAd.ApiService.Services.Verification.Interface;
 using ServAd.ApiService.Services.Verification.Service;
+using ServAd.ApiService.Services.Gift.Interface;
+using ServAd.ApiService.Services.Gift.Service;
+using ServAd.ApiService.Services.RedeemGift.Interface;
+using ServAd.ApiService.Services.RedeemGift.Service;
 using ServAd.ApiService.Services.Wallet.Interface;
 using ServAd.ApiService.Services.Wallet.Service;
 using ServAd.ApiService.Workers;
@@ -42,6 +45,9 @@ using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
+using ServAd.ApiService.Services.UserEngagement.Interface;
+using ServAd.ApiService.Services.UserEngagement.Service;
+using ServAd.ApiService.Services.Verification.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,7 +135,7 @@ options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
        
         TokenDecryptionKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtSettings.EncryptingKey))
+            Encoding.UTF8.GetBytes(jwtSettings.EncryptingKey ?? string.Empty))
     };
 
 
@@ -137,6 +143,15 @@ options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     {
         OnMessageReceived = context =>
         {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) &&
+                (path.StartsWithSegments("/notificationHub") || path.StartsWithSegments("/chatHub")))
+            {
+                context.Token = accessToken;
+                return Task.CompletedTask;
+            }
+
             // 1️⃣ Check Authorization header
             var header = context.Request.Headers["Authorization"].ToString();
             if (!string.IsNullOrEmpty(header) && header.StartsWith("Bearer "))
@@ -159,8 +174,8 @@ options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 builder.Services.AddAuthentication()
     .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
     {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
         options.CallbackPath = "/signin-google";
 
         options.Events.OnRemoteFailure = context =>
@@ -201,6 +216,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSignalR();
 builder.Services.AddHttpClient(); 
 builder.Services.AddScoped<IRabbitmqService, RabbitmqService>();
+builder.Services.AddScoped<ServAd.ApiService.Services.Payment.Interface.IPaymentService, ServAd.ApiService.Services.Payment.Service.PaymentService>();
 
 // --- Business Logic Services ---
 // Service Listing (Images/Videos)
@@ -211,6 +227,9 @@ builder.Services.AddScoped<IServAddBooking, ServAddBookingService>();
 
 // User Wallet & Points (eSewa/Khalti)
 builder.Services.AddScoped<IUserWalletService, UserWalletService>();
+
+// User Engagement (Watch & Login Points)
+builder.Services.AddScoped<IUserEngagementService, UserEngagementService>();
 
 // Boosting System (RabbitMQ + Points)
 builder.Services.AddScoped<IBoostingService, BoostingService>();
@@ -224,6 +243,8 @@ builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IGiftService, GiftService>(); 
+builder.Services.AddScoped<IRedeemGiftService, RedeemGiftService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddHostedService<NotificationConsumerWorker>();
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ServAd.ApiService.Controllers.PointTransection.Dto;
 using ServAd.ApiService.Services.PointTransaction.Interface;
 using ShareLibrary.cs.Data.Enums;
@@ -51,7 +51,7 @@ namespace ServAd.ApiService.Controllers.PointTransection
         /// Deducts from balance but keeps LifetimePurchasedPoints (Gift Target) safe.
         /// </summary>
         [HttpPost("spendforboost")]
-        public async Task<IActionResult> SpendForBoost(Guid walletId, int points)
+        public async Task<IActionResult> SpendForBoost(Guid walletId, decimal points)
         {
             var transaction = await transactionService.SpendPointsAsync(
                 walletId,
