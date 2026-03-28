@@ -1,136 +1,208 @@
-/* 1. Universal Typography - Forced Arial for everything */
-.manage-services-container, 
-.manage-services-container * {
-    font-family: 'Arial', 'Helvetica', sans-serif !important;
-}
-
-/* 2. Headings */
-.main-heading {
-    color: #2a3547 !important;
-    font-weight: 700;
-    font-size: 1.5rem;
-}
-
-/* 3. Form Card & Labels */
-.add-service-card {
-    border-top: 4px solid #dc3545 !important;
-    background-color: #ffffff !important;
-    border-radius: 8px;
-}
-
-.add-service-card label {
-    color: #000000 !important;
-    font-weight: bold;
-}
-
-/* 4. Input Fields */
-.custom-input-white {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-}
-
-.custom-input-white:focus {
-    border-color: #dc3545 !important;
-    box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.25) !important;
-    outline: none;
-}
-
-/* 5. Table Design - Reference Image Matches */
-.table-red-border {
-    border: 1px solid #eef2f6 !important; 
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.custom-data-table thead th {
+/* Container */
+.manage-services-container {
     background-color: #ffffff;
-    color: #5a6a85 !important; /* Muted header text */
-    border-bottom: 1px solid #eef2f6 !important;
-    font-weight: 600;
-    text-transform: none;
-    font-size: 0.9rem;
-    padding: 15px;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+/* Header */
+.header-section {
+    margin-bottom: 1.5rem;
+}
+
+.main-heading {
+    font-weight: 800;
+    color: #1a202c;
+}
+
+.sub-text {
+    color: #6b7280;
+}
+
+/* Table */
+.table-wrapper {
+    background: white;
+    border-radius: 8px;
+    border-top: 4px solid #dc3545;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    overflow-x: auto;
+}
+
+.custom-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-data-table th {
+    background-color: #f8fafc;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid #edf2f7;
 }
 
 .custom-data-table td {
-    vertical-align: middle !important;
-    color: #2a3547 !important;
-    border-top: 1px solid #f1f4f8 !important;
-    padding: 12px 15px;
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
 }
 
-/* Service Details Column */
+.custom-data-table tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Image */
+.service-img {
+    width: 50px;
+    height: 35px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.no-img-placeholder {
+    width: 50px;
+    height: 35px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    border-radius: 6px;
+}
+
+/* Title */
 .service-title-text {
     font-weight: 700;
-    font-size: 0.95rem;
-    color: #2a3547;
+    color: #2d3748;
 }
 
-.service-category-text {
-    font-size: 0.75rem;
-    color: #7c8fac;
+/* Category */
+.badge-category {
+    display: inline-block;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Availability */
+.availability-text {
+    font-size: 13px;
+    color: #718096;
+    white-space: nowrap;
+}
+
+/* Status */
+.status-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    font-weight: 600;
 }
 
-/* Price - Bold Red */
+.pill-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.pill-warning {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+/* Price */
 .price-text-bold {
-    color: #d33333 !important;
+    color: #22c55e;
     font-weight: 800;
-    font-size: 1.1rem;
 }
 
-/* 6. Action Icons - Clean No Background (Matching Image) */
-.action-cell {
+/* No Data */
+.no-data {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+}
+
+.pagination-footer {
+    padding: 1rem;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    border-top: 1px solid #e5e7eb;
 }
 
-.btn-action-transparent {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 5px;
-    transition: transform 0.2s;
+.pagination-info {
+    font-size: 13px;
+    color: #6b7280;
 }
 
-.btn-action-transparent:hover {
-    transform: scale(1.1);
+.pagination-buttons {
+    display: flex;
+    align-items: center;
 }
 
-.icon-teal { color: #49beaf !important; } /* Teal Edit icon */
-.icon-red { color: #e57373 !important; }  /* Soft Red Delete icon */
-
-/* 7. Pagination */
-.custom-red-pagination .page-item {
+.pagination-buttons button {
     margin: 0 4px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    background: rgb(57, 56, 56);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.custom-red-pagination .page-link {
-    background-color: #ffffff !important;
-    color: #dc3545 !important;
-    border: 1px solid #dee2e6 !important;
-    font-weight: bold;
-    border-radius: 4px !important;
+.pagination-buttons button:hover:not(:disabled) {
+    background: #fee2e2;
+    border-color: #dc3545;
+    color: #dc3545;
 }
 
-.custom-red-pagination .page-item.active .page-link {
-    background-color: #dc3545 !important;
-    color: #ffffff !important;
-    border-color: #dc3545 !important;
+.pagination-buttons .active-page {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
 }
 
-/* 8. Animations */
-.animate-slide-down {
-    animation: slideDown 0.35s ease-out;
+.pagination-buttons button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-15px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Loader */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #eee;
+    border-top: 4px solid #dc3545;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.service-description {
+    max-width: 250px;
+    font-size: 13px;
+    color: #4b5563;
+    display: -webkit-box;
+    
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }

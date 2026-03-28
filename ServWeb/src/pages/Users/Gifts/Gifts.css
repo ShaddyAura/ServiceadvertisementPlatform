@@ -1,101 +1,283 @@
-/* Gifts.css - Red & White Light Theme */
+/* Gifts.css - Modern Clean Dashboard Theme */
 .rewards-page {
-    background: #f4f7f6; /* Matching your Dashboard background */
-    padding: 40px 20px;
-    min-height: 100vh;
-    color: #333;
+  background-color: #f8fafc;
+  padding: 40px;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Glass Status Card - White with Red Shadow */
 .status-card {
-    background: rgba(255, 255, 255, 0.9);
-    /* backdrop-filter: blur(10px); */
-    border: 1px solid rgba(220, 53, 69, 0.1);
-    border-radius: 30px;
-    padding: 40px;
-    margin-bottom: 50px;
-    /* Soft Red Glow instead of dark shadow */
-    box-shadow: 0 15px 35px rgba(220, 53, 69, 0.08);
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 30px 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
-.status-card h2, .status-card h3 {
-    color: #1e293b;
-    font-weight: 800;
+.status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
 }
 
-/* Progress Bar - Red Gradient */
+.points-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.trophy-bg {
+  width: 56px;
+  height: 56px;
+  background: #eff6ff;
+  color: #3b82f6;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trophy-bg svg {
+  width: 28px;
+  height: 28px;
+}
+
+.points-info p {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 4px 0;
+}
+
+.points-info h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+}
+
+.points-info h2 span {
+  font-size: 1.1rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.level-badge {
+  background: #1e293b;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.progress-container {
+  position: relative;
+  padding-bottom: 25px;
+}
+
 .progress-rail {
-    height: 20px;
-    background: #e2e8f0; /* Light gray track */
-    border-radius: 50px;
-    padding: 4px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+  height: 12px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 8px; /* Added spacing to drop markers */
 }
 
 .progress-bar-fill {
-    height: 100%;
-    /* Gradient from Red to Dark Red */
-    background: linear-gradient(90deg, #ff4d4d 0%, #dc3545 100%);
-    border-radius: 50px;
-    box-shadow: 0 0 15px rgba(220, 53, 69, 0.4);
-    position: relative;
-    transition: width 0.5s ease-in-out;
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+  border-radius: 12px;
+  position: relative;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Gift Cards - White with Red Light Border */
+.shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.milestone-markers {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  padding: 0 5px;
+}
+
+.milestone-markers span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+  position: relative;
+}
+
+.milestone-markers span::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 4px;
+  background: #cbd5e1;
+}
+
+.gift-grid-header {
+  margin-bottom: 30px;
+}
+
+.gift-grid-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.gift-grid-header p {
+  color: #64748b;
+  margin: 0;
+}
+
+.gifts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
 .gift-unlock-card {
-    background: #ffffff;
-    border-radius: 24px;
-    padding: 25px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 1px solid #e2e8f0;
-    text-align: center;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Eligible State - Red Glow */
-.gift-unlock-card.eligible {
-    border-color: #dc3545;
-    box-shadow: 0 0 20px rgba(220, 53, 69, 0.1);
+.gift-unlock-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
 }
 
-.gift-unlock-card.eligible:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 12px 30px rgba(220, 53, 69, 0.15);
+.gift-unlock-card.locked {
+  opacity: 0.8;
+}
+
+.gift-img-container {
+  height: 180px;
+  position: relative;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.gift-img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 20px;
+  transition: transform 0.3s ease;
+}
+
+.gift-unlock-card:hover .gift-img-container img {
+  transform: scale(1.05);
+}
+
+.lock-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+}
+
+.gift-details {
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.points-tag {
+  display: inline-block;
+  background: #eff6ff;
+  color: #3b82f6;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  align-self: flex-start;
 }
 
 .gift-unlock-card h4 {
-    color: #334155;
-    margin-top: 15px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
 }
 
-/* Unlock Button - Red Theme */
+.gift-unlock-card p {
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+  flex: 1;
+}
+
 .unlock-btn {
-    background: #dc3545;
-    color: #ffffff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    width: 100%;
-    transition: background 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.unlock-btn:hover:not(:disabled) {
-    background: #c82333;
+.gift-unlock-card.eligible .unlock-btn {
+  background: #3b82f6;
+  color: white;
 }
 
-.unlock-btn:disabled {
-    background: #f1f5f9;
-    color: #cbd5e1;
-    cursor: not-allowed;
-    border: 1px solid #e2e8f0;
+.gift-unlock-card.eligible .unlock-btn:hover {
+  background: #2563eb;
 }
 
-/* Point Text Colors */
-.points-needed {
-    color: #dc3545;
-    font-weight: 700;
+.gift-unlock-card.locked .unlock-btn {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
 }

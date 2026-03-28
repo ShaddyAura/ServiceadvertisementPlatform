@@ -183,13 +183,14 @@ export const createBooking = (bookingData) =>
 
 // ✅ Correct: 'id' is defined as a parameter and used in the URL
 export const updateBookingStatus = (id, status) => 
-    api.patch(`/Booking/bookingstatus?id=${id}`, status, {
-        headers: { 'Content-Type': 'application/json' }
-    });
+    api.patch(`/Booking/bookingstatus?id=${id}&status=${status}`);
 
 // ✅ Correct: 'id' is defined as a parameter
 export const deleteBooking = (id) => 
     api.delete(`/Booking/deletebooking?id=${id}`);
+
+
+
 
 // boostings 
 
@@ -215,8 +216,11 @@ export const cancelBoost = (serviceId) =>
 export const sendMessage = (data) =>
   api.post(`/Chat/sendmessage`, data);
 
-export const getChatHistory = (bookingId) =>
-  api.get(`/Chat/gethistory/${bookingId}`);
+export const getChatHistory = (bookingId, profileId) =>
+  api.get(`/Chat/gethistory/${bookingId}/${profileId}`);
+
+export const deleteChatHistory = (bookingId, profileId) =>
+  api.delete(`/Chat/deletehistory/${bookingId}/${profileId}`);
 
 
 
@@ -347,7 +351,7 @@ export const SpendForBoost = (walletId, points) =>
     
 // Get list of all active gifts/vouchers
 export const GetGifts = () => 
-    api.get("/Gifts/Gift");
+    api.get("/Gifts/Gift");                          
 
 // ........................................
 //. reedems gifts
@@ -371,10 +375,31 @@ export const GetMyVouchers = (profileId) =>
 
   // 1. Make sure 'export' is written clearly
 export const getWallet = (profileId) =>
-    api.get(`/Wallets/getwallet/${profileId}`);
+    api.get(`/Wallets/getwallet?profileId=${profileId}`); // changed to query param pattern
 
 export const purchasePoints = (data) =>
     api.post(`/Wallets/purchasepoints`, data);
+
+export const claimDailyReward = (profileId) =>
+    api.post("/Wallets/claim-daily-reward", { profileId });
+
+export const claimWatchTimeReward = (profileId, secondsWatched) =>
+    api.post("/Wallets/claim-watch-time", { profileId, secondsWatched });
+
+// User Engagement specific
+export const claimUserDailyReward = (profileId) =>
+    api.post("/UserEngagement/claim-daily-reward", { profileId });
+
+export const claimUserWatchTimeReward = (profileId, secondsWatched) =>
+    api.post("/UserEngagement/claim-watch-time", { profileId, secondsWatched });
+
+// ===================== PAYMENTS =====================
+
+export const initiateBookingPayment = (data) =>
+    api.post("/Payment/initiate-booking", data);
+
+export const initiatePointsPayment = (data) =>
+    api.post("/Payment/initiate-points", data);
 
 
 // Reviews

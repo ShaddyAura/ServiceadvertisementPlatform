@@ -68,11 +68,13 @@ export default function BookingsProvider() {
   const handleUpdate = async (id, status, statusName) => {
     if (!id) return;
     try {
-      await updateBookingStatus(id, status);
+      const res = await updateBookingStatus(id, status);
+      console.log("Status update response:", res.status, res);
       Swal.fire("Updated", `Status is now: ${statusName}`, "success");
       loadData();
     } catch (error) {
-      Swal.fire("Error", "Could not update status.", "error");
+      console.error("Status update error:", error.response?.status, error.response?.data, error.message);
+      Swal.fire("Error", `Could not update status. ${error.response?.data || error.message}`, "error");
     }
   };
 
@@ -105,16 +107,28 @@ export default function BookingsProvider() {
   };
 
   const getStatusDisplay = status => {
-    switch (status) {
-      case 0: return { text: "Pending", icon: <FaClock />, cls: "status-pending" };
-      case 1: return { text: "Confirmed", icon: <FaCheckCircle />, cls: "status-confirmed" };
-      case 2: return { text: "In Process", icon: <FaSpinner className="fa-spin" />, cls: "status-process" };
-      case 3: return { text: "Completed", icon: <FaHandshake />, cls: "status-completed" };
-      case 4: return { text: "Cancelled", icon: <FaTimesCircle />, cls: "status-cancelled" };
-      case 5: return { text: "Disputed", icon: <FaExclamationTriangle />, cls: "status-disputed" };
-      default: return { text: "Unknown", icon: null, cls: "" };
+    const s = String(status);
+    switch (s) {
+      case "Pending": case "0": return { text: "Pending", icon: <FaClock />, cls: "status-pending" };
+      case "Confirmed": case "1": return { text: "Confirmed", icon: <FaCheckCircle />, cls: "status-confirmed" };
+      case "InProcess": case "2": return { text: "In Process", icon: <FaSpinner className="fa-spin" />, cls: "status-process" };
+      case "Completed": case "3": return { text: "Completed", icon: <FaHandshake />, cls: "status-completed" };
+      case "Paid": case "4": return { text: "Paid", icon: <FaCheckCircle />, cls: "status-paid" };
+      case "Cancelled": case "5": return { text: "Cancelled", icon: <FaTimesCircle />, cls: "status-cancelled" };
+      case "Disputed": case "6": return { text: "Disputed", icon: <FaExclamationTriangle />, cls: "status-disputed" };
+      default: return { text: "Pending", icon: <FaClock />, cls: "status-pending" };
     }
   };
+
+  const statusOptions = [
+    { value: 0, label: "Pending" },
+    { value: 1, label: "Confirmed" },
+    { value: 2, label: "In Process" },
+    { value: 3, label: "Completed" },
+    { value: 4, label: "Paid" },
+    { value: 5, label: "Cancelled" },
+    { value: 6, label: "Disputed" },
+  ];
 
   if (loading) return <div className="loader">Loading Dashboard...</div>;
 
@@ -157,26 +171,39 @@ export default function BookingsProvider() {
             const id = b.id || b.Id;
             const currentStatus = b.status ?? b.Status;
             const statusInfo = getStatusDisplay(currentStatus);
+            
+            // Convert string status from API to integer for dropdown
+            const statusToInt = (s) => {
+              const map = { "Pending": 0, "Confirmed": 1, "InProcess": 2, "Completed": 3, "Paid": 4, "Cancelled": 5, "Disputed": 6 };
+              return map[s] ?? (typeof s === "number" ? s : 0);
+            };
+            const currentStatusInt = statusToInt(currentStatus);
+            
             return (
               <div className="card booking-card" key={id}>
                 <div className={`status-tag ${statusInfo.cls}`}>{statusInfo.icon} {statusInfo.text}</div>
                 <h5>{b.service?.title || b.Service?.Title || "Service Request"}</h5>
                 <p className="small">Client: <strong>{b.profile?.fullName || b.Profile?.FullName || "A Customer"}</strong></p>
                 
+                {/* Provider Status Dropdown */}
+                <div className="status-select-row">
+                  <label className="status-select-label">Update Status:</label>
+                  <select
+                    className="status-select"
+                    value={currentStatusInt}
+                    onChange={(e) => {
+                      const newStatus = parseInt(e.target.value);
+                      const label = statusOptions.find(o => o.value === newStatus)?.label || "Unknown";
+                      handleUpdate(id, newStatus, label);
+                    }}
+                  >
+                    {statusOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="action-row">
-                  {currentStatus === 0 && <button className="btn-sm success" onClick={() => handleUpdate(id, 1, "Confirmed")}>Accept</button>}
-                  {currentStatus === 1 && <button className="btn-sm process" onClick={() => handleUpdate(id, 2, "In Process")}>Start Work</button>}
-                  {currentStatus === 2 && (
-                    <>
-                      <button className="btn-sm success" onClick={() => handleUpdate(id, 3, "Completed")}>Finish</button>
-                      <button className="btn-sm danger" onClick={() => handleUpdate(id, 5, "Disputed")}>Dispute</button>
-                    </>
-                  )}
-                  
-                  {currentStatus < 3 && currentStatus !== 5 && (
-                    <button className="btn-sm danger" onClick={() => handleUpdate(id, 4, "Cancelled")}>Cancel</button>
-                  )}
-                  
                   <button className="btn-sm info" onClick={() => viewDetails(b)}><FaInfoCircle /></button>
                   <button className="btn-sm trash" onClick={() => handleDeleteBooking(id)}><FaTrash /></button>
                   <button className="btn-sm chat" onClick={() => navigate(`/chat/${id}`)}><FaComments /></button>

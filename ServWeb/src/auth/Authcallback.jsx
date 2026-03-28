@@ -18,6 +18,8 @@ export default function Authcallback() {
 
         if (role === "Admin") {
           navigate("/admin-dashboard");
+        } else if (role === "ServiceProvider") {
+          navigate("/serviceproviderDashboard");
         } else {
           navigate("/user-dashboard");
         }

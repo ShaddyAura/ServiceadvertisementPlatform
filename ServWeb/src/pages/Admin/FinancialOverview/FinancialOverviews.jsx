@@ -1,5 +1,6 @@
 import React from "react";
 import { FaWallet, FaArrowUp, FaHistory } from "react-icons/fa";
+// import "./FinancialOverview.css"; // Ensure this is imported
 
 const FinancialOverview = () => {
   return (

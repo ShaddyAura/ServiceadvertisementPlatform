@@ -176,13 +176,22 @@ export default function ServiceProvider() {
                   <label className="small font-weight-bold text-dark">Service Title</label>
                   <input className="form-control custom-input-white" placeholder="Enter title" value={title} onChange={(e) => setTitle(e.target.value)} required />
                 </div>
-                <div className="col-md-3 mb-2">
-                  <label className="small font-weight-bold text-dark">Category</label>
-                  <select className="form-control custom-input-white" value={categoryName} onChange={(e) => setCategoryName(e.target.value)} required>
-                    <option value="">-- Select --</option>
-                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                  </select>
-                </div>
+              <div className="col-md-3 mb-2">
+               <label className="small fw-bold">Category</label>
+               <select
+                 className="form-select"
+                 value={categoryName}
+                 onChange={(e) => setCategoryName(e.target.value)}
+                 required
+               >
+                 <option value="">-- Select --</option>
+                 {categories.map(c => (
+                   <option key={c.id} value={c.name}>
+                     {c.name}
+                   </option>
+                 ))}
+                 </select>
+                 </div>
                 <div className="col-md-3 mb-2">
                   <label className="small font-weight-bold text-dark">Price (Rs.)</label>
                   <input type="number" className="form-control custom-input-white" value={price} onChange={(e) => setPrice(e.target.value)} required />
@@ -195,14 +204,18 @@ export default function ServiceProvider() {
                   <label className="small font-weight-bold text-dark">End Time</label>
                   <input type="time" step="1" className="form-control custom-input-white" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
                 </div>
-                <div className="col-md-6 mb-2">
-                  <label className="small font-weight-bold text-dark">Initial Status</label>
-                  <select className="form-control custom-input-white" value={status} onChange={(e) => setStatus(e.target.value)}>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Pending">Pending</option>
-                  </select>
-                </div>
+                 <div className="col-md-6 mb-2">
+                 <label className="small fw-bold text-dark">Initial Status</label>
+                 <select
+                   className="form-select"
+                   value={status}
+                   onChange={(e) => setStatus(e.target.value)}
+                 >
+                   <option value="Active">Active</option>
+                   <option value="Inactive">Inactive</option>
+                   <option value="Pending">Pending</option>
+                 </select>
+                 </div>  
                 <div className="col-md-6 mb-2">
                   <label className="small font-weight-bold text-dark">Thumbnail (Image)</label>
                   <input type="file" accept="image/*" className="form-control custom-input-white" onChange={(e) => setImageFile(e.target.files[0])} />

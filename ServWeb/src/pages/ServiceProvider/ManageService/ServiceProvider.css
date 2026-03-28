@@ -19,12 +19,82 @@
     padding: 12px 15px !important;
     font-size: 14px !important;
     color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
     transition: all 0.25s ease;
 }
 
 .custom-input-white:focus {
     border-color: #dc3545 !important;
     box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+}
+
+/* --- Force black text on all form elements --- */
+.manage-services-container label,
+.manage-services-container .form-label,
+.manage-services-container h5,
+.manage-services-container h4,
+.manage-services-container h3,
+.manage-services-container p,
+.manage-services-container span,
+.manage-services-container .card-title,
+.manage-services-container .card-header,
+.manage-services-container .small,
+.manage-services-container small {
+    color: #000000 !important;
+}
+
+.manage-services-container select,
+.manage-services-container textarea,
+.manage-services-container input,
+.manage-services-container .form-control,
+.manage-services-container .form-select {
+    color: #000000 !important;
+}
+
+.manage-services-container select option {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+}
+
+/* --- Add Service Card form: ensure all text is black --- */
+.add-service-card,
+.add-service-card *,
+.add-service-card label,
+.add-service-card .small,
+.add-service-card .font-weight-bold,
+.add-service-card .text-dark,
+.add-service-card .card-header,
+.add-service-card .card-header h5,
+.add-service-card .card-body label {
+    color: #000000 !important;
+}
+
+.add-service-card select,
+.add-service-card select option,
+.add-service-card .form-control[as="select"],
+.manage-services-container select.custom-input-white {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+}
+
+/* .manage-services-container select.custom-input-white option {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+} */
+/* Force selected value text to black */
+/* INPUTS & SELECTS */
+.form-control, .form-select {
+    background-color: #ffffff !important; 
+    color: #000000 !important; 
+    border: 2px solid #ffcccc !important; /* Light Red Input Border */
+    padding: 1rem !important; /* Taller inputs */
+    border-radius: 15px !important;
+    font-size: 1.05rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.15) !important;
 }
 
 /* --- Media Styling --- */

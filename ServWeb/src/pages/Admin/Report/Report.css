@@ -1,0 +1,231 @@
+.report-container { padding: 20px; font-family: 'Inter', sans-serif; }
+.report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.report-header h2 { font-weight: 800; color: #1a1a1a; }
+
+/* Stats Grid */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+.report-card { background: white; padding: 20px; border-radius: 12px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #eee; }
+.report-card h4 { margin: 0; font-size: 1.6rem; font-weight: 700; }
+.report-card p { margin: 0; color: #666; font-size: 0.9rem; }
+.report-card svg { font-size: 2.5rem; margin-right: 15px; opacity: 0.8; }
+
+.icon-blue { color: #007bff; }
+.icon-green { color: #28a745; }
+.icon-red { color: #dc3545; }
+.icon-gold { color: #ffc107; }
+
+/* Table Styling */
+.table-card { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
+.admin-report-table { width: 100%; border-collapse: collapse; }
+.admin-report-table th { background: #f8f9fa; padding: 15px; font-size: 0.8rem; text-transform: uppercase; color: #888; text-align: left; }
+.admin-report-table td { padding: 15px; border-top: 1px solid #f0f0f0; }
+
+.status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.bg-success-light { background: #e6f4ea; color: #1e7e34; }
+.bg-warning-light { background: #fff3e0; color: #e65100; }
+.bg-danger-light { background: #fce8e8; color: #c62828; }
+
+.service-info { display: flex; flex-direction: column; }
+.service-info span { font-size: 0.75rem; color: #888; }
+.price-text { font-weight: 700; color: #333; }
+
+.export-btn { background: #000; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.export-btn:hover { background: #333; }
+
+@media print {
+    .search-bar, .export-btn, .view-btn { display: none; }
+    .report-card { border: 1px solid #ccc; box-shadow: none; }
+}
+
+
+
+/* Service  */
+
+/* Adding to your existing Report.css */
+
+.report-grid-two {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.card-header {
+    background: #fdfdfd;
+    padding: 15px;
+    font-weight: 700;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    font-size: 1rem;
+}
+
+.icon-purple { color: #6f42c1; }
+
+.text-success { color: #28a745 !important; }
+
+.no-data { text-align: center; padding: 40px; color: #999; }
+
+/* Loader Style */
+.admin-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    font-weight: 600;
+    color: #dc3545;
+}
+
+.mt-4 { margin-top: 2rem; }
+
+
+/* Review Specific Styles */
+.rating-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-weight: 700;
+}
+
+.comment-preview {
+    font-size: 0.85rem;
+    color: #666;
+    font-style: italic;
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.row-flagged {
+    background-color: #fff5f5 !important;
+}
+
+.row-flagged td {
+    border-left: 4px solid #dc3545;
+}
+
+.text-warning { color: #ffc107; }
+.text-danger { color: #dc3545; }
+
+.ml-1 { margin-left: 0.25rem; }
+.card-header.d-flex { display: flex; align-items: center; justify-content: space-between; }
+
+/* -------------------------------------------
+   NEW LOGSHEET REPORT REDESIGN STYLES
+------------------------------------------- */
+.logsheet-wrapper {
+    background: #fff;
+    padding: 30px;
+    border: 1px solid #ffdbdb;
+    border-radius: 8px;
+    font-family: 'Inter', Arial, sans-serif;
+    color: #333;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logsheet-main-title {
+    color: #c94b4b;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.logsheet-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+}
+
+.logsheet-meta {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #555;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.logsheet-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.logsheet-action-btn {
+    background: #fff;
+    border: 2px solid #a4bde0;
+    color: #2b579a;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+
+.logsheet-action-btn:hover {
+    background: #f0f6ff;
+    transform: translateY(-1px);
+}
+
+.logsheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    font-size: 0.85rem;
+    table-layout: fixed;
+}
+
+.logsheet-table th, 
+.logsheet-table td {
+    border: 1px solid #eec4c4;
+    padding: 10px;
+    text-align: center;
+}
+
+.logsheet-table th {
+    background: #fae6e6; /* light pink/red */
+    color: #444;
+    font-weight: 700;
+}
+
+.logsheet-table td {
+    background: #fff;
+}
+
+.logsheet-table-section-header {
+    background: #fdf5f5 !important;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* Printing logic */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .logsheet-wrapper, .logsheet-wrapper * {
+        visibility: visible;
+    }
+    .logsheet-actions {
+        display: none !important;
+    }
+    .logsheet-wrapper {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+        border: none;
+    }
+}

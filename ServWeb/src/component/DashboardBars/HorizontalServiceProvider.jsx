@@ -10,8 +10,6 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import Notification from "../Notifications/Notification"; 
 import { useNotifications } from "../Notifications/useNotifications"; 
-// 1. Import the specific API endpoint for fetching history
-import { getUserNotifications } from "../../api/AccountApi";
 
 const HorizontalServiceProvider = () => {
   const [nepalTime, setNepalTime] = useState("");
@@ -21,21 +19,8 @@ const HorizontalServiceProvider = () => {
   // 2. Hook into real-time notifications
   const { notifications, setNotifications } = useNotifications(user?.profileId);
 
-  // 3. Fetch initial notification history from DB on load
-  useEffect(() => {
-    const fetchHistory = async () => {
-      if (user?.profileId) {
-        try {
-          const response = await getUserNotifications(user.profileId);
-          setNotifications(response.data);
-        } catch (err) {
-          console.error("Failed to load provider notifications:", err);
-        }
-      }
-    };
+  // Notifications are loaded by the useNotifications hook
 
-    fetchHistory();
-  }, [user?.profileId, setNotifications]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -83,7 +68,7 @@ const HorizontalServiceProvider = () => {
         </div>
 
         <div className="profile-container">
-          <div className="icon profile" onClick={() => navigate("/profile")}>
+          <div className="icon profile">
             <FaIdBadge />
           </div>
 

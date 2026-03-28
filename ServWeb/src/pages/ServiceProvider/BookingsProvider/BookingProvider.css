@@ -241,8 +241,42 @@
 .status-confirmed { background: #e7f5ff; color: #1971c2; }
 .status-process { background: #f3f0ff; color: #6741d9; }
 .status-completed { background: #ebfbee; color: #2f9e44; }
+.status-paid { background: #e6fffa; color: #087f5b; border: 1px solid #b2f5ea; }
 .status-cancelled { background: #fff5f5; color: #c92a2a; }
 .status-disputed { background: #fff0f6; color: #a61e4d; border: 1px solid #ff8787; }
+
+/* Status Select Styles */
+.status-select-row {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f1f3f5;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.status-select-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.status-select {
+  flex: 1;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  font-size: 0.85rem;
+  background: white;
+  cursor: pointer;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: #dc3545;
+}
 
 .btn-sm {
   padding: 6px 12px;

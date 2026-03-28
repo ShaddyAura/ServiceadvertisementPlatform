@@ -1,10 +1,63 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Lock, Unlock, Trophy, Gift as GiftIcon, ArrowRight } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { useAuth } from '../../../context/AuthContext';
+import { fetchProfileById, GetGifts, ClaimVoucher } from '../../../api/AccountApi';
 import './Gifts.css';
 
-const Gifts = ({ userWallet, allAvailableGifts, onRedeem }) => {
-  const progress = userWallet?.lifetimePurchasedPoints || 0;
+const Gifts = () => {
+  const { user } = useAuth();
+  const [userProfile, setUserProfile] = useState(null);
+  const [allAvailableGifts, setAllAvailableGifts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user?.profileId) return;
+      try {
+        setLoading(true);
+        const [profileRes, giftsRes] = await Promise.all([
+          fetchProfileById(user.profileId),
+          GetGifts()
+        ]);
+        
+        setUserProfile(profileRes.data);
+        setAllAvailableGifts(giftsRes.data || []);
+      } catch (err) {
+        console.error("Failed to load gifts data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [user]);
+
+  const handleRedeem = async (giftId) => {
+    try {
+      const res = await Swal.fire({
+        title: 'Claim Reward?',
+        text: "You are about to unlock this milestone reward. Continue?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3b82f6'
+      });
+
+      if (res.isConfirmed) {
+        await ClaimVoucher({ profileId: user.profileId, giftId });
+        Swal.fire('Unlocked!', 'Reward added to your Voucher Vault!', 'success');
+        
+        const profileRes = await fetchProfileById(user.profileId);
+        setUserProfile(profileRes.data);
+      }
+    } catch (err) {
+      Swal.fire('Oops', err.response?.data?.message || 'Failed to unlock reward.', 'warning');
+    }
+  };
+
+  const progress = userProfile?.lifetimePoints || 0;
   const maxTarget = 25000;
+
+  if (loading) return <div style={{padding: '50px', textAlign: 'center'}}>Loading Rewards...</div>;
 
   return (
     <div className="rewards-page">
@@ -66,7 +119,7 @@ const Gifts = ({ userWallet, allAvailableGifts, onRedeem }) => {
                 <button 
                   className="unlock-btn"
                   disabled={!isEligible}
-                  onClick={() => onRedeem(gift.id)}
+                  onClick={() => handleRedeem(gift.id)}
                 >
                   {isEligible ? (
                     <>Unlock Gift <ArrowRight size={16} /></>

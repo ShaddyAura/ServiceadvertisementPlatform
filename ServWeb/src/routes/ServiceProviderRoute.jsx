@@ -6,7 +6,7 @@ export default function ServiceProviderRoute ({ children }) {
 
   if (loading) return <div>Loading...</div>;
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/providerlogin" replace />;
 
   // CHANGE THIS: If they are the right role, return 'children' (don't redirect)
   if (user.role === "ServiceProvider") return children;

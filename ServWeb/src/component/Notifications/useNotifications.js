@@ -1,18 +1,18 @@
 import { useEffect, useState, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
-import axios from "axios"; // or your Api client
+import { getUserNotifications } from "../../api/AccountApi";
 
 export const useNotifications = (profileId) => {
   const [notifications, setNotifications] = useState([]);
   const connectionRef = useRef(null);
 
-  // 1. Load History from your API
+  // 1. Load History from your API (single source of truth)
   useEffect(() => {
     const fetchHistory = async () => {
       if (!profileId) return;
       try {
-        const res = await axios.get(`https://localhost:7065/api/Notification/${profileId}`);
-        setNotifications(res.data);
+        const res = await getUserNotifications(profileId);
+        setNotifications(res.data || []);
       } catch (err) {
         console.error("Error fetching notification history:", err);
       }
@@ -24,9 +24,11 @@ export const useNotifications = (profileId) => {
   useEffect(() => {
     if (!profileId || connectionRef.current) return;
 
+    const token = localStorage.getItem("token");
+
     const connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:7065/notificationHub", {
-        accessTokenFactory: () => localStorage.getItem("token")
+        accessTokenFactory: () => token
       })
       .withAutomaticReconnect()
       .build();
@@ -34,12 +36,16 @@ export const useNotifications = (profileId) => {
     connectionRef.current = connection;
 
     connection.start()
-      .then(() => console.log("SignalR: Connected"))
-      .catch(err => console.error("SignalR Connection Error: ", err));
+      .then(() => console.log("✅ NotificationHub: Connected"))
+      .catch(err => console.error("❌ NotificationHub Connection Error:", err));
 
+    // Listen for new real-time notifications
     connection.on("ReceiveNotification", (newNotif) => {
-      // Append new notification to the top
-      setNotifications(prev => [newNotif, ...prev]);
+      setNotifications(prev => {
+        // Prevent duplicates
+        if (prev.find(n => n.id === newNotif.id)) return prev;
+        return [newNotif, ...prev];
+      });
     });
 
     // Handle "Mark as Read" broadcast from backend

@@ -127,18 +127,22 @@ export default function ServiceEditProvider() {
               </div>
 
               {/* Category */}
-              <div className="col-md-3 mb-3">
-                <label className="small font-weight-bold">Category</label>
-                <select 
-                  className="form-control custom-input" 
-                  value={categoryName} 
-                  onChange={(e) => setCategoryName(e.target.value)} 
-                  required
-                >
-                  <option value="">-- Select --</option>
-                  {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                </select>
-              </div>
+<div className="col-md-3 mb-2">
+               <label className="small fw-bold">Category</label>
+               <select
+                 className="form-select"
+                 value={categoryName}
+                 onChange={(e) => setCategoryName(e.target.value)}
+                 required
+               >
+                 <option value="">-- Select --</option>
+                 {categories.map(c => (
+                   <option key={c.id} value={c.name}>
+                     {c.name}
+                   </option>
+                 ))}
+                 </select>
+                 </div>
 
               {/* Price */}
               <div className="col-md-3 mb-3">
@@ -179,18 +183,18 @@ export default function ServiceEditProvider() {
               </div>
 
               {/* Status */}
-              <div className="col-md-6 mb-3">
-                <label className="small font-weight-bold">Availability Status</label>
-                <select 
-                  className="form-control custom-input" 
-                  value={status} 
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                  <option value="Pending">Pending</option>
-                </select>
-              </div>
+                  <div className="col-md-6 mb-2">
+                  <label className="small fw-bold text-dark">Initial Status</label>
+                 <select
+                   className="form-select"
+                   value={status}
+                   onChange={(e) => setStatus(e.target.value)}
+                 >
+                   <option value="Active">Active</option>
+                   <option value="Inactive">Inactive</option>
+                   <option value="Pending">Pending</option>
+                 </select>
+                 </div>  
 
               {/* Media: Image */}
               <div className="col-md-6 mb-3">

@@ -38,6 +38,13 @@ export default function Payment() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    // Only allow digits
+    if (value !== "" && !/^\d+$/.test(value)) return;
+    
+    // Enforce max length
+    if ((name === "esewaId" || name === "khaltiId") && value.length > 10) return;
+    if ((name === "esewaPw" || name === "khaltiPw") && value.length > 4) return;
+
     setCredentials(prev => ({ ...prev, [name]: value }));
   };
 
@@ -48,6 +55,14 @@ export default function Payment() {
 
     if (!id || !pw) {
       return Swal.fire("Required", `Please enter your ${gateway} credentials.`, "warning");
+    }
+
+    if (!/^\d{10}$/.test(id)) {
+      return Swal.fire("Invalid ID", "Mobile number must be exactly 10 digits.", "warning");
+    }
+
+    if (!/^\d{4}$/.test(pw)) {
+      return Swal.fire("Invalid PIN", "Transaction PIN must be exactly 4 digits.", "warning");
     }
 
     const result = await Swal.fire({
@@ -62,19 +77,36 @@ export default function Payment() {
     if (result.isConfirmed) {
       setIsProcessing(true);
       try {
-        // Mock API call for payment
-        // await processPayment({ profileId: user.profileId, amount, gateway });
-
-        await Swal.fire({
-            title: "Success!",
-            text: "Transaction completed successfully.",
-            icon: "success",
-            timer: 2000
-        });
-        navigate("/dashboard"); 
+        const { initiateBookingPayment } = await import('../../../api/AccountApi');
+        const res = await initiateBookingPayment({ bookingId: location.state?.bookingId, gateway: gateway.toLowerCase() });
+        
+        if (gateway === 'eSewa') {
+           const { esewaData, paymentUrl } = res.data;
+           const form = document.createElement('form');
+           form.method = 'POST';
+           form.action = paymentUrl;
+           
+           const fieldMapping = {
+               Amount: 'amount', TaxAmount: 'tax_amount', TotalAmount: 'total_amount',
+               TransactionUuid: 'transaction_uuid', ProductCode: 'product_code',
+               ProductServiceCharge: 'product_service_charge', ProductDeliveryCharge: 'product_delivery_charge',
+               SuccessUrl: 'success_url', FailureUrl: 'failure_url',
+               SignedFieldNames: 'signed_field_names', Signature: 'signature'
+           };
+           for (const key in esewaData) {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = fieldMapping[key] || key;
+              input.value = esewaData[key];
+              form.appendChild(input);
+           }
+           document.body.appendChild(form);
+           form.submit();
+        } else if (gateway === 'Khalti') {
+           window.location.href = res.data.paymentUrl;
+        }
       } catch (error) {
         Swal.fire("Error", "Transaction could not be completed.", "error");
-      } finally {
         setIsProcessing(false);
       }
     }

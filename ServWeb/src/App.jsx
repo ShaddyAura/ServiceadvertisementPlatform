@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { LoadingProvider } from "./context/LoadingContext";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
@@ -12,8 +13,12 @@ import Notification from "./component/Notifications/Notification";
 // PUBLIC
 import Home from "./pages/Home";
 import Login from "./auth/Login/Login";
+import ProviderLogin from "./auth/Login/ProviderLogin";
 import Register from "./auth/Register/Register";
 import ProviderRegister from  "./auth/Register/ProviderRegister";
+import PaymentSuccess from "./pages/Payment/PaymentSuccess";
+import PaymentFailure from "./pages/Payment/PaymentFailure";
+
 import Authcallback from "./auth/Authcallback";
 import ForgotPassword from "./auth/Forgot password/ForgotPassword";
 import ResetPassword from "./auth/Reset Password/ResetPassword";
@@ -35,14 +40,16 @@ import Gifts from "./pages/Users/Gifts/Gifts";
 import AdCampaigns from "./pages/Admin/AdCampaigns/AdCampaigns";
 import FinancialOverview from "./pages/Admin/FinancialOverview/FinancialOverviews";
 import IdentityVerification  from "./pages/Admin/IdentityVerification/IdentityVerification";
-import SystemDisputes from "./pages/Admin/SystemDisputes/SystemDisputes";
+import ServiceReport from "./pages/Admin/Report/ServiceReport"
+import ReportReview from "./pages/Admin/Report/ReportReview"
 import UserManagement from "./pages/Admin/UserManagement/UserManagements";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import SystemSettings from "./pages/Admin/SystemSettings/SystemSettings";
 import Categories from "./pages/Admin/Categorys/Categories";
+import BookingReport from "./pages/Admin/Report/BookingReport"
+
 
 // ServiceProvider Route
-
 import ProviderDashboard from "./pages/ServiceProvider/ProviderDashboard";
 import ServiceProvider from "./pages/ServiceProvider/ManageService/ServiceProvider";
 import ServiceEditProvider from "./pages/ServiceProvider/ManageService/ServiceEditProvider";   
@@ -56,6 +63,7 @@ import ChatListProvider from "./pages/ServiceProvider/ChatProvider/ChatListProiv
 import PointProvider from "./pages/ServiceProvider/Points/PointProvider";
 import ReedemGiftsProvider from "./pages/ServiceProvider/ReedemsGifts/ReedemsGiftsProvider";
 import GiftProvider from "./pages/ServiceProvider/Gifts/GiftProvider";
+import MyBookings from "./pages/ServiceProvider/ProviderReport/mybookings";
 
 
 import Services from "./pages/Services";
@@ -65,11 +73,13 @@ import ContactUs from "./pages/ContactUs";
 export default function App() {
   return (
     <BrowserRouter>
+      <LoadingProvider>
       <Routes>
         {/* PUBLIC ROUTES */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/providerlogin" element={<ProviderLogin />} />
         <Route path="/providerregister" element= {<ProviderRegister/>}/>
         <Route path="/auth/callback" element={<Authcallback />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -80,6 +90,8 @@ export default function App() {
         {/* PROTECTED NORMAL PAGES (Shared) */}
         <Route path="/services" element={<ProtectedRoute><Services /></ProtectedRoute>} />
         <Route path="/contact" element={<ProtectedRoute><ContactUs /></ProtectedRoute>} />
+        <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+        <Route path="/payment/failure" element={<ProtectedRoute><PaymentFailure /></ProtectedRoute>} />
 
         {/* --- USER/CUSTOMER DASHBOARD --- */}
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
@@ -110,6 +122,8 @@ export default function App() {
         <Route path="/point" element={<PointProvider />} />
         <Route path="/reedem" element={<ReedemGiftsProvider />} />
         <Route path="/gift" element={<GiftProvider />} />
+         <Route path="/mybook" element={< MyBookings/>} />
+       
       </Route>
 
 
@@ -122,13 +136,16 @@ export default function App() {
          <Route path="/verifications" element={<IdentityVerification />} />
          <Route path="/finances" element={<FinancialOverview />} />
           <Route path="/categories" element={<Categories />} />
-         <Route path="/boosts" element={<AdCampaigns />} />
-         <Route path="/disputes" element={<SystemDisputes />} />
-        
+         <Route path="/adminboost" element={<AdCampaigns />} />
+         <Route path="servicereport" element={<ServiceReport />} />
+         <Route path="bookingreport" element={<BookingReport />} />
+          <Route path="reportreview" element={<ReportReview />} />
+
          <Route path="/settings" element={<SystemSettings />} />
      </Route>
 
       </Routes>
+      </LoadingProvider>
     </BrowserRouter>
   );
 }

@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import Logo from "../../component/Logo";
-import "./Login.css";
+import "./Login.css"; // Reusing the same CSS
 import { loginUser } from "../../api/AccountApi";
 import { getCurrentUser } from "../../Services/authService";
 import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
 
-export default function Login() {
+export default function ProviderLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -17,96 +17,71 @@ export default function Login() {
   const location = useLocation();
   const { setUser } = useAuth();
 
-  /* ---------------- GOOGLE CANCEL / ERROR HANDLER ---------------- */
+  /* ---------------- GOOGLE HANDLERS ---------------- */
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const error = params.get("error");
 
-    if (error === "google_cancelled") {
-      Swal.fire({
-        icon: "error",
-        title: "Login cancelled",
-        text: "You cancelled Google sign in",
-        confirmButtonColor: "#5ca9ff",
-      });
-    }
-
-    if (error === "access_denied") {
-      Swal.fire({
-        icon: "error",
-        title: "Access denied",
-        text: "Google sign in was denied",
-        confirmButtonColor: "#5ca9ff",
-      });
-    }
-
-    if (error === "google_failed") {
-      Swal.fire({
-        icon: "error",
-        title: "Google login failed",
-        text: "Something went wrong. Please try again.",
-        confirmButtonColor: "#5ca9ff",
-      });
-    }
-
     if (error) {
-      window.history.replaceState({}, document.title, "/login");
+      const messages = {
+        google_cancelled: "You cancelled Google sign in",
+        access_denied: "Google sign in was denied",
+        google_failed: "Something went wrong. Please try again.",
+      };
+
+      Swal.fire({
+        icon: "error",
+        title: "Login Issue",
+        text: messages[error] || "An error occurred",
+        confirmButtonColor: "#5ca9ff",
+      });
+      window.history.replaceState({}, document.title, "/provider-login");
     }
   }, [location.search]);
 
-  /* ---------------- FORM HANDLERS ---------------- */
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleLogin = async () => {
     if (!form.email || !form.password) {
-      Swal.fire({
-        icon: "warning",
-        title: "Missing fields",
-        text: "Please enter email and password",
-        confirmButtonColor: "#f0ad4e",
-      });
+      Swal.fire({ icon: "warning", title: "Missing fields", text: "Please enter email and password" });
       return;
     }
 
     try {
       setLoading(true);
-
       Swal.fire({
-        title: "Signing in...",
+        title: "Signing in as Provider...",
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
       });
 
-      // 1. Call Backend Login
+      // 1. Backend Login
       const res = await loginUser(form);
-      
-      // 2. Extract Role from Response (Returned by your C# login action)
       const role = res.data?.role;
 
-      // 3. Fetch current user context
+      // 2. Auth Context
       const user = await getCurrentUser();
       setUser(user);
 
       Swal.close();
 
-      // --------------------------------------------------------------
-      // ✅ MULTI-ROLE REDIRECT LOGIC
-      // --------------------------------------------------------------
-if (role === "Admin") {
-    navigate("/admin-dashboard");
-} 
-else {
-    navigate("/user-dashboard");
-}
-
+      // 3. Redirect Logic (Ensuring only ServiceProviders get through here)
+      if (role === "ServiceProvider") {
+        navigate("/serviceproviderDashboard");
+      } else if (role === "Admin") {
+        navigate("/admin-dashboard");
+      } else {
+        // If a regular user tries to login here, send them to user dashboard
+        navigate("/user-dashboard");
+      }
     } catch (err) {
       Swal.close();
       Swal.fire({
         icon: "error",
         title: "Login Failed",
-        text: "Invalid email or password",
+        text: "Invalid provider credentials",
         confirmButtonColor: "#dc3545",
       });
     } finally {
@@ -114,7 +89,6 @@ else {
     }
   };
 
-  /* ---------------- UI ---------------- */
   return (
     <div className="auth-bg">
       <nav className="auth-navbar">
@@ -124,7 +98,8 @@ else {
       <div className="login-wrapper">
         <div className="login-card">
           <div className="login-form">
-            <h2>Sign in</h2>
+            <h2 style={{ color: "#dc3545" }}>Provider Sign in</h2>
+            <p className="text-muted small mb-4">Manage your services and reviews</p>
 
             <div className="input-box">
               <input
@@ -132,7 +107,7 @@ else {
                 value={form.email}
                 onChange={handleChange}
                 type="email"
-                placeholder="Email"
+                placeholder="Provider Email"
               />
             </div>
 
@@ -150,40 +125,37 @@ else {
             </div>
 
             <div className="text-center mt-2">
-              <Link to="/forgot-password" className="login-link">
+              <Link to="/forgot-password" size="small" className="login-link">
                 Forgot Password?
               </Link>
             </div>
 
-            <button
-              onClick={handleLogin}
-              className="login-btn"
-              disabled={loading}
-            >
-              {loading ? "Signing in..." : "Log in"}
+            <button onClick={handleLogin} className="login-btn" disabled={loading}>
+              {loading ? "Verifying..." : "Provider Login"}
             </button>
 
-            {/* GOOGLE LOGIN */}
+            {/* GOOGLE LOGIN - UPDATED userType to ServiceProvider */}
             <button
               onClick={() =>
                 (window.location.href =
-                  "https://localhost:7065/api/account/google-login?userType=User")
+                  "https://localhost:7065/api/account/google-login?userType=ServiceProvider")
               }
               className="google-btn"
             >
               <img src="/assets/google-icon.png" alt="Google icon" />
-              Sign in with Google
+              Provider Sign in with Google
             </button>
 
             <p className="already">
-              <Link to="/register" className="login-link">
-                Don’t have an account?
+              <Link to="/providerregister" className="login-link">
+                Register as a New Provider
               </Link>
             </p>
           </div>
 
           <div className="login-img">
-            <img src="/assets/Login.jpg" alt="Login Visual" />
+            {/* You can use a different image here if you have one for providers */}
+            <img src="/assets/Login.jpg" alt="Provider Login Visual" />
           </div>
         </div>
       </div>

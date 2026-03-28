@@ -10,14 +10,14 @@ export function AuthProvider({ children }) {
   const refreshUser = async () => {
     try {
       const res = await getCurrentUser();
-      
+
       // 'res' now contains { id, email, role, profileId , fullname} from your backend
       if (res) {
         setUser({
           ...res,
-          id: res.id || res.Id, 
+          id: res.id || res.Id,
           profileId: res.profileId || res.ProfileId,
-          fullname: res.fullname || res.Fullname
+          fullname: res.fullName || res.fullname || res.Fullname
         });
       } else {
         setUser(null);

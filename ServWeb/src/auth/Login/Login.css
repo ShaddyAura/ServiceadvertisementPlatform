@@ -68,7 +68,7 @@
 .input-box input {
   width: 100%;
   padding: 12px 16px;
-  padding-left: 42px;
+  padding-right: 42px;
   background: #f1f1f1;
   border: 1px solid #ddd;
   outline: none;
@@ -76,6 +76,18 @@
   border-radius: 8px;
   font-size: 15px;
 }
+
+.toggle-password {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+}
+
 
 .input-box input:focus {
   border-color: #5ca9ff;

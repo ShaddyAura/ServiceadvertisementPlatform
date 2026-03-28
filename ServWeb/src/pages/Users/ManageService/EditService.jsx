@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchServiceById, updateService, fetchCategories } from "../../../api/AccountApi";
-import Swal from 'sweetalert2'; // SweetAlert for error handling and success messages
+import Swal from 'sweetalert2';
 import "./ManageServices.css"; 
 
 export default function EditService() {
-  const { id } = useParams(); // Extract the service ID from the URL
-  const navigate = useNavigate(); // For navigation to other pages (back)
-  const [categories, setCategories] = useState([]); // Store categories for dropdown
-  const [loading, setLoading] = useState(true); // Track loading state
-  const [submitting, setSubmitting] = useState(false); // Track submitting state for the form
+  const { id } = useParams(); 
+  const navigate = useNavigate(); 
+  const [categories, setCategories] = useState([]); 
+  const [loading, setLoading] = useState(true); 
+  const [submitting, setSubmitting] = useState(false); 
 
   // Form fields state
   const [title, setTitle] = useState("");
@@ -22,44 +22,46 @@ export default function EditService() {
   const [imageFile, setImageFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
 
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        setLoading(true); // Set loading to true while fetching data
-        // Fetch categories and service data
-        const [catRes, serviceRes] = await Promise.all([
-          fetchCategories(),
-          fetchServiceById(id),
-        ]);
+ useEffect(() => {
+  const loadInitialData = async () => {
+    if (!id || id === "undefined") return;
 
-        const service = serviceRes.data;
-        setCategories(catRes.data || []);
+    try {
+      setLoading(true);
+      const [catRes, serviceRes] = await Promise.all([
+        fetchCategories(),
+        fetchServiceById(id)
+      ]);
 
-        // Set form fields with the fetched service data
-        setTitle(service.title || "");
-        setPrice(service.price || "");
-        setCategoryName(service.category || "");
-        setDescription(service.description || "");
-        setStartTime(service.startTime || "");
-        setEndTime(service.endTime || "");
-        setStatus(service.status || "Active");
-      } catch (err) {
-        console.error("Error loading service details:", err); // Log errors
-        Swal.fire("Error", "Could not load service data.", "error"); // Show error message
-        navigate(-1); // Navigate back if there's an error
-      } finally {
-        setLoading(false); // Set loading to false once data is fetched
-      }
-    };
+      const service = serviceRes.data;
+      setCategories(catRes.data || []);
 
-    loadInitialData(); // Call the function to fetch data
-  }, [id, navigate]); // Depend on 'id' to reload when it changes
+      // Mapping based on your Swagger screenshot (lowercase)
+      setTitle(service.title || "");
+      setPrice(service.price || "");
+      setCategoryName(service.category || "");
+      setDescription(service.description || "");
+      setStartTime(service.startTime || "");
+      setEndTime(service.endTime || "");
+      setStatus(service.status || "Active");
+
+    } catch (err) {
+      console.error("Fetch Error:", err);
+      Swal.fire("Error", "Could not load data from backend.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadInitialData();
+}, [id]);
+
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
-    setSubmitting(true); // Set submitting state to true
+    e.preventDefault();
+    setSubmitting(true);
 
-    const formData = new FormData(); // Prepare form data for the update request
+    const formData = new FormData();
     formData.append("Id", id);
     formData.append("Title", title);
     formData.append("Price", price);
@@ -69,12 +71,10 @@ export default function EditService() {
     formData.append("EndTime", endTime);
     formData.append("Status", status);
 
-    // Add files to form data if present
     if (imageFile) formData.append("ImageFile", imageFile);
     if (videoFile) formData.append("VideoFile", videoFile);
 
     try {
-      // Call updateService to send the data to the server
       await updateService(id, formData);
       Swal.fire({
         icon: 'success',
@@ -82,12 +82,11 @@ export default function EditService() {
         showConfirmButton: false,
         timer: 1500,
       });
-      navigate(-1); // Navigate back to the previous page after success
+      navigate("/services/manage"); 
     } catch (err) {
-      // Show error message if there's an issue with updating the service
       Swal.fire("Error", err.response?.data?.message || "Error updating service.", "error");
     } finally {
-      setSubmitting(false); // Set submitting state back to false
+      setSubmitting(false);
     }
   };
 
@@ -102,7 +101,6 @@ export default function EditService() {
 
   return (
     <div className="manage-services-container p-3">
-      {/* Header Section */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="main-heading">Edit Service Details</h2>
         <button className="btn btn-secondary px-4 font-weight-bold" onClick={() => navigate(-1)}>
@@ -110,7 +108,6 @@ export default function EditService() {
         </button>
       </div>
 
-      {/* Main Form Card */}
       <div className="card add-service-card shadow animate-slide-down">
         <div className="card-header bg-white">
           <h5 className="m-0 font-weight-bold text-dark">Updating: {title}</h5>
@@ -119,19 +116,16 @@ export default function EditService() {
         <form onSubmit={handleSubmit}>
           <div className="card-body bg-white py-4">
             <div className="row">
-              {/* Service Title */}
               <div className="col-md-6 mb-3">
                 <label className="small font-weight-bold text-dark">Service Title</label>
                 <input
                   className="form-control custom-input-white"
-                  placeholder="Service Title"
                   value={title}
                   required
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </div>
 
-              {/* Category */}
               <div className="col-md-3 mb-3">
                 <label className="small font-weight-bold text-dark">Category</label>
                 <select
@@ -147,7 +141,6 @@ export default function EditService() {
                 </select>
               </div>
 
-              {/* Price */}
               <div className="col-md-3 mb-3">
                 <label className="small font-weight-bold text-dark">Price (Rs.)</label>
                 <input
@@ -159,7 +152,6 @@ export default function EditService() {
                 />
               </div>
 
-              {/* Media Uploads */}
               <div className="col-md-6 mb-3">
                 <label className="small font-weight-bold text-dark">Update Thumbnail (Optional)</label>
                 <input
@@ -180,11 +172,11 @@ export default function EditService() {
                 />
               </div>
 
-              {/* Availability & Status */}
               <div className="col-md-4 mb-3">
                 <label className="small font-weight-bold text-dark">Available From</label>
                 <input
                   type="time"
+                  step="1"
                   className="form-control custom-input-white"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
@@ -195,6 +187,7 @@ export default function EditService() {
                 <label className="small font-weight-bold text-dark">Available Until</label>
                 <input
                   type="time"
+                  step="1"
                   className="form-control custom-input-white"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
@@ -210,11 +203,11 @@ export default function EditService() {
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
+                  <option value="Pending">Pending</option>
                   <option value="Suspended">Suspended</option>
                 </select>
               </div>
 
-              {/* Description */}
               <div className="col-12 mb-2">
                 <label className="small font-weight-bold text-dark">Service Description</label>
                 <textarea

@@ -2,10 +2,11 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import "./Verticalbar.css"; 
 import {
+  FaExclamationTriangle,
   FaTachometerAlt,
   FaUser,           // Added missing import
   FaTools,          // Added missing import
-  FaRocket,         // Added missing import
+  FaRocket,         // Added missing importsss
   FaCalendarCheck,  // Added missing import
   FaStar,
   FaSignOutAlt,
@@ -21,6 +22,7 @@ const VerticalServiceProvider = () => {
     // { to: "/review", label: "Reviews", icon: <FaStar /> },
     { to: "/point", label: "Points", icon: <FaStar /> },
     { to: "/reedem", label: "Redeem Gifts", icon: <FaStar /> },
+    { to: "/mybook", label: "MyBooking", icon: <FaExclamationTriangle /> },
     { to: "/gift", label: "Gifts", icon: <FaStar /> },
     { to: "/login", label: "Logout", icon: <FaSignOutAlt />, className: "logout" },
   ];

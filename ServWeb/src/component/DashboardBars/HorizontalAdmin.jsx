@@ -2,13 +2,21 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./HorizontalAdmin.css"; 
 import Logo from "../Logo"; 
-import { FaBell, FaUserShield, FaCommentDots, FaUserCircle } from "react-icons/fa";
+import { FaUserShield, FaCommentDots, FaUserCircle } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
+import Notification from "../Notifications/Notification"; 
+import { useNotifications } from "../Notifications/useNotifications"; 
 
 const HorizontalAdmin = () => {
   const [nepalTime, setNepalTime] = useState("");
-  const { user } = useAuth(); // Access user data: { email, role, profileId }
+  const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Notification integration (was missing)
+  const { notifications, setNotifications } = useNotifications(user?.profileId);
+
+  // Notifications are loaded by the useNotifications hook
+
 
   useEffect(() => {
     const updateTime = () => {
@@ -42,32 +50,30 @@ const HorizontalAdmin = () => {
       <div className="right-section">
         <div className="time">🇳🇵 {nepalTime}</div>
 
-        <div className="icon chat-icon" onClick={() => navigate("/admin/disputes")} title="Disputes">
-          <FaCommentDots />
-          <span className="badge">5</span> 
+        {/* Fixed: Now uses the Notification component instead of plain bell icon */}
+        <div className="notification-wrapper">
+          <Notification 
+            notifications={notifications} 
+            setNotifications={setNotifications} 
+            profileId={user?.profileId}
+          />
         </div>
 
-        <div className="icon notification">
-          <FaBell />
-        </div>
-
-        {/* Profile Section with Hover Info */}
         <div className="profile-container">
-          <div className="icon profile" onClick={() => navigate("/admin/settings")}>
+          <div className="icon profile">
             <FaUserShield />
           </div>
           
-          {/* THE HOVER BOX */}
           <div className="profile-hover-box">
             <div className="hover-header">
               <FaUserCircle className="user-avatar-icon" />
               <div className="user-details">
                 <p className="user-email">{user?.email || "guest@example.com"}</p>
-                <span className="user-role-badge">{user?.role || "User"}</span>
+                <span className="user-role-badge">{user?.role || "Admin"}</span>
               </div>
             </div>
             <hr />
-            <div className="hover-footer" onClick={() => navigate("/admin/settings")}>
+            <div className="hover-footer" onClick={() => navigate("/settings")}>
                View Settings
             </div>
           </div>

@@ -6,8 +6,9 @@ import {
   fetchAllBookings,
   createBooking,
   updateBookingStatus,
-  deleteBooking
+  deleteBooking,
 } from "../../../api/AccountApi";
+import * as api from "../../../api/AccountApi";
 import {
   FaPlus,
   FaTrash,
@@ -176,6 +177,16 @@ export default function ServicesAndBookings() {
   };
 
   // --- 4. VIEW DETAILS ---
+  const handlePayment = (bookingId, amount) => {
+      navigate('/payments', {
+        state: {
+          bookingId: bookingId,
+          amount: amount,
+          planType: "Service Booking"
+        }
+      });
+  };
+
   const viewDetails = (b) => {
     Swal.fire({
       title: 'Booking Info',
@@ -191,16 +202,21 @@ export default function ServicesAndBookings() {
   };
 
   const getStatusDisplay = status => {
-    switch (status) {
-      case 0: return { text: "Pending", icon: <FaClock />, cls: "status-pending" };
-      case 1: return { text: "Confirmed", icon: <FaCheckCircle />, cls: "status-confirmed" };
-      case 2: return { text: "In Process", icon: <FaSpinner className="fa-spin" />, cls: "status-process" };
-      case 3: return { text: "Completed", icon: <FaHandshake />, cls: "status-completed" };
-      case 4: return { text: "Cancelled", icon: <FaTimesCircle />, cls: "status-cancelled" };
-      case 5: return { text: "Disputed", icon: <FaExclamationTriangle />, cls: "status-disputed" };
-      default: return { text: "Unknown", icon: null, cls: "" };
+    const s = String(status);
+    switch (s) {
+      case "Pending": case "0": return { text: "Pending", icon: <FaClock />, cls: "status-pending" };
+      case "Confirmed": case "1": return { text: "Confirmed", icon: <FaCheckCircle />, cls: "status-confirmed" };
+      case "InProcess": case "2": return { text: "In Process", icon: <FaSpinner className="fa-spin" />, cls: "status-process" };
+      case "Completed": case "3": return { text: "Completed", icon: <FaHandshake />, cls: "status-completed" };
+      case "Paid": case "4": return { text: "Paid", icon: <FaCheckCircle />, cls: "status-paid" };
+      case "Cancelled": case "5": return { text: "Cancelled", icon: <FaTimesCircle />, cls: "status-cancelled" };
+      case "Disputed": case "6": return { text: "Disputed", icon: <FaExclamationTriangle />, cls: "status-disputed" };
+      default: return { text: "Pending", icon: <FaClock />, cls: "status-pending" };
     }
   };
+
+  // Helper: check if status matches (handles both string and int)
+  const isStatus = (current, name) => String(current) === name;
 
   if (loading) return <div className="loader">Loading Services...</div>;
 
@@ -243,26 +259,37 @@ export default function ServicesAndBookings() {
                 <p className="small">Provider: {b.service?.profile?.fullName || "Service Provider"}</p>
                 
                 <div className="action-row">
-                  {currentStatus === 0 && (
-                    <button className="btn-sm danger" onClick={() => handleUpdate(id, 4, "Cancelled")}>
-                      Cancel Request
-                    </button>
+                  {isStatus(currentStatus, "Pending") ? (
+                    <div className="pending-msg">
+                      <FaClock /> Waiting for Provider to accept...
+                      <button className="btn-sm danger ml-2" onClick={() => handleUpdate(id, 5, "Cancelled")}>
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {isStatus(currentStatus, "Confirmed") && (
+                        <button className="btn-sm primary" style={{backgroundColor: '#28a745'}} onClick={() => handlePayment(id, b.agreedPrice)}>
+                          Pay Now
+                        </button>
+                      )}
+                      {isStatus(currentStatus, "InProcess") && (
+                        <button className="btn-sm danger" onClick={() => handleUpdate(id, 6, "Disputed")}>
+                          Dispute
+                        </button>
+                      )}
+                      
+                      <button className="btn-sm info" onClick={() => viewDetails(b)} title="Details">
+                        <FaInfoCircle />
+                      </button>
+                      <button className="btn-sm trash" onClick={() => handleDeleteBooking(id)} title="Delete">
+                        <FaTrash />
+                      </button>
+                      <button className="btn-sm chat" onClick={() => navigate(`/chats/${id}`)} title="Chat">
+                        <FaComments />
+                      </button>
+                    </>
                   )}
-                  {currentStatus === 2 && (
-                    <button className="btn-sm danger" onClick={() => handleUpdate(id, 5, "Disputed")}>
-                      Dispute
-                    </button>
-                  )}
-                  
-                  <button className="btn-sm info" onClick={() => viewDetails(b)} title="Details">
-                    <FaInfoCircle />
-                  </button>
-                  <button className="btn-sm trash" onClick={() => handleDeleteBooking(id)} title="Delete">
-                    <FaTrash />
-                  </button>
-                  <button className="btn-sm chat" onClick={() => navigate(`/chats/${id}`)} title="Chat">
-                    <FaComments />
-                  </button>
                 </div>
               </div>
             );

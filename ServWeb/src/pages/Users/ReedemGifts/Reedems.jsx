@@ -1,22 +1,61 @@
-import React, { useState } from 'react';
-
-import { 
-  Eye, 
-  EyeOff, 
-  CheckCircle, 
-  Clock, 
-  Ticket, 
-  Gift as GiftIcon // This fixes the error
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff, CheckCircle, Clock, Ticket, Gift as GiftIcon } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { useAuth } from '../../../context/AuthContext';
+import { GetMyVouchers } from '../../../api/AccountApi';
+import api from '../../../api/axios'; // Or wherever your custom action lives if needed
 import './Reedems.css';
 
-
-const RedeemsGifts = ({ redeemedVouchers, onMarkAsUsed }) => {
+const RedeemsGifts = () => {
+  const { user } = useAuth();
+  const [redeemedVouchers, setRedeemedVouchers] = useState([]);
   const [visibleCodes, setVisibleCodes] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchVouchers();
+  }, [user]);
+
+  const fetchVouchers = async () => {
+    if (!user?.profileId) return;
+    try {
+      setLoading(true);
+      const res = await GetMyVouchers(user.profileId);
+      setRedeemedVouchers(res.data || []);
+    } catch (err) {
+      console.error("Failed to load vouchers", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleVisibility = (id) => {
     setVisibleCodes(prev => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const handleMarkAsUsed = async (voucherId) => {
+    // If the merchant can mark used, implement API here
+    // Example placeholder using Swal for now:
+    const confirm = await Swal.fire({
+      title: 'Mark as Used?',
+      text: 'The merchant has seen this code?',
+      icon: 'question',
+      showCancelButton: true
+    });
+
+    if (confirm.isConfirmed) {
+      try {
+        // Assume an endpoint exists: PUT /api/ReedemGifts/markused/{id}
+        // await api.put(`/ReedemGifts/markused/${voucherId}`);
+        Swal.fire('Success', 'Voucher marked as used.', 'success');
+        fetchVouchers();
+      } catch {
+        Swal.fire('Info', 'Mock: Voucher marked used (backend endpoint required)', 'info');
+      }
+    }
+  };
+
+  if (loading) return <div style={{padding: '50px', textAlign: 'center'}}>Loading Vault...</div>;
 
   return (
     <div className="redeems-page">

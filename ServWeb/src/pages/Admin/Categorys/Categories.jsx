@@ -132,16 +132,16 @@ const Categories = () => {
       </div>
 
       {/* Search */}
-    <div className="search-box mb-4">
-  <FaSearch className="search-icon" />
-  <input
-    type="text"
-    className="form-control"
-    placeholder="Search categories..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-  />
-</div>
+      <div className="search-box mb-4">
+        <FaSearch className="search-icon" />
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Search categories..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
       {/* Table Card */}
       <div className="category-card shadow-sm">

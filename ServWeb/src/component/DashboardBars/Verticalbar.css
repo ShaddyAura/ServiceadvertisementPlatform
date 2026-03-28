@@ -50,6 +50,7 @@
 .card-icon {
   font-size: 24px;
   margin-bottom: 8px;
+  color: #f40606; /* Primary red icon color */
 }
 
 .card-text {
@@ -59,10 +60,10 @@
 
 /* Hover State - Red Color */
 .nav-card:hover {
-  background-color: #f72929; /* Red color */
-  color: white;
+  background-color: #fdeaea; /* Light red bg on hover */
+  color: #f40606; /* Red text to match icon */
   transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.3);
+  box-shadow: 0 4px 12px rgba(244, 6, 6, 0.15);
 }
 
 /* Active State (React Router NavLink adds .active class) */
@@ -72,6 +73,11 @@
     rgb(244, 6, 6) 0%,
     rgba(206, 36, 13, 0.8) 100%
   ) !important;
+  color: white !important;
+}
+
+.nav-card.active .card-icon {
+  color: white !important;
 }
 
 /* Specifically for logout if you want it red by default */

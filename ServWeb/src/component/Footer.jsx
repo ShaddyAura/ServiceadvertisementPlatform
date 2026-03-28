@@ -63,7 +63,7 @@ function Footer() {
       {/* UPDATED INTERNAL CSS */}
       <style>{`
         .footer-section {
-          background-color: #ffffff !important; 
+          background-color: #f4f4f4 !important; 
           color: #000000 !important;
           border-top: 1px solid #eee;
         }

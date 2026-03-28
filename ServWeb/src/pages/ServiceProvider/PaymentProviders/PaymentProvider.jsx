@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { FaArrowLeft, FaLock, FaShieldAlt, FaCheckCircle } from "react-icons/fa";
-import { purchasePoints } from "../../../api/AccountApi"; // Ensure correct path
+import { purchasePoints } from "../../../api/AccountApi"; 
 import { useAuth } from "../../../context/AuthContext";
 import "./PaymentProvider.css";
 
@@ -19,6 +19,13 @@ export default function PaymentProvider() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    // Only allow digits
+    if (value !== "" && !/^\d+$/.test(value)) return;
+
+    // Enforce max length
+    if ((name === "esewaId" || name === "khaltiId") && value.length > 10) return;
+    if ((name === "esewaPw" || name === "khaltiPw") && value.length > 4) return;
+
     setCredentials(prev => ({ ...prev, [name]: value }));
   };
 
@@ -29,6 +36,14 @@ export default function PaymentProvider() {
 
     if (!id || !pw) {
       return Swal.fire("Required", `Please enter your ${gateway} credentials.`, "warning");
+    }
+
+    if (!/^\d{10}$/.test(id)) {
+      return Swal.fire("Invalid ID", "Mobile number must be exactly 10 digits.", "warning");
+    }
+
+    if (!/^\d{4}$/.test(pw)) {
+      return Swal.fire("Invalid PIN", "Transaction PIN must be exactly 4 digits.", "warning");
     }
 
     const result = await Swal.fire({
@@ -43,28 +58,36 @@ export default function PaymentProvider() {
     if (result.isConfirmed) {
       setIsProcessing(true);
       try {
-        // Prepare the DTO for your backend
-        const purchaseData = {
-          profileId: user.profileId,
-          amount: parseFloat(amount),
-          pointsToGive: parseInt(points),
-          gateway: gateway.toLowerCase()
-        };
-
-        // 1. Call your actual backend API
-        await purchasePoints(purchaseData);
-
-        // 2. Success Feedback
-        Swal.fire({
-            title: "Success!",
-            text: "Payment processed and points added to wallet.",
-            icon: "success",
-            timer: 3000
-        }).then(() => navigate("/dashboard/points")); // Redirect back to points shop
-
+        const { initiatePointsPayment } = await import('../../../api/AccountApi');
+        const res = await initiatePointsPayment({ gateway: gateway.toLowerCase(), pointsToBuy: parseInt(points), amount: parseFloat(amount) });
+        
+        if (gateway === 'eSewa') {
+           const { esewaData, paymentUrl } = res.data;
+           const form = document.createElement('form');
+           form.method = 'POST';
+           form.action = paymentUrl;
+           
+           const fieldMapping = {
+               Amount: 'amount', TaxAmount: 'tax_amount', TotalAmount: 'total_amount',
+               TransactionUuid: 'transaction_uuid', ProductCode: 'product_code',
+               ProductServiceCharge: 'product_service_charge', ProductDeliveryCharge: 'product_delivery_charge',
+               SuccessUrl: 'success_url', FailureUrl: 'failure_url',
+               SignedFieldNames: 'signed_field_names', Signature: 'signature'
+           };
+           for (const key in esewaData) {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = fieldMapping[key] || key;
+              input.value = esewaData[key];
+              form.appendChild(input);
+           }
+           document.body.appendChild(form);
+           form.submit();
+        } else if (gateway === 'Khalti') {
+           window.location.href = res.data.paymentUrl;
+        }
       } catch (error) {
         Swal.fire("Payment Failed", error.response?.data?.message || "Transaction declined.", "error");
-      } finally {
         setIsProcessing(false);
       }
     }

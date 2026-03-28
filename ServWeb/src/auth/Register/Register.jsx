@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import Logo from "../../component/Logo";
 import "./Register.css"; // Using your existing CSS
 import { registerUser } from "../../api/AccountApi";
@@ -19,6 +20,8 @@ export default function Register() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -108,10 +111,16 @@ export default function Register() {
               <input name="email" onChange={handleChange} value={form.email} type="email" placeholder="Email" />
             </div>
             <div className="input-box">
-              <input name="password" onChange={handleChange} value={form.password} type="password" placeholder="Password" />
+              <input name="password" onChange={handleChange} value={form.password} type={showPassword ? "text" : "password"} placeholder="Password" />
+              <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </span>
             </div>
             <div className="input-box">
-              <input name="repeatPassword" onChange={handleChange} value={form.repeatPassword} type="password" placeholder="Repeat your password" />
+              <input name="repeatPassword" onChange={handleChange} value={form.repeatPassword} type={showRepeatPassword ? "text" : "password"} placeholder="Repeat your password" />
+              <span className="toggle-password" onClick={() => setShowRepeatPassword(!showRepeatPassword)}>
+                {showRepeatPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </span>
             </div>
             <div className="terms">
               <input type="checkbox" id="t1" name="agree" checked={form.agree} onChange={handleChange} />

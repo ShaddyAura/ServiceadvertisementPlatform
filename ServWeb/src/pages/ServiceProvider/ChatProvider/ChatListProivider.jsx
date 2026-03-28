@@ -33,6 +33,8 @@ export default function ChatListProvider() {
 
       {bookings.map(b => {
         const id = b.id || b.Id;
+        const serviceTitle = b.serviceListing?.title || b.resolvedServiceName || "Service Chat";
+        const clientName = b.fullName || b.profile?.fullName || "Client";
 
         return (
           <div
@@ -40,8 +42,11 @@ export default function ChatListProvider() {
             className="chat-list-item"
             onClick={() => navigate(`/chats/${id}`)}
           >
-            <h4>Booking #{id}</h4>
-            <p>Click to open chat</p>
+            <h4>{serviceTitle}</h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', fontSize: '0.9rem', marginTop: '5px' }}>
+              <span>Client: <strong>{clientName}</strong></span>
+              <span>Booking #{String(id).slice(0, 8)}</span>
+            </div>
           </div>
         );
       })}

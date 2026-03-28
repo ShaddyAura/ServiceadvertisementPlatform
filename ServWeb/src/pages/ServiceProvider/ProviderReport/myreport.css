@@ -1,0 +1,27 @@
+.price-tag {
+    font-weight: 700;
+    color: #28a745;
+    margin: 5px 0;
+}
+
+.btn-sm.success {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.no-data-card {
+    text-align: center;
+    grid-column: 1 / -1;
+    padding: 50px;
+    background: #f9f9f9;
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    color: #888;
+}
+
+/* Status colors */
+.status-tag.status-process { background: #e3f2fd; color: #1976d2; }
+.status-tag.status-confirmed { background: #e8f5e9; color: #2e7d32; }

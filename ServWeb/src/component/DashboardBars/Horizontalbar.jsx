@@ -5,9 +5,7 @@ import Logo from "../Logo";
 import { FaUserCircle, FaCommentDots } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import Notification from "../../component/Notifications/Notification"; 
-// 1. Ensure you import the hook and the API
 import { useNotifications } from "../../component/Notifications/useNotifications"; 
-import { getUserNotifications } from "../../api/AccountApi";
 
 const Horizontalbar = () => {
   const [nepalTime, setNepalTime] = useState("");
@@ -17,21 +15,8 @@ const Horizontalbar = () => {
   // 2. Initialize Real-time Notifications state/socket
   const { notifications, setNotifications } = useNotifications(user?.profileId);
 
-  // 3. Fetch initial notifications from the database on mount
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      if (user?.profileId) {
-        try {
-          const response = await getUserNotifications(user.profileId);
-          setNotifications(response.data);
-        } catch (err) {
-          console.error("Failed to load notifications history:", err);
-        }
-      }
-    };
+  // Notifications are loaded by the useNotifications hook
 
-    fetchInitialData();
-  }, [user?.profileId, setNotifications]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -78,7 +63,7 @@ const Horizontalbar = () => {
         </div>
 
         <div className="profile-container">
-          <div className="icon profile" onClick={() => navigate("/profile")}>
+          <div className="icon profile">
             <FaUserCircle size={25} />
           </div>
 

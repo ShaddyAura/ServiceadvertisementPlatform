@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import "./VerticalAdmin.css"; // Reuse exactly the same CSS
+import "./VerticalAdmin.css"; 
 import {
   FaTachometerAlt,
   FaUsers,
@@ -19,8 +19,10 @@ const adminMenuItems = [
   { to: "/users", label: "Manage Users", icon: <FaUsers /> }, 
   { to: "/verifications", label: "Verify IDs", icon: <FaShieldAlt /> }, 
   { to: "/finances", label: "Platform Cash", icon: <FaFileInvoiceDollar /> },
-  { to: "/boosts", label: "Ad Campaigns", icon: <FaChartLine /> },
-  { to: "/disputes", label: "Disputes", icon: <FaExclamationTriangle /> },
+  { to: "/adminboost", label: "Ad Campaigns", icon: <FaChartLine /> },
+  { to: "/servicereport", label: "serviceReport", icon: <FaExclamationTriangle /> },
+  { to: "/bookingreport", label: "BookingReport", icon: <FaExclamationTriangle /> },
+  { to: "/reportreview", label: "ReviewReport", icon: <FaExclamationTriangle /> },
   { to: "/categories", label: "Categories", icon: <FaList /> },
   { to: "/settings", label: "System Setup", icon: <FaCogs /> },
   { to: "/login", label: "Logout", icon: <FaSignOutAlt />, className: "logout" },
