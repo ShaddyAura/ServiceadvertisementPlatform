@@ -1,5 +1,6 @@
 namespace ServAd.ApiService.Services.Payment.Models
 {
+    // ── eSewa Form Data (sent to rc-epay.esewa.com.np) ──
     public class EsewaPaymentData
     {
         public string Amount { get; set; } = string.Empty;
@@ -15,6 +16,16 @@ namespace ServAd.ApiService.Services.Payment.Models
         public string Signature { get; set; } = string.Empty;
     }
 
+    // ── eSewa Transaction Status Response ──
+    public class EsewaStatusResponse
+    {
+        public string Status { get; set; } = string.Empty;
+        public string TransactionCode { get; set; } = string.Empty;
+        public string TotalAmount { get; set; } = "0";
+        public string Message { get; set; } = string.Empty;
+    }
+
+    // ── Khalti Initiate Response ──
     public class KhaltiInitiateResponse
     {
         public string Pidx { get; set; } = string.Empty;
