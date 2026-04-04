@@ -32,15 +32,23 @@ namespace ServAd.ApiService.Services.Booking.Service
                 context.Bookings.Add(booking);
                 await context.SaveChangesAsync();
 
-                // --- Notification Added ---
-                await notification.NotifyBookingUpdate(
-                    booking.Id,
-                    booking.ProfileId,
-                    booking.ProviderProfileId,
-                    booking.Status.ToString(),
-                    booking.AgreedPrice);
+                try 
+                {
+                    // --- Notification Added ---
+                    await notification.NotifyBookingUpdate(
+                        booking.Id,
+                        booking.ProfileId,
+                        booking.ProviderProfileId,
+                        booking.Status.ToString(),
+                        booking.AgreedPrice);
 
-                // ... RabbitMQ logic ...
+                    await rabbitMQ.PublishMessageAsync(new { BookingId = booking.Id, Action = "BookingCreated" }, "booking_events");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to publish booking creation event for {BookingId}. Proceeding.", booking.Id);
+                }
+
                 return booking;
             }
             catch (Exception ex)
@@ -68,18 +76,45 @@ namespace ServAd.ApiService.Services.Booking.Service
         public async Task UpdateStatusAsync(Guid id, BookingStatus status)
         {
             var booking = await GetByIdAsync(id);
+            
+            // Prevent duplicate logs if already Paid
+            if (booking.Status == status) return;
+
             booking.Status = status;
+
+            if (status == BookingStatus.Paid)
+            {
+                var paymentHistory = new UserRewardHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ProfileId = booking.ProfileId,
+                    RewardType = "BookingPayment",
+                    PointsEarned = 0,
+                    Amount = booking.AgreedPrice,
+                    BookingId = booking.Id,
+                    CreatedAt = DateTime.UtcNow
+                };
+                context.UserRewardHistories.Add(paymentHistory);
+            }
+
             await context.SaveChangesAsync();
 
-            // --- Notification Added ---
-            await notification.NotifyBookingUpdate(
-                booking.Id,
-                booking.ProfileId,
-                booking.ProviderProfileId,
-                status.ToString(),
-                booking.AgreedPrice);
+            try 
+            {
+                // --- Notification Added ---
+                await notification.NotifyBookingUpdate(
+                    booking.Id,
+                    booking.ProfileId,
+                    booking.ProviderProfileId,
+                    status.ToString(),
+                    booking.AgreedPrice);
 
-            await rabbitMQ.PublishMessageAsync(new { BookingId = id, Status = status.ToString() });
+                await rabbitMQ.PublishMessageAsync(new { BookingId = id, Status = status.ToString() }, "booking_events");
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to publish booking update notification/event for {BookingId}. Proceeding.", booking.Id);
+            }
         }
 
         public async Task DeleteAsync(Guid id)

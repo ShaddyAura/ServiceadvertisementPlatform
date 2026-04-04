@@ -18,7 +18,7 @@ namespace ShareLibrary.cs.Data.Entities
         [ForeignKey("WalletId")]
         public virtual UserWallet Wallet { get; set; } = null!;
 
-        public decimal Amount { get; set; } // Positive for gain, Negative for spending
+        public decimal Amount { get; set; } 
         public PointsSource Source { get; set; }
 
         public DateTime TransactionDate { get; set; } = DateTime.UtcNow;

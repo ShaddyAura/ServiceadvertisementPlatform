@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServAd.ApiService.Controllers.Notification.Dto;
 using ServAd.ApiService.Services.Notifications.Interface;
@@ -97,5 +97,41 @@ namespace ServAd.ApiService.Controllers.Notification
             await notify.NotifyServiceAdded(dto.ProfileId, dto.Title);
             return Ok(new { Message = "Manual notification queued successfully" });
         }
+
+        [HttpPost("broadcast")]
+        [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Broadcast([FromBody] BroadcastDto dto)
+        {
+            var targets = await context.Profiles.ToListAsync();
+
+            if (dto.Audience == "Providers Only")
+            {
+                // In our system Providers have services OR role = 2 depending on your struct
+                var providerIds = await context.ServiceListings.Select(s => s.ProfileId).Distinct().ToListAsync();
+                targets = targets.Where(p => providerIds.Contains(p.Id)).ToList();
+            }
+
+            var notifications = targets.Select(p => new ShareLibrary.cs.Data.Entities.Notification
+            {
+                Id = Guid.NewGuid(),
+                ProfileId = p.Id,
+                Title = dto.Title,
+                Message = dto.Message,
+                CreatedAt = DateTime.UtcNow,
+                IsRead = false
+            }).ToList();
+
+            context.Notifications.AddRange(notifications);
+            await context.SaveChangesAsync();
+
+            return Ok(new { Message = $"Broadcast sent to {notifications.Count} users." });
+        }
+    }
+
+    public class BroadcastDto
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public string Audience { get; set; } = "All Users";
     }
 }
