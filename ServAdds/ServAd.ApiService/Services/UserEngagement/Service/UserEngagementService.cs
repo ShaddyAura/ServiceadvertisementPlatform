@@ -12,28 +12,29 @@ namespace ServAd.ApiService.Services.UserEngagement.Service
         INotificationService notification,
         ILogger<UserEngagementService> logger) : IUserEngagementService
     {
-        private static DateTime _currentDate = DateTime.UtcNow.Date;
-        private static readonly HashSet<Guid> _claimedUsers = [];
-        private static readonly System.Threading.Lock _lockObj = new();
-
         public async Task<Profiles> ClaimDailyLoginRewardAsync(Guid profileId)
         {
-            lock (_lockObj)
+            var today = DateTime.UtcNow.Date;
+
+            // 1) Verify the user hasn't already claimed today
+            bool alreadyClaimed = await context.UserRewardHistories
+                .AnyAsync(r => r.ProfileId == profileId && r.RewardType == "DailyLogin" && r.CreatedAt.Date == today);
+            
+            if (alreadyClaimed)
             {
-                if (DateTime.UtcNow.Date > _currentDate)
-                {
-                    _currentDate = DateTime.UtcNow.Date;
-                    _claimedUsers.Clear();
-                }
-
-                if (_claimedUsers.Contains(profileId))
-                {
-                    throw new ApiException("Reward already claimed for today.", 400);
-                }
-
-                _claimedUsers.Add(profileId);
+                throw new ApiException("Reward already claimed for today.", 400);
             }
 
+            // 2) Verify Global Limit (Only 10 users per day)
+            int totalClaimsToday = await context.UserRewardHistories
+                .CountAsync(r => r.RewardType == "DailyLogin" && r.CreatedAt.Date == today);
+
+            if (totalClaimsToday >= 10)
+            {
+                throw new ApiException("Daily reward limit reached. Only 10 users can claim per day. Try again tomorrow!", 400);
+            }
+
+            // 3) Process Reward
             var profile = await context.Profiles.FindAsync(profileId) 
                 ?? throw new ApiException("Profile not found.", 404);
 
@@ -42,6 +43,16 @@ namespace ServAd.ApiService.Services.UserEngagement.Service
             profile.BoostingPoints += pointsToGive;
             profile.LifetimePoints += pointsToGive;
             profile.UpdatedAt = DateTime.UtcNow;
+
+            var rewardRecord = new UserRewardHistory
+            {
+                ProfileId = profileId,
+                RewardType = "DailyLogin",
+                PointsEarned = pointsToGive,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            context.UserRewardHistories.Add(rewardRecord);
 
             await context.SaveChangesAsync();
 
@@ -69,6 +80,16 @@ namespace ServAd.ApiService.Services.UserEngagement.Service
             profile.BoostingPoints += pointsToGive;
             profile.LifetimePoints += pointsToGive;
             profile.UpdatedAt = DateTime.UtcNow;
+
+            var rewardRecord = new UserRewardHistory
+            {
+                ProfileId = profileId,
+                RewardType = "WatchVideo",
+                PointsEarned = pointsToGive,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            context.UserRewardHistories.Add(rewardRecord);
 
             await context.SaveChangesAsync();
 
