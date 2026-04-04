@@ -464,6 +464,23 @@ namespace ServAd.ApiService.Controllers.Account
             return Ok(new { message = "Logged out" });
         }
 
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+                return NotFound("User not found.");
+
+            var result = await userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok(new { Message = "Password changed successfully." });
+        }
+
         [HttpGet("me")]
         public async Task<IActionResult> Me([FromServices] IOptions<JwtSettings> jwtSettings)
         {
