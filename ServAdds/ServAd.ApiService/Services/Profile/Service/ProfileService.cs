@@ -141,6 +141,17 @@ namespace ServAd.ApiService.Services.Profile.Service
                 .ToListAsync();
         }
 
+        public async Task<bool> ToggleSuspensionAsync(Guid profileId, string? reason)
+        {
+            var profile = await GetByIdAsync(profileId);
+            profile.IsSuspended = !profile.IsSuspended;
+            profile.SuspensionReason = profile.IsSuspended ? reason : null;
+            profile.UpdatedAt = DateTime.UtcNow;
+            
+            context.Profiles.Update(profile);
+            return await context.SaveChangesAsync() > 0;
+        }
+
         public async Task<string> UploadProfileImageAsync(Guid profileId, IFormFile file)
         {
             var profile = await GetByIdAsync(profileId);

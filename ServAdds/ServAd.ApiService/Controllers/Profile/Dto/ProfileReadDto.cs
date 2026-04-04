@@ -15,6 +15,8 @@ namespace ServAd.ApiService.Controllers.Profile.Dto
         public bool IsVerified { get; set; }
         public decimal BoostingPoints { get; set; }
         public decimal LifetimePoints { get; set; }
+        public bool IsSuspended { get; set; }
+        public string? SuspensionReason { get; set; }
         public DateTime CreatedAt { get; set; }
 
         // 🔥 ADD THIS

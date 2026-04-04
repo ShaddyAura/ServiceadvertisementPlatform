@@ -38,6 +38,9 @@ namespace ShareLibrary.cs.Data.Entities
 
         public bool IsVerified { get; set; } = false;
 
+        public bool IsSuspended { get; set; } = false;
+        public string? SuspensionReason { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
