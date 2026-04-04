@@ -21,6 +21,8 @@ namespace ServAd.ApiService.Services.Boosting.Interface
 
         Task<BoostingTransaction?> GetServiceBoostInfoAsync(Guid serviceId);
 
+        Task<IEnumerable<BoostingTransaction>> GetAllBoostingTransactionsAsync();
+
         Task CancelBoostAsync(Guid serviceId);
     }
 }

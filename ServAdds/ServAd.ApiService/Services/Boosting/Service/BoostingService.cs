@@ -78,7 +78,7 @@ namespace ServAd.ApiService.Services.Boosting.Service
                     Timestamp = now
                 }, "service_boosted_queue");
 
-                logger.LogInformation(
+                 logger.LogInformation(
                     "Service {ServiceId} boosted to {Level} until {Expiry}",
                     serviceId, level, endDate);
 
@@ -89,6 +89,15 @@ namespace ServAd.ApiService.Services.Boosting.Service
                 logger.LogError(ex, "Boosting failed for Service {Id}", serviceId);
                 throw new ApiException("An error occurred while processing the boost.", 500);
             }
+        }
+
+        public async Task<IEnumerable<BoostingTransaction>> GetAllBoostingTransactionsAsync()
+        {
+            return await context.BoostingTransactions
+                .Include(t => t.Service)
+                .ThenInclude(s => s.Profile)
+                .OrderByDescending(t => t.BoostStartDate)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<BoostingTransaction>>

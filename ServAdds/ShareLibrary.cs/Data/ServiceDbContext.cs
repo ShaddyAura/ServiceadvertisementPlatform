@@ -21,10 +21,13 @@ namespace ShareLibrary.cs.Data
         public DbSet<UserWallet> Wallets { get; set; }
 
         // -----------------------------
-        // Points & Transactions
+        // Points & Transactions & Withdrawals
         // -----------------------------
         public DbSet<PointsTransaction> PointsTransactions { get; set; }
+        public DbSet<WithdrawalRequest> WithdrawalRequests { get; set; }
         public DbSet<BoostingTransaction> BoostingTransactions { get; set; }
+        public DbSet<UserRewardHistory> UserRewardHistories { get; set; }
+
 
         // -----------------------------
         // Gifts & Redemptions
@@ -74,6 +77,7 @@ namespace ShareLibrary.cs.Data
 
             // Fixed the "AgreedPrice" warning here:
             builder.Entity<Bookings>().Property(b => b.AgreedPrice).HasPrecision(18, 2);
+            builder.Entity<WithdrawalRequest>().Property(w => w.Amount).HasPrecision(18, 2);
 
             // -----------------------------------------------------------
             // Profile ↔ Identity User (1–1)

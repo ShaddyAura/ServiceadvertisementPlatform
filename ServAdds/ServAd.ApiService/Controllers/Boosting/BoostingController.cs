@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ServAd.ApiService.Controllers.Boosting.Dto;
 using ServAd.ApiService.Services.Boosting.Interface;
 using ShareLibrary.cs.Data.Entities;
@@ -33,6 +33,13 @@ namespace ServAd.ApiService.Controllers.Boosting
             var history = await boostingService
                 .GetServiceBoostHistoryAsync(serviceId);
 
+            return Ok(history);
+        }
+
+        [HttpGet("all-history")]
+        public async Task<ActionResult<IEnumerable<BoostingTransaction>>> GetAllHistory()
+        {
+            var history = await boostingService.GetAllBoostingTransactionsAsync();
             return Ok(history);
         }
 

@@ -501,6 +501,9 @@ namespace ShareLibrary.cs.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<bool>("IsSuspended")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnType("bit");
 
@@ -517,6 +520,9 @@ namespace ShareLibrary.cs.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("ProfileImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SuspensionReason")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -676,6 +682,41 @@ namespace ShareLibrary.cs.Migrations
                     b.ToTable("ServiceListings");
                 });
 
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.UserRewardHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("PointsEarned")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RewardType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("ProfileId");
+
+                    b.ToTable("UserRewardHistories");
+                });
+
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.UserWallet", b =>
                 {
                     b.Property<Guid>("Id")
@@ -710,6 +751,47 @@ namespace ShareLibrary.cs.Migrations
                         .IsUnique();
 
                     b.ToTable("Wallets");
+                });
+
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.WithdrawalRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountDetails")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfileId");
+
+                    b.ToTable("WithdrawalRequests");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -909,11 +991,39 @@ namespace ShareLibrary.cs.Migrations
                     b.Navigation("Profile");
                 });
 
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.UserRewardHistory", b =>
+                {
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Bookings", "Booking")
+                        .WithMany()
+                        .HasForeignKey("BookingId");
+
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
+                        .WithMany()
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Profile");
+                });
+
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.UserWallet", b =>
                 {
                     b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
                         .WithOne("Wallet")
                         .HasForeignKey("ShareLibrary.cs.Data.Entities.UserWallet", "ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Profile");
+                });
+
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.WithdrawalRequest", b =>
+                {
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
+                        .WithMany()
+                        .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
