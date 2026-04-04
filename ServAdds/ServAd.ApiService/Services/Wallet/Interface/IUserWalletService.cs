@@ -5,6 +5,7 @@
         public interface IUserWalletService
         {
             Task<UserWallet> GetWalletByProfileIdAsync(Guid profileId);
+            Task<IEnumerable<UserWallet>> GetAllWalletsAsync();
 
             // Specifically for buying points: Increments both current balance and lifetime target
             Task<UserWallet> PurchasePointsAsync(Guid profileId, decimal amount, decimal pointsToGive, string gateway);

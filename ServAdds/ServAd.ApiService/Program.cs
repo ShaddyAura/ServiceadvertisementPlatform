@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using ServAd.ApiService.Services.UserPayment.Interface;
+using ServAd.ApiService.Services.UserPayment.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Identity;
@@ -48,6 +50,8 @@ using System.Text.Json.Serialization;
 using ServAd.ApiService.Services.UserEngagement.Interface;
 using ServAd.ApiService.Services.UserEngagement.Service;
 using ServAd.ApiService.Services.Verification.Interface;
+using ServAd.ApiService.Services.Withdrawal.Interface;
+using ServAd.ApiService.Services.Withdrawal.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -246,6 +250,8 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IGiftService, GiftService>(); 
 builder.Services.AddScoped<IRedeemGiftService, RedeemGiftService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IUserPaymentService, UserPaymentService>();
+builder.Services.AddScoped<IWithdrawalService, WithdrawalService>();
 builder.Services.AddHostedService<NotificationConsumerWorker>();
 
 // ============================================================================

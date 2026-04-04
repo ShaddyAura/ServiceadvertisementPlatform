@@ -14,15 +14,26 @@ namespace ServAd.ApiService.Services.Wallet.Service
         IRabbitmqService rabbitMQ,
         ILogger<UserWalletService> logger) : IUserWalletService
     {
-        public async Task<UserWallet> GetWalletByProfileIdAsync(Guid profileId)
+        public async Task<IEnumerable<UserWallet>> GetAllWalletsAsync()
         {
-            var wallet = await context.Wallets.FirstOrDefaultAsync(w => w.ProfileId == profileId);
+            return await context.Wallets.ToListAsync();
+        }
+
+        public async Task<UserWallet> GetWalletByProfileIdAsync(Guid profileOrUserId)
+        {
+            // Auto-resolve whether the provided Guid is a ProfileId directly or a UserId fallback from JWT
+            var profile = await context.Profiles.FirstOrDefaultAsync(p => p.Id == profileOrUserId || p.UserId == profileOrUserId) 
+                            ?? throw new ApiException("Associated Profile could not be found for the given token identity.", 400);
+
+            var actualProfileId = profile.Id;
+
+            var wallet = await context.Wallets.FirstOrDefaultAsync(w => w.ProfileId == actualProfileId);
             if (wallet == null)
             {
                 wallet = new UserWallet
                 {
                     Id = Guid.NewGuid(),
-                    ProfileId = profileId,
+                    ProfileId = actualProfileId,
                     PointsBalance = 0,
                     LifetimePurchasedPoints = 0,
                     ESewaBalance = 0,
@@ -73,23 +84,29 @@ namespace ServAd.ApiService.Services.Wallet.Service
 
                 await context.SaveChangesAsync();
 
-                // --- Notification Added ---
-                // This updates the user's UI balance and shows a "Payment Success" popup
-                await notification.NotifyPointWalletUpdate(
-                    profileId,
-                    wallet.PointsBalance,
-                    pointsToGive,
-                    $"Purchase via {gateway.ToUpper()}"
-                );
-
-                // 3. RabbitMQ: Background logic for milestone checking (Gifts/Vouchers)
-                await rabbitMQ.PublishMessageAsync(new
+                try 
                 {
-                    ProfileId = profileId,
-                    NewLifetimePoints = wallet.LifetimePurchasedPoints,
-                    PointsPurchased = pointsToGive,
-                    Action = "PointPurchaseSuccess"
-                }, "wallet_purchase_queue");
+                    // --- Notification Added ---
+                    await notification.NotifyPointWalletUpdate(
+                        profileId,
+                        wallet.PointsBalance,
+                        pointsToGive,
+                        $"Purchase via {gateway.ToUpper()}"
+                    );
+
+                    // 3. RabbitMQ: Background logic for milestone checking (Gifts/Vouchers)
+                    await rabbitMQ.PublishMessageAsync(new
+                    {
+                        ProfileId = profileId,
+                        NewLifetimePoints = wallet.LifetimePurchasedPoints,
+                        PointsPurchased = pointsToGive,
+                        Action = "PointPurchaseSuccess"
+                    }, "wallet_purchase_queue");
+                }
+                catch (Exception pubEx)
+                {
+                    logger.LogWarning(pubEx, "Failed to publish RabbitMQ or Notification for Profile {Id}. Continuing payment process.", profileId);
+                }
 
                 logger.LogInformation("Profile {Id} purchased {Pts} points via {Gateway}.",
                     profileId, pointsToGive, gateway);

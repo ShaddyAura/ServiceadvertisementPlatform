@@ -11,6 +11,23 @@ namespace ServAd.ApiService.Controllers.Wallets
     public class WalletsController(IUserWalletService walletService) : ControllerBase
     {
         /// <summary>
+        /// Get all wallets (Admin Use)
+        /// </summary>
+        [HttpGet("allwallets")]
+        public async Task<IActionResult> GetAllWallets()
+        {
+            try
+            {
+                var wallets = await walletService.GetAllWalletsAsync();
+                return Ok(wallets);
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Get wallet by profileId
         /// </summary>
         [HttpGet("getwallet")]
