@@ -83,6 +83,8 @@ namespace ServAd.ApiService.Controllers.Profile
                 PhoneNumber = p.PhoneNumber,
                 Address = p.Address,
                 IsVerified = p.IsVerified,
+                IsSuspended = p.IsSuspended,
+                SuspensionReason = p.SuspensionReason,
                 ProfileImageUrl = p.ProfileImageUrl,
                 CreatedAt = p.CreatedAt
             });
@@ -112,6 +114,18 @@ namespace ServAd.ApiService.Controllers.Profile
             });
         }
 
+        [HttpPatch("togglesuspension")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ToggleSuspension(Guid id, [FromQuery] string? reason)
+        {
+            var success = await profileService.ToggleSuspensionAsync(id, reason);
+
+            if (!success)
+                return BadRequest("Suspension update failed.");
+
+            return Ok(new { message = "User suspension status updated successfully." });
+        }
+
         private static ProfileReadDto MapToReadDto(ShareLibrary.cs.Data.Entities.Profiles p)
         {
             return new ProfileReadDto
@@ -125,6 +139,8 @@ namespace ServAd.ApiService.Controllers.Profile
                 DateOfBirth = p.DateOfBirth,
                 ProfileImageUrl = p.ProfileImageUrl,
                 IsVerified = p.IsVerified,
+                IsSuspended = p.IsSuspended,
+                SuspensionReason = p.SuspensionReason,
                 BoostingPoints = p.BoostingPoints,
                 LifetimePoints = p.LifetimePoints,
                 CreatedAt = p.CreatedAt

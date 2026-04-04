@@ -35,5 +35,23 @@ namespace ServAd.ApiService.Services.Reviews.Service
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Review>> GetAllReviewsAsync()
+        {
+            return await context.Reviews
+                .Include(r => r.Profile)
+                .Include(r => r.Service)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<bool> DeleteReviewAsync(Guid reviewId)
+        {
+            var review = await context.Reviews.FindAsync(reviewId);
+            if (review == null) return false;
+
+            context.Reviews.Remove(review);
+            return await context.SaveChangesAsync() > 0;
+        }
     }
 }

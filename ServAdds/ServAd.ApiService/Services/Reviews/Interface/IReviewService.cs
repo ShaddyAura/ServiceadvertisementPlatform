@@ -6,5 +6,7 @@ namespace ServAd.ApiService.Services.Reviews.Interface
     {
         Task<bool> AddReviewAsync(Review review);
         Task<IEnumerable<Review>> GetReviewsByServiceIdAsync(Guid serviceId);
+        Task<IEnumerable<Review>> GetAllReviewsAsync();
+        Task<bool> DeleteReviewAsync(Guid reviewId);
     }
 }

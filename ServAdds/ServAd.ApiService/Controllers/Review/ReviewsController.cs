@@ -38,5 +38,23 @@ namespace ServAd.ApiService.Controllers.Review
             var reviews = await reviewService.GetReviewsByServiceIdAsync(serviceId);
             return Ok(reviews);
         }
+
+        [HttpGet("all-reviews")]
+        public async Task<IActionResult> GetAllReviews()
+        {
+            var reviews = await reviewService.GetAllReviewsAsync();
+            return Ok(reviews);
+        }
+
+        [HttpDelete("delete/{reviewId}")]
+        public async Task<IActionResult> DeleteReview(Guid reviewId)
+        {
+            var success = await reviewService.DeleteReviewAsync(reviewId);
+            if (!success)
+            {
+                return NotFound(new { Message = "Review not found or could not be deleted." });
+            }
+            return Ok(new { Message = "Review deleted successfully." });
+        }
     }
 }
