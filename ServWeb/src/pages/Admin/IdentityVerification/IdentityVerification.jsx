@@ -141,13 +141,25 @@ const IdentityVerification = () => {
             </div>
 
             <div className="action-footer mt-4">
-              {/* Using 4 for Approved, 2 for Rejected based on common Enum patterns */}
-              <button className="btn-verify" onClick={() => handleReview(item.id, 4)}>
-                <FaCheck /> VERIFY
-              </button>
-              <button className="btn-reject" onClick={() => handleReview(item.id, 2)}>
-                <FaTimes /> REJECT
-              </button>
+              {(item.status === 4 || item.status === 1) ? (
+                <>
+                  <button className="btn-verified-locked" disabled>
+                    <FaCheck /> VERIFIED
+                  </button>
+                  <button className="btn-reject-disabled" disabled>
+                    <FaTimes /> REJECT
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="btn-verify" onClick={() => handleReview(item.id, 4)}>
+                    <FaCheck /> VERIFY
+                  </button>
+                  <button className="btn-reject" onClick={() => handleReview(item.id, 2)}>
+                    <FaTimes /> REJECT
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ))}

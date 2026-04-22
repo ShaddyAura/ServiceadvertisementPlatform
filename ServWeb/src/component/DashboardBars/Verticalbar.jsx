@@ -31,7 +31,7 @@ const Verticalbar = () => {
     { to: "/gifts", label: "Gifts", icon: <FaGift /> },
     { to: "/announcements", label: "Announcements", icon: <FaBullhorn /> },
 
-    { to: "/login", label: "Logout", icon: <FaSignOutAlt />, className: "logout" },
+    // { to: "/login", label: "Logout", icon: <FaSignOutAlt />, className: "logout" },
   ];
 
   return (

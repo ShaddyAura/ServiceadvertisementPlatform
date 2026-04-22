@@ -15,7 +15,8 @@ import {
   FaCoins,
   FaTags,
   FaClipboardList,
-  FaGift
+  FaGift,
+  FaAddressCard
 } from "react-icons/fa";
 
 const VerticalServiceProvider = () => {
@@ -32,6 +33,7 @@ const VerticalServiceProvider = () => {
     { to: "/mybook", label: "MyBooking", icon: <FaClipboardList /> },
     { to: "/gift", label: "Gifts", icon: <FaGift /> },
     { to: "/provider-announcements", label: "Announcements", icon: <FaBullhorn /> },
+    { to: "/provider-contacts", label: "Contact Details", icon: <FaAddressCard /> },
     { to: "/login", label: "Logout", icon: <FaSignOutAlt />, className: "logout" },
   ];
 

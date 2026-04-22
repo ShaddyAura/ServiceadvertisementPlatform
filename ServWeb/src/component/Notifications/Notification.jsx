@@ -76,7 +76,12 @@ const Notification = ({ notifications, setNotifications }) => {
                         <p className="notif-title">{n.title}</p>
                         <p className="notif-message">{n.message}</p>
                         <p className="notif-time">
-                          {n.createdAt ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }) : 'Just now'}
+                          {n.createdAt ? new Date(n.createdAt.endsWith('Z') ? n.createdAt : n.createdAt + 'Z').toLocaleString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            day: '2-digit',
+                            month: 'short'
+                          }) : 'Just now'}
                         </p>
                       </div>
 

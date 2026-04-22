@@ -90,7 +90,19 @@ export default function Register() {
         navigate(`/confirm-email?email=${encodeURIComponent(email)}`);
       }, 1500);
     } catch (err) {
-      let errorMessage = err.response?.data ? (typeof err.response.data === "string" ? err.response.data : Object.values(err.response.data).flat().join("\n")) : "Registration failed.";
+      let errorMessage = "Registration failed.";
+      if (err.response?.data) {
+        const data = err.response.data;
+        if (typeof data === "string") {
+          errorMessage = data;
+        } else if (Array.isArray(data)) {
+          // Handle IdentityError array [{code: "...", description: "..."}]
+          errorMessage = data.map(e => e.description || e.message || JSON.stringify(e)).join("\n");
+        } else if (typeof data === "object") {
+          // Handle ModelState or other object structures
+          errorMessage = Object.values(data).flat().map(v => typeof v === "object" ? JSON.stringify(v) : v).join("\n");
+        }
+      }
       showError(errorMessage);
     } finally {
       setLoading(false);

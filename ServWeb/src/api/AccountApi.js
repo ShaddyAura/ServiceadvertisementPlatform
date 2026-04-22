@@ -445,6 +445,9 @@ export const sendBroadcast = (data) =>
 export const getUserPaymentHistory = () =>
     api.get(`/UserPayment/history`);
 
+export const fetchProviderEarnings = () =>
+    api.get(`/UserPayment/provider-earnings`);
+
 // Admin Review Moderation
 export const fetchAllReviews = () => 
     api.get(`/Reviews/all-reviews`);
@@ -467,3 +470,19 @@ export const createWithdrawalRequest = (data) =>
 
 export const getUserWithdrawals = (profileId) => 
     api.get(`/Withdrawal/user-requests/${profileId}`);
+
+export const cancelWithdrawal = (id) =>
+    api.patch(`/Withdrawal/cancel/${id}`);
+
+// Provider Contact Us
+export const fetchProviderContacts = (profileId) => 
+    api.get(`/ProviderContact/profile/${profileId}`);
+
+export const createProviderContact = (data) => 
+    api.post('/ProviderContact', data);
+
+export const updateProviderContact = (id, data) => 
+    api.put(`/ProviderContact/${id}`, data);
+
+export const deleteProviderContact = (id) => 
+    api.delete(`/ProviderContact/${id}`);

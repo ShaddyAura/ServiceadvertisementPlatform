@@ -148,7 +148,12 @@ const Announcements = () => {
                   <span className="announce-card-time">
                     <FaClock />
                     {n.createdAt
-                      ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })
+                      ? new Date(n.createdAt.endsWith('Z') ? n.createdAt : n.createdAt + 'Z').toLocaleString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit',
+                          day: '2-digit',
+                          month: 'short'
+                        })
                       : "Just now"}
                   </span>
                 </div>

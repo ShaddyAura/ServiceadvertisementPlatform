@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { fetchCategories } from "../../../api/AccountApi";
-import { FaTag, FaPlus, FaTrash, FaEdit, FaPercent, FaCalendarAlt, FaCheck, FaTimes } from "react-icons/fa";
 import Swal from "sweetalert2";
 import "./Promotions.css";
 import "../AdminDashboard.css";
@@ -31,7 +30,25 @@ const Promotions = () => {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    setPromotions(getPromotions());
+    const existing = getPromotions();
+    if (existing.length === 0) {
+      // Seed a demo promotion if empty
+      const demoPromo = {
+        id: "demo-1",
+        discount: 20,
+        category: "All Categories",
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        message: "Welcome Sale! Get 20% off on all services.",
+        isActive: true,
+        createdAt: new Date().toISOString()
+      };
+      savePromotions([demoPromo]);
+      setPromotions([demoPromo]);
+    } else {
+      setPromotions(existing);
+    }
+
     fetchCategories()
       .then(res => setCategories(res.data || []))
       .catch(() => {});
@@ -139,11 +156,11 @@ const Promotions = () => {
     <div className="admin-dash-container">
       <div className="admin-dash-header">
         <div>
-          <h2 className="admin-dash-title"><FaTag color="#6366f1" /> Promotions & Discounts</h2>
+          <h2 className="admin-dash-title"><i className="bi bi-tag" style={{ color: '#6366f1', marginRight: '8px' }}></i> Promotions & Discounts</h2>
           <p className="admin-dash-subtitle">Create and manage category-wide discount campaigns visible on the homepage.</p>
         </div>
         <button className="promo-add-btn" onClick={() => { resetForm(); setShowForm(true); }}>
-          <FaPlus /> New Promotion
+          <i className="bi bi-plus-lg"></i> New Promotion
         </button>
       </div>
 
@@ -152,12 +169,12 @@ const Promotions = () => {
         <div className="promo-form-card">
           <div className="promo-form-header">
             <h5>{editingId ? "✏️ Edit Promotion" : "🎉 Create New Promotion"}</h5>
-            <button className="promo-form-close" onClick={resetForm}><FaTimes /></button>
+            <button className="promo-form-close" onClick={resetForm}><i className="bi bi-x-lg"></i></button>
           </div>
           <form onSubmit={handleSubmit} className="promo-form-body">
             <div className="promo-form-grid">
               <div className="promo-field">
-                <label><FaPercent className="promo-field-icon" /> Discount (%)</label>
+                <label><i className="bi bi-percent promo-field-icon"></i> Discount (%)</label>
                 <input
                   type="number"
                   min="1"
@@ -170,22 +187,24 @@ const Promotions = () => {
               </div>
 
               <div className="promo-field">
-                <label><FaTag className="promo-field-icon" /> Category</label>
-                <select
-                  value={category}
-                  onChange={e => setCategory(e.target.value)}
-                  className="form-control"
-                >
-                  <option value="">Select Category</option>
-                  <option value="All Categories">All Categories</option>
-                  {categories.map(c => (
-                    <option key={c.id} value={c.name}>{c.name}</option>
-                  ))}
-                </select>
+                <label><i className="bi bi-tag promo-field-icon"></i> Category</label>
+              <select
+  value={category}
+  onChange={e => setCategory(e.target.value)}
+  className="form-control"
+  required
+>
+  {/* Add 'hidden' and 'disabled' so it acts as a true placeholder */}
+  <option value="" disabled hidden>Select Category</option>
+  <option value="All Categories">All Categories</option>
+  {categories.map(c => (
+    <option key={c.id} value={c.name}>{c.name}</option>
+  ))}
+</select>
               </div>
 
               <div className="promo-field">
-                <label><FaCalendarAlt className="promo-field-icon" /> Start Date</label>
+                <label><i className="bi bi-calendar-event promo-field-icon"></i> Start Date</label>
                 <input
                   type="date"
                   value={startDate}
@@ -195,7 +214,7 @@ const Promotions = () => {
               </div>
 
               <div className="promo-field">
-                <label><FaCalendarAlt className="promo-field-icon" /> End Date</label>
+                <label><i className="bi bi-calendar-event promo-field-icon"></i> End Date</label>
                 <input
                   type="date"
                   value={endDate}
@@ -221,7 +240,7 @@ const Promotions = () => {
             <div className="promo-form-actions">
               <button type="button" className="promo-cancel-btn" onClick={resetForm}>Cancel</button>
               <button type="submit" className="promo-submit-btn">
-                <FaCheck /> {editingId ? "Update Promotion" : "Create Promotion"}
+                <i className="bi bi-check-lg"></i> {editingId ? "Update Promotion" : "Create Promotion"}
               </button>
             </div>
           </form>
@@ -232,7 +251,7 @@ const Promotions = () => {
       <div className="promo-table-card">
         {promotions.length === 0 ? (
           <div className="promo-empty">
-            <FaTag className="promo-empty-icon" />
+            <i className="bi bi-tag promo-empty-icon"></i>
             <h4>No promotions yet</h4>
             <p>Create your first promotion to attract more customers!</p>
           </div>
@@ -283,10 +302,10 @@ const Promotions = () => {
                             {promo.isActive ? "ON" : "OFF"}
                           </button>
                           <button className="promo-edit-btn" onClick={() => handleEdit(promo)} title="Edit">
-                            <FaEdit />
+                            <i className="bi bi-pencil-square"></i>
                           </button>
                           <button className="promo-delete-btn" onClick={() => handleDelete(promo.id)} title="Delete">
-                            <FaTrash />
+                            <i className="bi bi-trash"></i>
                           </button>
                         </div>
                       </td>

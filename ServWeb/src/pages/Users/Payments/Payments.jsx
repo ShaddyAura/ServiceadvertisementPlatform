@@ -60,12 +60,16 @@ export default function Payment() {
       const now = new Date();
       now.setHours(0,0,0,0);
       
-      const activePromo = promos.find(p => 
-        p.isActive && 
-        (p.category === categoryName || p.category === "All Categories") &&
-        now >= new Date(p.startDate) && 
-        now <= new Date(p.endDate)
-      );
+      const activePromo = promos.find(p => {
+        if (!p.isActive) return false;
+        if (p.category !== categoryName && p.category !== "All Categories") return false;
+        
+        const start = new Date(p.startDate);
+        const end = new Date(p.endDate);
+        end.setHours(23, 59, 59, 999);
+        
+        return now >= start && now <= end;
+      });
 
       if (activePromo) {
         setDiscountPercent(activePromo.discount);
@@ -298,7 +302,7 @@ export default function Payment() {
                 <div className="payment-gateway-btn h-100 p-4 rounded-4 text-center cursor-pointer khalti-hover shadow-sm border bg-white position-relative"
                      onClick={() => handlePayment("Khalti")}
                      style={{ cursor: 'pointer', transition: 'all 0.2s', ...(isProcessing ? {opacity: 0.7, pointerEvents: 'none'} : {}) }}>
-                  <img src="/assets/khelti.png" alt="Khalti" style={{ height: "45px", objectFit: "contain" }} className="mb-3" />
+                  <img src="/assets/khalti.png" alt="Khalti" style={{ height: "45px", objectFit: "contain" }} className="mb-3" />
                   <div className="fw-bold text-dark">Pay with Khalti</div>
                 </div>
               </div>

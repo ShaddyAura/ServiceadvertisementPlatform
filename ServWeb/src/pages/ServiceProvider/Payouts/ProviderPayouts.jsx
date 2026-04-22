@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { getWallet, createWithdrawalRequest, getUserWithdrawals } from "../../../api/AccountApi";
+import { getWallet, createWithdrawalRequest, getUserWithdrawals, cancelWithdrawal, fetchProviderEarnings } from "../../../api/AccountApi";
 import { useAuth } from "../../../context/AuthContext";
-import { FaMoneyCheckAlt, FaHistory, FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa";
+import { FaMoneyCheckAlt, FaHistory, FaCheckCircle, FaTimesCircle, FaClock, FaArrowCircleDown, FaPercentage, FaWallet } from "react-icons/fa";
 import Swal from "sweetalert2";
 import "./ProviderPayouts.css";
 
@@ -9,6 +9,7 @@ const ProviderPayouts = () => {
     const { user } = useAuth();
     const [wallet, setWallet] = useState(null);
     const [history, setHistory] = useState([]);
+    const [earnings, setEarnings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
@@ -22,12 +23,14 @@ const ProviderPayouts = () => {
         if (!user?.profileId) return;
         try {
             setLoading(true);
-            const [wRes, hRes] = await Promise.all([
+            const [wRes, hRes, eRes] = await Promise.all([
                 getWallet(user.profileId),
-                getUserWithdrawals(user.profileId)
+                getUserWithdrawals(user.profileId),
+                fetchProviderEarnings()
             ]);
             setWallet(wRes.data);
             setHistory(hRes.data || []);
+            setEarnings(eRes.data || []);
         } catch (err) {
             console.error("Payout data load error:", err);
         } finally {
@@ -65,6 +68,27 @@ const ProviderPayouts = () => {
         }
     };
 
+    const handleCancelPayout = async (id) => {
+        const confirm = await Swal.fire({
+            title: "Cancel Request?",
+            text: "Are you sure you want to cancel this pending withdrawal?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, cancel it",
+            confirmButtonColor: "#ef4444"
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        try {
+            await cancelWithdrawal(id);
+            Swal.fire("Cancelled", "Withdrawal request has been removed.", "success");
+            loadData();
+        } catch (err) {
+            Swal.fire("Error", "Could not cancel request.", "error");
+        }
+    };
+
     if (loading) return <div className="p-5 text-center">Loading Payouts...</div>;
 
     return (
@@ -72,24 +96,24 @@ const ProviderPayouts = () => {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h3 className="fw-bold"><FaMoneyCheckAlt color="#6366f1" /> My Earnings & Payouts</h3>
-                    <p className="text-muted">Withdraw your service earnings to your digital wallet.</p>
+                    <p className="text-muted">Manage your income, track commissions, and request withdrawals.</p>
                 </div>
             </div>
 
-            <div className="row">
+            <div className="row mb-5">
                 {/* Withdrawal Form */}
                 <div className="col-lg-5 mb-4">
-                    <div className="card shadow-sm border-0 p-4">
+                    <div className="card shadow-sm border-0 p-4 h-100">
                         <h5 className="mb-4 fw-bold">Request New Payout</h5>
                         
                         <div className="balance-info mb-4 d-flex gap-3">
                             <div className="bal-card esewa">
-                                <span className="small">eSewa Earnings</span>
-                                <h6>Rs. {wallet?.eSewaBalance?.toLocaleString()}</h6>
+                                <span className="small">eSewa Balance</span>
+                                <h6>Rs. {(wallet?.eSewaBalance ?? wallet?.ESewaBalance ?? 0).toLocaleString()}</h6>
                             </div>
                             <div className="bal-card khalti">
-                                <span className="small">Khalti Earnings</span>
-                                <h6>Rs. {wallet?.khaltiBalance?.toLocaleString()}</h6>
+                                <span className="small">Khalti Balance</span>
+                                <h6>Rs. {(wallet?.khaltiBalance ?? wallet?.KhaltiBalance ?? 0).toLocaleString()}</h6>
                             </div>
                         </div>
 
@@ -137,10 +161,10 @@ const ProviderPayouts = () => {
                     </div>
                 </div>
 
-                {/* History */}
-                <div className="col-lg-7">
-                    <div className="card shadow-sm border-0 p-4">
-                        <h5 className="mb-4 fw-bold"><FaHistory className="me-2" /> Payout History</h5>
+                {/* Withdrawal History */}
+                <div className="col-lg-7 mb-4">
+                    <div className="card shadow-sm border-0 p-4 h-100">
+                        <h5 className="mb-4 fw-bold"><FaHistory className="me-2" /> Withdrawal History</h5>
                         <div className="table-responsive">
                             <table className="table table-hover align-middle">
                                 <thead className="bg-light">
@@ -149,6 +173,7 @@ const ProviderPayouts = () => {
                                         <th>Method</th>
                                         <th>Amount</th>
                                         <th>Status</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -160,7 +185,7 @@ const ProviderPayouts = () => {
                                                     {h.paymentMethod}
                                                 </span>
                                             </td>
-                                            <td className="fw-bold">Rs. {h.amount.toLocaleString()}</td>
+                                            <td className="fw-bold text-danger">- Rs. {h.amount.toLocaleString()}</td>
                                             <td>
                                                 <span className={`status-tag ${h.status.toLowerCase()}`}>
                                                     {h.status === "Pending" && <FaClock className="me-1" />}
@@ -169,9 +194,67 @@ const ProviderPayouts = () => {
                                                     {h.status}
                                                 </span>
                                             </td>
+                                            <td className="text-end">
+                                                {h.status === "Pending" && (
+                                                    <button 
+                                                        className="btn btn-sm btn-outline-danger border-0 fw-bold"
+                                                        onClick={() => handleCancelPayout(h.id)}
+                                                        title="Cancel Request"
+                                                    >
+                                                        <FaTimesCircle />
+                                                    </button>
+                                                )}
+                                            </td>
                                         </tr>
                                     )) : (
-                                        <tr><td colSpan="4" className="text-center py-5 text-muted">No withdrawal history found.</td></tr>
+                                        <tr><td colSpan="5" className="text-center py-5 text-muted">No withdrawal history found.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* NEW SECTION: SERVICE EARNINGS HISTORY */}
+            <div className="row">
+                <div className="col-12">
+                    <div className="card shadow-sm border-0 p-4">
+                        <h5 className="mb-4 fw-bold text-success"><FaArrowCircleDown className="me-2" /> Service Earnings History</h5>
+                        <p className="small text-muted mb-4">A record of all payments received for your services, including platform commissions.</p>
+                        
+                        <div className="table-responsive">
+                            <table className="table table-hover align-middle">
+                                <thead className="table-dark">
+                                    <tr className="small">
+                                        <th>Date</th>
+                                        <th>Service Title</th>
+                                        <th>Paid via</th>
+                                        <th>Total Paid</th>
+                                        <th>Platform Fee (10%)</th>
+                                        <th>Your Net Income</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {earnings.length > 0 ? earnings.map(e => (
+                                        <tr key={e.id}>
+                                            <td className="small">{new Date(e.createdAt).toLocaleDateString()}</td>
+                                            <td className="fw-bold">{e.booking?.service?.title || "Service Payment"}</td>
+                                            <td>
+                                                <span className={`badge-method ${e.gateway.toLowerCase()}`}>
+                                                    {e.gateway}
+                                                </span>
+                                            </td>
+                                            <td className="text-muted">Rs. {e.amount.toLocaleString()}</td>
+                                            <td className="text-danger">
+                                                <FaPercentage className="small" /> Rs. {e.platformFee.toLocaleString()}
+                                            </td>
+                                            <td className="fw-bold text-success">
+                                                <FaWallet className="me-1" /> Rs. {e.netAmount.toLocaleString()}
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr><td colSpan="6" className="text-center py-5 text-muted">No earnings history found yet.</td></tr>
                                     )}
                                 </tbody>
                             </table>

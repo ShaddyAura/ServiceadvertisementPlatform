@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getWallet } from '../../../api/AccountApi';
+import { getWallet, GetHistoryPoints } from '../../../api/AccountApi';
 import { useAuth } from '../../../context/AuthContext';
 import { 
     FaWallet, FaCoins, FaRocket, 
-    FaGem, FaCrown, FaHistory 
+    FaGem, FaCrown, FaHistory, FaTimes
 } from 'react-icons/fa';
 import './PointProvider.css';
 
@@ -14,6 +14,11 @@ const PointProvider = () => {
     const [wallet, setWallet] = useState(null);
     const [customPoints, setCustomPoints] = useState(200);
     const [loading, setLoading] = useState(true);
+    
+    // History States
+    const [showHistory, setShowHistory] = useState(false);
+    const [history, setHistory] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
 
     // Dynamic pricing tiers
     const packages = [
@@ -32,6 +37,22 @@ const PointProvider = () => {
         }
     }, [user]);
 
+    const handleFetchHistory = async () => {
+        if (!wallet?.id) return;
+        try {
+            setLoadingHistory(true);
+            setShowHistory(true);
+            const res = await GetHistoryPoints(wallet.id);
+            // Sort by date descending
+            const data = (res.data || []).sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate));
+            setHistory(data);
+        } catch (err) {
+            console.error("Failed to fetch point history", err);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
     const handlePurchase = (rs, points) => {
         navigate("/payment", {
             state: {
@@ -40,6 +61,16 @@ const PointProvider = () => {
                 planType: "Point Recharge"
             }
         });
+    };
+
+    const getSourceLabel = (source) => {
+        const sources = {
+            0: "Ad Watch",
+            1: "Daily Login",
+            2: "Point Purchase",
+            3: "Ad Boosting"
+        };
+        return sources[source] || "Transaction";
     };
 
     if (loading) return <div className="loader">Updating Wallet...</div>;
@@ -63,7 +94,7 @@ const PointProvider = () => {
                             <p>Lifetime Purchased</p>
                             <strong>{wallet?.lifetimePurchasedPoints || 0} Pts</strong>
                         </div>
-                        <button className="history-btn">
+                        <button className="history-btn" onClick={handleFetchHistory}>
                             <FaHistory /> History
                         </button>
                     </div>
@@ -120,8 +151,51 @@ const PointProvider = () => {
                     </button>
                 </div>
             </div>
+
+            {/* --- HISTORY MODAL --- */}
+            {showHistory && (
+                <div className="history-modal-overlay">
+                    <div className="history-modal">
+                        <div className="modal-header">
+                            <h3><FaHistory className="me-2" /> Point History</h3>
+                            <button className="close-btn" onClick={() => setShowHistory(false)}>
+                                <FaTimes />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            {loadingHistory ? (
+                                <div className="p-5 text-center">
+                                    <div className="spinner-border text-danger"></div>
+                                </div>
+                            ) : history.length > 0 ? (
+                                <div className="history-list">
+                                    {history.map((h) => (
+                                        <div key={h.transactionId} className="history-item">
+                                            <div className="h-left">
+                                                <span className={`h-badge source-${h.source}`}>
+                                                    {getSourceLabel(h.source)}
+                                                </span>
+                                                <small className="h-date">
+                                                    {new Date(h.transactionDate).toLocaleDateString()} {new Date(h.transactionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </small>
+                                            </div>
+                                            <div className={`h-amount ${h.source === 3 ? 'minus' : 'plus'}`}>
+                                                {h.source === 3 ? '-' : '+'}{h.amount.toFixed(2)}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center p-5 text-muted">
+                                    No transaction history found.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-export default PointProvider;
+export default PointProvider;

@@ -13,6 +13,7 @@ import "./BoostProvider.css";
 
 export default function BoostProvider() {
   const { user, authLoading } = useAuth();
+  const BASE_URL = "https://localhost:7065";
   const hasLoaded = useRef(false);
 
   const [wallet, setWallet] = useState({ pointsBalance: 0, lifetimePurchasedPoints: 0 });
@@ -24,7 +25,6 @@ export default function BoostProvider() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
 
-  const BASE_URL = "https://localhost:7065"; // Centralized API URL
 
   const boostPlans = [
     { type: "Standard", price: 200, duration: "3 Days" },

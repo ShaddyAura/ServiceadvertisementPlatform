@@ -197,7 +197,7 @@ export default function ProfileProvider() {
               <div className="card-body">
                 <div className="text-center mb-4">
                   <div className="avatar-wrapper shadow-sm mx-auto" style={{position:'relative', width:'110px', height:'110px'}}>
-                    <img src={profile.profileImageUrl ? `${BASE_URL}${profile.profileImageUrl}` : "https://via.placeholder.com/150"} className="rounded-circle w-100 h-100 border object-fit-cover" alt="profile" />
+                    <img src={profile.profileImageUrl ? `${BASE_URL}${profile.profileImageUrl}` : "/assets/default-avatar.png"} className="rounded-circle w-100 h-100 border object-fit-cover" alt="profile" />
                     <label className="bg-primary text-white rounded-circle p-2 shadow" style={{position:'absolute', bottom:0, right:0, cursor:'pointer'}}><FaCamera size={14} /><input hidden type="file" onChange={handleImageChange} accept="image/*" /></label>
                   </div>
                   <h6 className="mt-2 fw-bold mb-0">{user?.firstName} {user?.lastName}</h6>

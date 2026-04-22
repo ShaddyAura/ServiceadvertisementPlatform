@@ -23,6 +23,22 @@ export default function ServiceEditProvider() {
   const [imageFile, setImageFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
 
+  const formatTime = (timeStr, defaultTime) => {
+    if (!timeStr) return defaultTime;
+    try {
+        const match = String(timeStr).match(/(\d+):(\d+)(?::(\d+))?/);
+        if (match) {
+            let h = parseInt(match[1], 10);
+            if (h >= 24) h = h % 24; // fallback if somehow exceeded 24 hours
+            const hh = h.toString().padStart(2, '0');
+            const mm = match[2].padStart(2, '0');
+            const ss = (match[3] || '00').substring(0, 2).padStart(2, '0');
+            return `${hh}:${mm}:${ss}`;
+        }
+    } catch(e) {}
+    return defaultTime;
+  };
+
   const loadServiceData = useCallback(async () => {
     try {
       setLoading(true);
@@ -41,8 +57,8 @@ export default function ServiceEditProvider() {
         setPrice(service.price || "");
         setCategoryName(service.category || "");
         setDescription(service.description || "");
-        setStartTime(service.startTime || "09:00:00");
-        setEndTime(service.endTime || "18:00:00");
+        setStartTime(formatTime(service.startTime, "09:00:00"));
+        setEndTime(formatTime(service.endTime, "18:00:00"));
         setStatus(service.status || "Active");
       } else {
         Swal.fire({
@@ -80,6 +96,10 @@ export default function ServiceEditProvider() {
     // Only append files if the user selected new ones
     if (imageFile) formData.append("ImageFile", imageFile);
     if (videoFile) formData.append("VideoFile", videoFile);
+
+    if (parseFloat(price) <= 0) {
+      return Swal.fire('Validation Error', 'Price must be greater than 0.', 'warning');
+    }
 
     try {
       await updateService(id, formData);
@@ -149,6 +169,7 @@ export default function ServiceEditProvider() {
                 <label className="small font-weight-bold">Price (Rs.)</label>
                 <input 
                   type="number" 
+                  min="0"
                   className="form-control custom-input" 
                   value={price} 
                   onChange={(e) => setPrice(e.target.value)} 

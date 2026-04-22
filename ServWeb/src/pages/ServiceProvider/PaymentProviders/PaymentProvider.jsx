@@ -95,8 +95,8 @@ export default function PaymentProvider() {
   return (
     <div className="payment-page-wrapper">
       <div className="container py-5">
-        <button className="back-link" onClick={() => navigate(-1)}>
-          <FaArrowLeft /> Back to Points Shop
+        <button className="back-link btn btn-link text-dark p-0 fw-bold shadow-none" onClick={() => navigate(-1)}>
+          <FaArrowLeft className="me-2" /> Cancel & Go Back
         </button>
 
         <div className="row mt-4">
@@ -148,7 +148,7 @@ export default function PaymentProvider() {
               {/* ── Khalti ── */}
               <div className="payment-card khalti-theme">
                 <div className="card-top">
-                  <img src="/assets/khelti.png" alt="Khalti" />
+                  <img src="/assets/khalti.png" alt="Khalti" />
                 </div>
                 <div className="card-body-custom" style={{ textAlign: "center" }}>
                   <p style={{ color: "#666", marginBottom: 8 }}>
@@ -165,35 +165,7 @@ export default function PaymentProvider() {
               </div>
             </div>
 
-            {/* Sandbox Credentials Box */}
-            <div className="mt-4 p-3 bg-light border rounded shadow-sm text-start" style={{fontSize: "0.85rem", color: "#6c757d"}}>
-              <strong><FaShieldAlt className="text-warning me-1" /> API Test Environment Credentials:</strong>
-              <div className="row mt-2">
-                <div className="col-md-6 border-end">
-                  <span className="text-success fw-bold">eSewa Sandbox:</span><br/>
-                  ID: <code>9806800001</code> <br/>
-                  Password: <code>Nepal@123</code> <br/>
-                  MPIN: <code>1122</code> | Token: <code>123456</code>
-                </div>
-                <div className="col-md-6">
-                  <span className="fw-bold" style={{color: '#5c2d91'}}>Khalti Sandbox:</span><br/>
-                  Mobile: <code>9800000000</code> <br/>
-                  MPIN: <code>1111</code> <br/>
-                  OTP: <code>987654</code>
-                </div>
-              </div>
-            </div>
             
-            {/* Explicit Cancel Button */}
-            <div className="text-center mt-4 mb-2">
-              <button 
-                className="btn btn-outline-danger px-5 border-2 rounded-pill fw-bold" 
-                onClick={() => navigate('/point')}
-                disabled={isProcessing}
-              >
-                <i className="bi bi-x-circle me-2"></i>Cancel & Return
-              </button>
-            </div>
             
           </div>
         </div>

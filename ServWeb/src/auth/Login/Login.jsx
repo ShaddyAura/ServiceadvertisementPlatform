@@ -28,15 +28,18 @@ export default function Login() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const error = params.get("error");
+    const reason = params.get("reason");
+
     if (error) {
       const messages = {
         google_cancelled: "You cancelled Google sign in",
         access_denied: "Google sign in was denied",
         google_failed: "Something went wrong. Please try again.",
+        suspended: `Your account is suspended. Reason: ${reason || "No reason provided."}`,
       };
       Swal.fire({
-        icon: "error",
-        title: "Login Issue",
+        icon: error === "suspended" ? "warning" : "error",
+        title: error === "suspended" ? "Account Suspended" : "Login Issue",
         text: messages[error] || "An error occurred",
         confirmButtonColor: theme.palette.primary.main,
       });
@@ -74,12 +77,25 @@ export default function Login() {
 
     } catch (err) {
       Swal.close();
-      Swal.fire({
-        icon: "error",
-        title: "Login Failed",
-        text: "Invalid email or password",
-        confirmButtonColor: theme.palette.error.main,
-      });
+      
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail || "Invalid email or password";
+
+      if (status === 403) {
+          Swal.fire({
+            icon: "warning",
+            title: "Account Suspended",
+            text: detail,
+            confirmButtonColor: theme.palette.warning.main,
+          });
+      } else {
+          Swal.fire({
+            icon: "error",
+            title: "Login Failed",
+            text: detail,
+            confirmButtonColor: theme.palette.error.main,
+          });
+      }
     } finally {
       setLoading(false);
     }

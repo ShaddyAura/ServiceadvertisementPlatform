@@ -34,6 +34,12 @@ export default function PaymentSuccess() {
     const amt = searchParams.get("amt");
     const pts = searchParams.get("pts");
     const id = searchParams.get("id"); // booking ID
+    const statusParam = searchParams.get("status");
+
+    if (gateway === "khalti" && statusParam && (statusParam.toLowerCase().includes("cancel") || statusParam.toLowerCase().includes("expired"))) {
+      navigate(`/payment/failure?type=${type}`, { replace: true });
+      return;
+    }
 
     const verify = async () => {
       try {
@@ -44,6 +50,7 @@ export default function PaymentSuccess() {
         if (pts) endpoint += `&pts=${pts}`;
         if (amt) endpoint += `&amt=${amt}`;
         if (id) endpoint += `&id=${id}`;
+        if (statusParam) endpoint += `&status=${statusParam}`;
 
         await api.get(endpoint, { withCredentials: true });
 
@@ -123,7 +130,17 @@ export default function PaymentSuccess() {
             <h3 style={{ marginTop: 20, color: "#991b1b" }}>Verification Failed</h3>
             <p style={{ color: "#6b7280", marginTop: 8 }}>{message}</p>
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                const searchParams = new URLSearchParams(location.search);
+                const type = searchParams.get("type");
+                if (type === "points") {
+                  navigate("/point");
+                } else if (type === "booking") {
+                  navigate("/bookings");
+                } else {
+                  navigate(-1);
+                }
+              }}
               style={{
                 marginTop: 20,
                 padding: "12px 30px",

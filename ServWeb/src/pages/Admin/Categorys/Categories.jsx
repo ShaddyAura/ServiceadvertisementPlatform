@@ -6,9 +6,9 @@ import {
   deleteCategory
 } from '../../../api/AccountApi';
 import Swal from 'sweetalert2';
-import './category.css';
+import './Category.css';
 import {
-  FaEdit,
+  FaPen,
   FaTrash,
   FaPlus,
   FaCheckCircle,
@@ -87,7 +87,9 @@ const Categories = () => {
       setShowModal(false);
       loadCategories();
     } catch (err) {
-      Swal.fire('Error', 'Action failed.', 'error');
+      console.error("API Error details:", err?.response || err);
+      const errorMsg = err.response?.data?.message || err.response?.data || err.message || 'Action failed.';
+      Swal.fire('Error', `Action failed: ${errorMsg}`, 'error');
     }
   };
 
@@ -149,7 +151,7 @@ const Categories = () => {
           <table className="table align-middle">
             <thead className="table-light">
               <tr>
-                {/* <th style={{ width: '80px' }}>Icon</th> */}
+                <th style={{ width: '80px' }}>Icon</th>
                 <th>Name</th>
                 <th>Status</th>
                 <th className="text-end">Actions</th>
@@ -159,11 +161,11 @@ const Categories = () => {
               {filteredCategories.length > 0 ? (
                 filteredCategories.map((cat) => (
                   <tr key={cat.id}>
-                    {/* <td>
+                    <td>
                       <div className="icon-box">
-                        <i className={cat.iconClass}></i>
+                        <i className={cat.iconClass || "bi bi-grid"}></i>
                       </div>
-                    </td> */}
+                    </td>
                     <td className="fw-bold">{cat.name}</td>
                     <td>
                       <span className={`status-badge ${cat.isActive ? 'active' : 'inactive'}`}>
@@ -172,18 +174,20 @@ const Categories = () => {
                       </span>
                     </td>
                     <td className="text-end">
-                      <button className="btn-action btn-edit me-2" onClick={() => handleOpenModal(cat)}>
-                        <FaEdit />
-                      </button>
-                      <button className="btn-action btn-delete" onClick={() => handleDelete(cat.id)}>
-                        <FaTrash />
-                      </button>
+                      <div className="d-flex justify-content-end gap-2">
+                        <button className="btn-action btn-edit" title="Edit" onClick={() => handleOpenModal(cat)}>
+                          <FaPen size={14} />
+                        </button>
+                        <button className="btn-action btn-delete" title="Delete" onClick={() => handleDelete(cat.id)}>
+                          <FaTrash size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center py-5 text-muted">No categories found</td>
+                  <td colSpan="5" className="text-center py-5 text-muted">No categories found</td>
                 </tr>
               )}
             </tbody>

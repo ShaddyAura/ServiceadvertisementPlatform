@@ -22,6 +22,7 @@ import {
   FaInfoCircle
 } from "react-icons/fa";
 import "./Bookings.css";
+import ProviderContactViewer from "../../Services/ProviderContactViewer";
 
 export default function ServicesAndBookings() {
   const Swal = window.Swal;
@@ -31,6 +32,7 @@ export default function ServicesAndBookings() {
   const [services, setServices] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeContactPanel, setActiveContactPanel] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -69,46 +71,66 @@ export default function ServicesAndBookings() {
       return Swal.fire("Invalid Action", "You cannot book your own service.", "warning");
     }
 
+    const now = new Date();
+    // Adjust to local ISO string for datetime-local min attribute
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const minDateTime = now.toISOString().slice(0, 16);
+
     const { value: formValues } = await Swal.fire({
-  title: 'Booking Details',
-  // 1. Force White Background and Black Text
-  background: '#ffffff', // Force white background
-  html: `
-    <div style="text-align:left; font-family: 'Inter', sans-serif; padding: 10px;">
-      <label style="display:block; margin-bottom: 5px; font-weight: 700;">Agreed Price (Rs.)</label>
-      <input id="swal-price" class="swal2-input custom-swal-input" type="number" value="${service.price || service.Price}" style="margin-top:0;">
-      
-      <label style="display:block; margin-top: 15px; margin-bottom: 5px; font-weight: 700;">Scheduled Start</label>
-      <input id="swal-start" class="swal2-input custom-swal-input" type="datetime-local" style="margin-top:0;">
-      
-      <label style="display:block; margin-top: 15px; margin-bottom: 5px; font-weight: 700;">Scheduled End</label>
-      <input id="swal-end" class="swal2-input custom-swal-input" type="datetime-local" style="margin-top:0;">
-      
-      <label style="display:block; margin-top: 15px; margin-bottom: 5px; font-weight: 700;">Notes for Provider</label>
-      <textarea id="swal-notes" class="swal2-textarea" placeholder="E.g. Address or specific instructions..." style="margin-top:0; border-radius: 8px;"></textarea>
-    </div>`,
-  focusConfirm: false,
-  showCancelButton: true,
-  confirmButtonText: 'Confirm Booking',
-  confirmButtonColor: '#dc3545', // Matches your red theme
-  cancelButtonColor: '#000000',   // Matches your black theme
-  preConfirm: () => {
-    const price = document.getElementById('swal-price').value;
-    const start = document.getElementById('swal-start').value;
-    const end = document.getElementById('swal-end').value;
-    const notes = document.getElementById('swal-notes').value;
-    if (!price || !start || !end) {
-      Swal.showValidationMessage('Please fill in Price, Start, and End dates');
-      return false;
-    }
-    return { price, start, end, notes };
-  },
-  // 2. Add custom class for more styling control
-  customClass: {
-    popup: 'white-background-popup',
-    title: 'black-title'
-  }
-});
+      title: 'Booking Details',
+      background: '#ffffff',
+      html: `
+        <div style="text-align:left; font-family: 'Inter', sans-serif; padding: 10px;">
+          <label style="display:block; margin-bottom: 5px; font-weight: 700;">Agreed Price (Rs.)</label>
+          <input id="swal-price" class="swal2-input custom-swal-input" type="number" value="${service.price || service.Price}" style="margin-top:0;">
+          
+          <label style="display:block; margin-top: 15px; margin-bottom: 5px; font-weight: 700;">Scheduled Start</label>
+          <input id="swal-start" class="swal2-input custom-swal-input" type="datetime-local" min="${minDateTime}" style="margin-top:0;">
+          
+          <label style="display:block; margin-top: 15px; margin-bottom: 5px; font-weight: 700;">Scheduled End</label>
+          <input id="swal-end" class="swal2-input custom-swal-input" type="datetime-local" min="${minDateTime}" style="margin-top:0;">
+          
+          <label style="display:block; margin-top: 15px; margin-bottom: 5px; font-weight: 700;">Notes for Provider</label>
+          <textarea id="swal-notes" class="swal2-textarea" placeholder="E.g. Address or specific instructions..." style="margin-top:0; border-radius: 8px;"></textarea>
+        </div>`,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Confirm Booking',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#000000',
+      preConfirm: () => {
+        const price = document.getElementById('swal-price').value;
+        const start = document.getElementById('swal-start').value;
+        const end = document.getElementById('swal-end').value;
+        const notes = document.getElementById('swal-notes').value;
+        if (!price || !start || !end) {
+          Swal.showValidationMessage('Please fill in Price, Start, and End dates');
+          return false;
+        }
+
+        const selectedStart = new Date(start);
+        const selectedEnd = new Date(end);
+
+        if (selectedEnd <= selectedStart) {
+          Swal.showValidationMessage('Scheduled end must be after start time');
+          return false;
+        }
+
+        // --- Duration Validation: Max 4 Days ---
+        const diffMs = selectedEnd - selectedStart;
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        if (diffDays > 4) {
+          Swal.showValidationMessage('Error: Booking duration cannot exceed 4 days');
+          return false;
+        }
+
+        return { price, start, end, notes };
+      },
+      customClass: {
+        popup: 'white-background-popup',
+        title: 'black-title'
+      }
+    });
 
     if (formValues) {
       try {
@@ -216,8 +238,20 @@ export default function ServicesAndBookings() {
     }
   };
 
-  // Helper: check if status matches (handles both string and int)
-  const isStatus = (current, name) => String(current) === name;
+  // Helper: check if status matches (handles both string names and numeric IDs)
+  const isStatus = (current, name) => {
+    const s = String(current);
+    switch (name) {
+      case "Pending":   return s === "0" || s === "Pending";
+      case "Confirmed": return s === "1" || s === "Confirmed";
+      case "InProcess": return s === "2" || s === "InProcess";
+      case "Completed": return s === "3" || s === "Completed";
+      case "Paid":      return s === "4" || s === "Paid";
+      case "Cancelled": return s === "5" || s === "Cancelled";
+      case "Disputed":  return s === "6" || s === "Disputed";
+      default: return false;
+    }
+  };
 
   if (loading) return <div className="loader">Loading Services...</div>;
 
@@ -284,6 +318,9 @@ export default function ServicesAndBookings() {
                       <button className="btn-sm info" onClick={() => viewDetails(b)} title="Details">
                         <FaInfoCircle /> Details
                       </button>
+                      <button className="btn-sm bg-secondary text-white border-0" onClick={() => setActiveContactPanel(activeContactPanel === id ? null : id)} title="Contacts">
+                        <FaInfoCircle /> Contacts
+                      </button>
                       <button className="btn-sm chat" onClick={() => navigate(`/chats/${id}`)} title="Chat">
                         <FaComments /> Chat
                       </button>
@@ -293,6 +330,14 @@ export default function ServicesAndBookings() {
                     </>
                   )}
                 </div>
+                {activeContactPanel === id && (
+                  <div className="mt-3 pd-2 pb-2">
+                    <ProviderContactViewer 
+                      profileId={b.providerProfileId || b.ProviderProfileId || b.service?.profileId || b.service?.ProfileId} 
+                      realName={b.service?.profile?.fullName || b.service?.Profile?.FullName}
+                    />
+                  </div>
+                )}
               </div>
             );
           })

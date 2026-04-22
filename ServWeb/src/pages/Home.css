@@ -63,10 +63,7 @@
   padding: 120px 0;
 }
 
-h3 {
-    color: #e4dfdf !important;
-    font-weight: 700;
-}
+
 .stats-item-box {
   position: relative;
   text-align: center;
@@ -120,6 +117,25 @@ h3 {
   30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
   40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
   100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.promo-ticker {
+  display: inline-block;
+  animation: ticker 20s linear infinite;
+  color: white;
+  font-weight: 900;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* LOCAL HERO SEARCH INPUTS (MUI FIX) */

@@ -60,9 +60,9 @@ const AdminDashboard = () => {
       const pendingCnt = profiles.filter(p => !p.isVerified && p.role === 2).length;
       setPendingVerifications(pendingCnt > 0 ? pendingCnt : 0); // fallback
 
-      // Revenue (Completed bookings)
-      const isCompleted = (b) => String(b.status ?? b.Status).toLowerCase() === "completed" || String(b.status ?? b.Status) === "3";
-      const totalRev = bookings.filter(isCompleted).reduce((sum, b) => sum + (b.agreedPrice || b.AgreedPrice || 0), 0);
+      // Revenue (Only 'Paid' bookings count as successful financial transactions)
+      const isPaid = (b) => String(b.status ?? b.Status).toLowerCase() === "paid" || String(b.status ?? b.Status) === "4";
+      const totalRev = bookings.filter(isPaid).reduce((sum, b) => sum + (b.agreedPrice || b.AgreedPrice || 0), 0);
       setTotalRevenue(totalRev);
 
       // 2. REVENUE & SERVICE TRENDS (Monthly)
@@ -72,6 +72,8 @@ const AdminDashboard = () => {
       monthNames.forEach(m => monthsMap[m] = { name: m, revenue: 0, services: 0 });
 
       bookings.forEach(b => {
+        if (!isPaid(b)) return; // Only count fixed revenue for successful payments
+        
         const dateStr = b.createdAt || b.CreatedAt;
         if (dateStr) {
           const date = new Date(dateStr);
@@ -196,6 +198,13 @@ const AdminDashboard = () => {
     loadData();
   }, [loadData]);
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Good morning";
+    if (hour >= 12 && hour < 19) return "Good afternoon";
+    return "Good evening";
+  };
+
   const getTimeAgo = (dateObj) => {
     const diffHours = Math.abs(new Date() - dateObj) / 36e5;
     if (diffHours < 1) return `${Math.floor(diffHours * 60) || 1} min ago`;
@@ -214,12 +223,22 @@ const AdminDashboard = () => {
     { label: "Pending Verifications", value: pendingVerifications.toString(), icon: <ShieldCheck size={22} />, trend: "Requires action", trendUp: false, gradient: "stat-gradient-rose" },
   ];
 
+  let adminName = user?.fullname;
+  if (!adminName || ["Admin", "User"].includes(adminName)) {
+    if (user?.email) {
+      const namePart = user.email.split('@')[0].replace(/[0-9]/g, '');
+      adminName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    } else {
+      adminName = "Admin";
+    }
+  }
+
   return (
     <div className="admin-dash-container">
       <div className="admin-dash-header">
         <div>
           <h2 className="admin-dash-title">Dashboard Overview</h2>
-          <p className="admin-dash-subtitle">Welcome back, {user?.fullname || "Admin"}! Here is the live platform data.</p>
+          <p className="admin-dash-subtitle">{getGreeting()}, {adminName}! Here is the live platform data.</p>
         </div>
         <div className="admin-dash-date">
           <Clock size={16} />

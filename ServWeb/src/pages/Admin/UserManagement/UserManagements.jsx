@@ -154,7 +154,7 @@ const UserManagement = () => {
                   <td className="ps-4">
                     <div className="d-flex align-items-center">
                       <img 
-                        src={p.profileImageUrl ? `https://localhost:7065${p.profileImageUrl}` : "https://via.placeholder.com/40"} 
+                        src={p.profileImageUrl ? `https://localhost:7065${p.profileImageUrl}` : "/assets/default-avatar.png"} 
                         className="rounded-circle me-3 border shadow-sm profile-img-thumb" 
                         alt="User" 
                         style={{ width: '45px', height: '45px', objectFit: 'cover' }}

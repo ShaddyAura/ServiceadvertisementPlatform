@@ -21,7 +21,13 @@ const getActivePromotions = () => {
   try {
     const promos = JSON.parse(localStorage.getItem("platform_promotions")) || [];
     const now = new Date();
-    return promos.filter(p => p.isActive && new Date(p.startDate) <= now && new Date(p.endDate) >= now);
+    return promos.filter(p => {
+      if (!p.isActive) return false;
+      const start = new Date(p.startDate);
+      const end = new Date(p.endDate);
+      end.setHours(23, 59, 59, 999);
+      return now >= start && now <= end;
+    });
   } catch { return []; }
 };
 
@@ -53,8 +59,8 @@ export default function Dashboard() {
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  const REWARD_SECONDS = 15;
-  const ENGAGEMENT_REWARD = 10;
+  const REWARD_SECONDS = 60;
+  const ENGAGEMENT_REWARD = 0.1;
   const LOGIN_REWARD = 2;
 
   useEffect(() => {
@@ -75,9 +81,18 @@ export default function Dashboard() {
       ]);
 
       const profData = profileRes.data || {};
-      const combinedFullName = (profData.fullName && profData.fullName !== "User" && profData.fullName !== "Friend")
-        ? profData.fullName
-        : (user.fullname && user.fullname !== "User" && user.fullname !== "Friend" ? user.fullname : "Friend");
+      let combinedFullName = profData.fullName;
+      if (!combinedFullName || ["User", "Friend"].includes(combinedFullName)) {
+        combinedFullName = user?.fullname;
+      }
+      if (!combinedFullName || ["User", "Friend"].includes(combinedFullName)) {
+        if (user?.email) {
+          const namePart = user.email.split('@')[0].replace(/[0-9]/g, '');
+          combinedFullName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+        } else {
+          combinedFullName = "Friend";
+        }
+      }
 
       setProfile({
         ...profData,
@@ -94,13 +109,19 @@ export default function Dashboard() {
       const servicesWithBoost = await Promise.all(
         allServices.map(async (service) => {
           let isBoosted = false;
+          let pointsSpent = 0;
           let avgRate = 0;
           let rCount = 0;
 
           try {
             const res = await fetchBoostStatus(service.id);
-            const expiry = res.data?.boostExpiry ? new Date(res.data.boostExpiry) : null;
-            isBoosted = expiry && expiry > new Date();
+            const expiryStr = res.data?.boostExpiry || res.data?.boostEndDate;
+            pointsSpent = res.data?.pointsSpent || 0;
+            
+            if (expiryStr) {
+              const expiry = new Date(expiryStr.endsWith('Z') ? expiryStr : expiryStr + 'Z');
+              isBoosted = expiry > new Date();
+            }
           } catch { }
 
           try {
@@ -113,11 +134,17 @@ export default function Dashboard() {
             }
           } catch { }
 
-          return { ...service, isBoosted, avgRating: avgRate.toFixed(1), reviewCount: rCount };
+          return { ...service, isBoosted, pointsSpent, avgRating: avgRate.toFixed(1), reviewCount: rCount };
         })
       );
 
-      setServices(servicesWithBoost.sort((a, b) => Number(b.isBoosted) - Number(a.isBoosted)));
+      // 🔥 DYNAMIC SORTING: 
+      // 1. Boosted first
+      // 2. Max Points to Min Points
+      setServices(servicesWithBoost.sort((a, b) => {
+        if (b.isBoosted !== a.isBoosted) return b.isBoosted - a.isBoosted;
+        return (b.pointsSpent || 0) - (a.pointsSpent || 0);
+      }));
     } catch (err) {
       console.error("Dashboard Load Error:", err);
     } finally {
@@ -164,8 +191,8 @@ export default function Dashboard() {
     setRewardClaimed(true);
     try {
       const res = await claimUserWatchTimeReward(user.profileId, REWARD_SECONDS);
-      // Backend awards 10 points for watching ad
-      const earned = 10;
+      // Backend awards 0.1 points for watching ad
+      const earned = 0.1;
       setProfile(prev => ({ ...prev, boostingPoints: res.data.boostingPoints }));
       Swal.fire({ title: 'Reward!', text: `+${earned} points!`, icon: 'success', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
     } catch (err) {
@@ -200,7 +227,7 @@ export default function Dashboard() {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) return "Good morning";
     if (hour >= 12 && hour < 19) return "Good afternoon";
-    return "Welcome";
+    return "Good evening";
   };
 
   const isProvider = user?.role === 'ServiceProvider' || user?.roles?.includes('ServiceProvider');
@@ -290,7 +317,7 @@ export default function Dashboard() {
                   <div className={`user-reward-bar ${rewardClaimed ? 'bar-complete' : 'bar-active'}`} style={{ width: `${(timer / REWARD_SECONDS) * 100}%` }}></div>
                 </div>
                 <p className="user-reward-text">
-                  {rewardClaimed ? "✅ 10 Points Claimed!" : `Watch for ${REWARD_SECONDS - timer}s to earn`}
+                  {rewardClaimed ? "✅ 0.1 Points Claimed!" : `Watch for ${REWARD_SECONDS - timer}s to earn`}
                 </p>
               </div>
             )}
@@ -315,7 +342,7 @@ export default function Dashboard() {
       {/* TOP WELCOME BAR */}
       <div className="user-welcome-bar">
         <div className="user-welcome-left">
-          <h2>{getGreeting()}, {profile?.fullName || user?.fullname || "Friend"}! 👋</h2>
+          <h2>{getGreeting()}, {profile?.fullName || "Friend"}! 👋</h2>
           <p>Explore premium verified services</p>
 
           {/* DISCOUNT / PROMO HIGHLIGHT */}
@@ -437,7 +464,7 @@ export default function Dashboard() {
                 </div>
                 {!isProvider && (
                   <div className="user-card-earn">
-                    <i className="bi bi-coin"></i> Watch & Earn 10 Pts
+                    <i className="bi bi-coin"></i> Watch & Earn 0.1 Pts
                   </div>
                 )}
               </div>

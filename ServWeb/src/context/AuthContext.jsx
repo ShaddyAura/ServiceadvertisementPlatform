@@ -13,11 +13,15 @@ export function AuthProvider({ children }) {
 
       // 'res' now contains { id, email, role, profileId , fullname} from your backend
       if (res) {
+        const isAdmin = res.role === "Admin";
         setUser({
           ...res,
           id: res.id || res.Id,
-          profileId: res.profileId || res.ProfileId,
-          fullname: res.fullName || res.fullname || res.Fullname
+          // Match profileId to userId for Admin only, else keep backend profileId
+          profileId: isAdmin ? (res.id || res.Id) : (res.profileId || res.ProfileId),
+          // Add another specific field for Admin as requested
+          adminProfileId: isAdmin ? (res.id || res.Id) : null,
+          fullname: res.fullName || res.fullname || res.Fullname || (isAdmin ? "Administrator" : "")
         });
       } else {
         setUser(null);

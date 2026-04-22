@@ -28,15 +28,18 @@ export default function ProviderLogin() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const error = params.get("error");
+    const reason = params.get("reason");
+
     if (error) {
       const messages = {
         google_cancelled: "You cancelled Google sign in",
         access_denied: "Google sign in was denied",
         google_failed: "Something went wrong. Please try again.",
+        suspended: `Your account is suspended. Reason: ${reason || "No reason provided."}`,
       };
       Swal.fire({
-        icon: "error",
-        title: "Login Issue",
+        icon: error === "suspended" ? "warning" : "error",
+        title: error === "suspended" ? "Account Suspended" : "Login Issue",
         text: messages[error] || "An error occurred",
         confirmButtonColor: theme.palette.primary.main,
       });
@@ -70,12 +73,25 @@ export default function ProviderLogin() {
 
     } catch (err) {
       Swal.close();
-      Swal.fire({
-        icon: "error",
-        title: "Login Failed",
-        text: "Invalid provider credentials",
-        confirmButtonColor: theme.palette.error.main,
-      });
+      
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail || "Invalid provider credentials";
+
+      if (status === 403) {
+          Swal.fire({
+            icon: "warning",
+            title: "Account Suspended",
+            text: detail,
+            confirmButtonColor: theme.palette.secondary.main,
+          });
+      } else {
+          Swal.fire({
+            icon: "error",
+            title: "Login Failed",
+            text: detail,
+            confirmButtonColor: theme.palette.error.main,
+          });
+      }
     } finally {
       setLoading(false);
     }
@@ -179,7 +195,7 @@ export default function ProviderLogin() {
           </div>
 
           <div className="login-img">
-            <img src="/assets/Login.jpg" alt="Provider Login Visual" />
+            <img src="/assets/logprovider.png" alt="Provider Login Visual" />
           </div>
         </div>
       </div>

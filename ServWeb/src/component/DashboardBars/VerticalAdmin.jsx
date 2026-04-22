@@ -14,7 +14,8 @@ import {
   FaCheckSquare,
   FaBullhorn,
   FaCreditCard,
-  FaTag
+  FaTag,
+  FaClipboardList
 } from "react-icons/fa";
 
 const VerticalAdmin = () => {
@@ -26,10 +27,10 @@ const adminMenuItems = [
   { to: "/moderation", label: "Moderation", icon: <FaCheckSquare /> },
   { to: "/broadcast", label: "Broadcaster", icon: <FaBullhorn /> },
   { to: "/finances", label: "Platform Cash", icon: <FaFileInvoiceDollar /> },
-  { to: "/adminboost", label: "Ad Campaigns", icon: <FaChartLine /> },
-  { to: "/servicereport", label: "serviceReport", icon: <FaExclamationTriangle /> },
-  { to: "/bookingreport", label: "BookingReport", icon: <FaExclamationTriangle /> },
-  { to: "/reportreview", label: "ReviewReport", icon: <FaExclamationTriangle /> },
+  { to: "/adminboost", label: "Ad Campaigns", icon: <FaChartLine /> },    
+  { to: "/servicereport", label: "Service Report", icon: <FaClipboardList /> },
+  { to: "/bookingreport", label: "Booking Report", icon: <FaClipboardList /> },
+  { to: "/reportreview", label: "Review Report", icon: <FaClipboardList /> },
   { to: "/categories", label: "Categories", icon: <FaList /> },
   { to: "/promotions", label: "Promotions", icon: <FaTag /> },
   { to: "/settings", label: "System Setup", icon: <FaCogs /> },

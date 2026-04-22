@@ -9,6 +9,7 @@ import ServiceProviderRoute from './routes/ServiceProviderRoute';
 import ServiceProviderLayout from "./layouts/ServiceProviderLayout";
 import AdminLayout from "./layouts/AdminLayout";
 import Notification from "./component/Notifications/Notification";
+import ChatBot from "./component/ChatBot/ChatBot";
 
 // PUBLIC
 import Home from "./pages/Home";
@@ -72,7 +73,7 @@ import ReedemGiftsProvider from "./pages/ServiceProvider/ReedemsGifts/ReedemsGif
 import GiftProvider from "./pages/ServiceProvider/Gifts/GiftProvider";
 import MyBookings from "./pages/ServiceProvider/ProviderReport/mybookings";
 import AnnouncementsProvider from "./pages/ServiceProvider/Announcements/AnnouncementsProvider";
-
+import ProviderContactManage from "./pages/ServiceProvider/ContactUs/ProviderContactManage";
 
 import Services from "./pages/Services";
 import ContactUs from "./pages/ContactUs";
@@ -135,6 +136,7 @@ export default function App() {
          <Route path="/mybook" element={< MyBookings/>} />
          <Route path="/payouts" element={<ProviderPayouts />} />
          <Route path="/provider-announcements" element={<AnnouncementsProvider />} />
+         <Route path="/provider-contacts" element={<ProviderContactManage />} />
       </Route>
 
 
@@ -161,6 +163,7 @@ export default function App() {
      </Route>
 
       </Routes>
+      <ChatBot />
       </LoadingProvider>
     </BrowserRouter>
   );

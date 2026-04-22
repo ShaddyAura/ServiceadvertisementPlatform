@@ -34,16 +34,34 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      const promos = JSON.parse(localStorage.getItem("platform_promotions")) || [];
+      let promos = JSON.parse(localStorage.getItem("platform_promotions")) || [];
       const now = new Date();
-      const currentPromo = promos.find(p => 
-        p.isActive && new Date(p.startDate) <= now && new Date(p.endDate) >= now
-      );
+      
+      let currentPromo = promos.find(p => {
+        if (!p.isActive) return false;
+        const start = new Date(p.startDate);
+        const end = new Date(p.endDate);
+        end.setHours(23, 59, 59, 999);
+        return start <= now && end >= now;
+      });
+
+      // FALLBACK: If no promotion is found in localStorage, show a default one for demo
+      if (!currentPromo) {
+        currentPromo = {
+          id: "default-welcome-promo",
+          discount: 25,
+          category: "All Categories",
+          endDate: new Date(Date.now() + 86400000 * 7), // 7 days from now
+          message: "Welcome Sale! Enjoy special discounts on all household services this week.",
+          isActive: true
+        };
+      }
+
       if (currentPromo) {
         setTimeout(() => {
           setActivePromo(currentPromo);
           setShowPromo(true);
-        }, 1500);
+        }, 500);
       }
     } catch (err) { console.error(err); }
   }, []);
@@ -223,61 +241,109 @@ export default function Home() {
       </Container>
 
 
-      {/* --- PROMOTION POPUP (DIALOG) --- */}
+      {/* --- PROMOTION POPUP (COMPACT WIDE CARD DESIGN) --- */}
       <Dialog 
         open={showPromo} 
         onClose={() => setShowPromo(false)}
         TransitionComponent={Zoom}
-        maxWidth="sm"
+        maxWidth={false} // Disable standard MUI widths for custom sizing
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: 6,
+            width: '560px', // Slightly increased width
+            borderRadius: 5,
             overflow: 'hidden',
             border: '2px solid #ef4444',
-            boxShadow: '0 25px 50px -12px rgba(239, 68, 68, 0.4)',
+            boxShadow: '0 0 40px rgba(239, 68, 68, 0.3)',
             bgcolor: '#0a0a0c',
-            color: 'white'
+            color: 'white',
+            position: 'relative'
           }
         }}
       >
         {activePromo && (
-          <DialogContent sx={{ p: 0, position: 'relative' }}>
+          <DialogContent sx={{ p: 0 }}>
+             {/* Scrolling Offer Ticker */}
+             <Box sx={{ 
+               bgcolor: '#ef4444', 
+               py: 0.6, 
+               display: 'flex', 
+               overflow: 'hidden',
+               whiteSpace: 'nowrap'
+             }}>
+               <div className="promo-ticker">
+                 <span>LIMITED OFFER • DISCOUNT OFFER • HURRY UP • SPECIAL OFFER • </span>
+                 <span>LIMITED OFFER • DISCOUNT OFFER • HURRY UP • SPECIAL OFFER • </span>
+               </div>
+             </Box>
+
              <IconButton 
                onClick={() => setShowPromo(false)}
-               sx={{ position: 'absolute', right: 15, top: 15, color: 'white', zIndex: 10, bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
+               sx={{ position: 'absolute', right: 10, top: 35, color: 'white', zIndex: 10, bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
              >
                <CloseIcon />
              </IconButton>
              
-             <Grid container>
-                <Grid item xs={12} md={5} sx={{ bgcolor: '#ef4444', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', p: 4, color: 'white', textAlign: 'center' }}>
-                   <PromoIcon sx={{ fontSize: 60, mb: 1, animation: 'tada 2s infinite' }} />
-                   <Typography variant="h3" sx={{ fontWeight: 900 }}>{activePromo.discount}%</Typography>
-                   <Typography variant="h6" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>OFF</Typography>
-                </Grid>
-                <Grid item xs={12} md={7} sx={{ p: 4, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                   <Typography variant="h5" sx={{ fontWeight: 900, mb: 1, color: 'white' }}>Limited Time Offer!</Typography>
-                   <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.6)', mb: 3 }}>
-                      {activePromo.message} Valid on all <strong>{activePromo.category}</strong>.
-                   </Typography>
-                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, bgcolor: 'rgba(239, 68, 68, 0.1)', p: 1.5, borderRadius: 3, border: '1px dashed #ef4444' }}>
-                      <TrendingIcon sx={{ color: '#ef4444' }} />
-                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#ef4444' }}>
-                        Ends {new Date(activePromo.endDate).toLocaleDateString()}
-                      </Typography>
+             <Box sx={{ p: 0, textAlign: 'center' }}>
+                <Box sx={{ 
+                  background: 'linear-gradient(135deg, #ef4444 0%, #991b1b 100%)', 
+                  py: 3, // Reduced vertical padding
+                  px: 2,
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 4 // Horizontal layout for icons vs text
+                }}>
+                   <Box sx={{ 
+                     width: 70, 
+                     height: 70, 
+                     borderRadius: '50%', 
+                     bgcolor: 'rgba(255,255,255,0.1)', 
+                     display: 'flex', 
+                     alignItems: 'center', 
+                     justifyContent: 'center', 
+                     border: '2px dashed white',
+                     animation: 'spin 10s linear infinite'
+                   }}>
+                      <PromoIcon sx={{ fontSize: 35 }} />
                    </Box>
+                   <Box sx={{ textAlign: 'left' }}>
+                      <Typography variant="h2" sx={{ fontWeight: 900, fontSize: '3.2rem !important', mb: -0.5, lineHeight: 1 }}>{activePromo.discount}% OFF</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 2, opacity: 0.8 }}>Limited Time Offer</Typography>
+                   </Box>
+                </Box>
+                
+                <Box sx={{ p: 3 }}> {/* Reduced padding */}
+                   <Typography variant="h5" sx={{ fontWeight: 900, color: 'white', mb: 1 }}>
+                      <span style={{ color: '#ef4444' }}>Special Save!</span> {activePromo.message}
+                   </Typography>
+                   
+                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 3 }}>
+                      Valid on: <strong style={{ color: 'white' }}>{activePromo.category}</strong> • 
+                      Expires: <strong style={{ color: 'white' }}>{new Date(activePromo.endDate).toLocaleDateString()}</strong>
+                   </Typography>
+
                    <Button 
                     variant="contained" 
                     fullWidth 
                     size="large"
                     onClick={() => setShowPromo(false)}
-                    sx={{ bgcolor: '#ef4444', '&:hover': { bgcolor: '#dc2626' }, borderRadius: 3, py: 1.5, fontWeight: 900, boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.3)' }}
+                    sx={{ 
+                      bgcolor: '#ef4444', 
+                      '&:hover': { bgcolor: '#dc2626', transform: 'scale(1.01)' }, 
+                      borderRadius: 3, 
+                      py: 1.8, 
+                      fontWeight: 900, 
+                      fontSize: '1rem',
+                      boxShadow: '0 10px 20px -5px rgba(239, 68, 68, 0.4)',
+                      transition: '0.2s'
+                    }}
                    >
                      Claim Discount Now
                    </Button>
-                </Grid>
-             </Grid>
+                </Box>
+             </Box>
           </DialogContent>
         )}
       </Dialog>

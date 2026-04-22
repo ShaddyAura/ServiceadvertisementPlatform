@@ -89,6 +89,21 @@ export default function ServiceProvider() {
     }
   };
 
+  const formatToAmPm = (timeStr) => {
+    if (!timeStr) return "N/A";
+    try {
+      const [hourStr, minStr] = timeStr.split(':');
+      if (hourStr === undefined || minStr === undefined) return timeStr;
+      let hour = parseInt(hourStr, 10);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12;
+      hour = hour ? hour : 12; // the hour '0' should be '12'
+      return `${hour}:${minStr} ${ampm}`;
+    } catch {
+      return timeStr;
+    }
+  };
+
   const resetForm = () => {
     setTitle(""); setPrice(""); setCategoryName(""); setDescription("");
     setStartTime("09:00:00"); setEndTime("18:00:00"); setStatus("Active");
@@ -109,11 +124,15 @@ export default function ServiceProvider() {
     if (imageFile) formData.append("ImageFile", imageFile);
     if (videoFile) formData.append("VideoFile", videoFile);
 
+    if (parseFloat(price) <= 0) {
+      return Swal.fire('Validation Error', 'Price must be greater than 0.', 'warning');
+    }
+
     try {
       await createService(formData);
       Swal.fire({ icon: 'success', title: 'Saved', confirmButtonColor: '#28a745' });
       resetForm();
-      loadData(); // Re-fetch and close form
+      loadData();
     } catch (err) {
       Swal.fire('Error', 'Failed to save service.', 'error');
     }
@@ -194,7 +213,7 @@ export default function ServiceProvider() {
                 </div>
                 <div className="col-md-3 mb-2">
                   <label className="small font-weight-bold text-dark">Price (Rs.)</label>
-                  <input type="number" className="form-control custom-input-white" value={price} onChange={(e) => setPrice(e.target.value)} required />
+                  <input type="number" min="0" className="form-control custom-input-white" value={price} onChange={(e) => setPrice(e.target.value)} required />
                 </div>
                 <div className="col-md-3 mb-2">
                   <label className="small font-weight-bold text-dark">Start Time</label>
@@ -299,7 +318,7 @@ export default function ServiceProvider() {
                 </td>
                 <td><div className="service-title-text font-weight-bold">{s.title}</div></td>
                 <td><span className="badge badge-category">{s.category || "General"}</span></td>
-                <td><small className="text-muted"><i className="far fa-clock mr-1"></i> {s.startTime} - {s.endTime}</small></td>
+                <td><small className="text-muted"><i className="far fa-clock mr-1"></i> {formatToAmPm(s.startTime)} - {formatToAmPm(s.endTime)}</small></td>
                 <td>
                   <span className={`badge ${s.status === 'Active' ? 'status-active' : 'status-inactive'}`}>
                     {s.status || "N/A"}

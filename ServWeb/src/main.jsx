@@ -2,6 +2,7 @@ import React, { StrictMode } from 'react'; // ADD THIS LINE
 import { createRoot } from 'react-dom/client';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';

@@ -53,8 +53,9 @@
     flex-grow: 1; /* This pushes the button to the bottom */
 }
 
-/* INPUTS & SELECTS */
-.form-control, .form-select {
+/* INPUTS & SELECTS - Scoped to avoid leaking to other pages */
+.profile-main-wrapper .form-control, 
+.profile-main-wrapper .form-select {
     background-color: #ffffff !important; 
     color: #000000 !important; 
     border: 2px solid #ffcccc !important; /* Light Red Input Border */
@@ -63,7 +64,8 @@
     font-size: 1.05rem;
 }
 
-.form-control:focus, .form-select:focus {
+.profile-main-wrapper .form-control:focus, 
+.profile-main-wrapper .form-select:focus {
     border-color: #ef4444 !important;
     box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.15) !important;
 }
@@ -103,8 +105,9 @@
     margin: 1.5rem 0;
 }
 
-/* PUSH BUTTONS TO BOTTOM */
-.btn-primary, .btn-danger {
+/* PUSH BUTTONS TO BOTTOM - Scoped */
+.profile-main-wrapper .btn-primary, 
+.profile-main-wrapper .btn-danger {
     margin-top: auto; /* Uses flexbox to sit at the absolute bottom */
     padding: 1.2rem !important;
     font-size: 1.1rem;

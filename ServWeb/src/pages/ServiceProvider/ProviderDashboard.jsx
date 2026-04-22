@@ -211,9 +211,18 @@ const ProviderDashboard = () => {
           const profileRes = await fetchProfileById(user.profileId);
           const profData = profileRes.data || {};
           
-          const combinedFullName = (profData.fullName && profData.fullName !== "User" && profData.fullName !== "Provider" && profData.fullName !== "Gamer")
-            ? profData.fullName 
-            : (user.fullname && user.fullname !== "User" && user.fullname !== "Provider" && user.fullname !== "Gamer" ? user.fullname : "Provider");
+          let combinedFullName = profData.fullName;
+          if (!combinedFullName || ["User", "Provider", "Gamer"].includes(combinedFullName)) {
+            combinedFullName = user.fullname;
+          }
+          if (!combinedFullName || ["User", "Provider", "Gamer"].includes(combinedFullName)) {
+            if (user.email) {
+              const namePart = user.email.split('@')[0].replace(/[0-9]/g, '');
+              combinedFullName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+            } else {
+              combinedFullName = "Provider";
+            }
+          }
 
           setProfile({
             ...profData,
@@ -296,7 +305,7 @@ const ProviderDashboard = () => {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) return "Good morning";
     if (hour >= 12 && hour < 19) return "Good afternoon";
-    return "Welcome";
+    return "Good evening";
   };
 
   return (
@@ -305,7 +314,7 @@ const ProviderDashboard = () => {
       <div className="provider-hero">
         <div className="provider-hero-content">
           <div className="provider-hero-text">
-            <h1>{getGreeting()}, {profile?.fullName?.split(' ')[0] || user?.fullname?.split(' ')[0] || "Provider"}! 👋</h1>
+            <h1>{getGreeting()}, {profile?.fullName?.split(' ')[0] || "Provider"}! 👋</h1>
             <p>Here's your live dynamic data analysis for your services.</p>
           </div>
           <div className="provider-hero-badge">

@@ -65,6 +65,7 @@ const HorizontalServiceProvider = () => {
     <div className="horizontalbar">
       <div className="left-section">
         <Logo />
+                <span className="badge ml-2 admin-tag">PROVIDER PANEL</span>
       </div>
 
       <div className="right-section">
