@@ -41,6 +41,7 @@ namespace ShareLibrary.cs.Data
         public DbSet<ServiceCategory> ServiceCategories { get; set; }
         public DbSet<ServiceListings> ServiceListings { get; set; }
         public DbSet<DocumentVerified> DocumentVerifieds { get; set; }
+        public DbSet<ProviderContact> ProviderContacts { get; set; }
 
         public DbSet<Review> Reviews { get; set; }
 
@@ -53,6 +54,8 @@ namespace ShareLibrary.cs.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
 
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<AccountSuspension> AccountSuspensions { get; set; }
+        public DbSet<BookingPayment> BookingPayments { get; set; }
 
     
 

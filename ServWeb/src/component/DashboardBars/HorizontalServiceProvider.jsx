@@ -5,16 +5,33 @@ import Logo from "../Logo";
 import { 
   FaUserCircle, 
   FaCommentDots, 
-  FaIdBadge 
+  FaIdBadge,
+  FaLock, 
+  FaSignOutAlt,
+  FaCog 
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
+import { logoutUser } from "../../api/AccountApi";
 import Notification from "../Notifications/Notification"; 
 import { useNotifications } from "../Notifications/useNotifications"; 
 
 const HorizontalServiceProvider = () => {
   const [nepalTime, setNepalTime] = useState("");
-  const { user } = useAuth(); 
+  const { user, setUser } = useAuth(); 
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      setUser(null);
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed", err);
+      // Fallback
+      setUser(null);
+      navigate("/login");
+    }
+  };
 
   // 2. Hook into real-time notifications
   const { notifications, setNotifications } = useNotifications(user?.profileId);
@@ -81,8 +98,13 @@ const HorizontalServiceProvider = () => {
               </div>
             </div>
             <hr />
-            <div className="hover-footer" onClick={() => navigate("/settings")}>
-                Account Settings
+            <div className="hover-footer-links">
+               <div className="hover-link-item" onClick={() => navigate("/change-password")}>
+                 <FaLock /> <span>Change Password</span>
+               </div>
+               <div className="hover-link-item logout-link" onClick={handleLogout}>
+                 <FaSignOutAlt /> <span>Logout</span>
+               </div>
             </div>
           </div>
         </div>

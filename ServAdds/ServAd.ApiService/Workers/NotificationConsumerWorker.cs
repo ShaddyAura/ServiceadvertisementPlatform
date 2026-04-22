@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using ServAd.ApiService.Hubs;
@@ -50,7 +51,9 @@ public class NotificationConsumerWorker(
 
                 try
                 {
-                    var payload = JsonSerializer.Deserialize<NotificationPayload>(message);
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var payload = JsonSerializer.Deserialize<NotificationPayload>(message, options);
+                    
                     if (payload != null)
                     {
                         await ProcessNotification(payload);
@@ -60,7 +63,15 @@ public class NotificationConsumerWorker(
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Error processing RabbitMQ message.");
+                    logger.LogError(ex, "Error processing RabbitMQ message. Discarding to prevent poison queue.");
+                    try 
+                    {
+                        await _channel.BasicNackAsync(ea.DeliveryTag, false, false, stoppingToken);
+                    }
+                    catch (Exception nackEx) 
+                    {
+                        logger.LogError(nackEx, "Failed to NACK poison message.");
+                    }
                 }
             };
 
@@ -83,6 +94,13 @@ public class NotificationConsumerWorker(
     {
         using var scope = serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ServiceDbContext>();
+
+        var profileExists = await context.Profiles.AnyAsync(p => p.Id == payload.ProfileId);
+        if (!profileExists)
+        {
+            logger.LogWarning("Cannot process notification. ProfileId {Id} does not exist in the Profiles table.", payload.ProfileId);
+            return;
+        }
 
         var notification = new Notification
         {

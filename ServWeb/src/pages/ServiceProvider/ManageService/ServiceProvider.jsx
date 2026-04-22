@@ -35,8 +35,8 @@ export default function ServiceProvider() {
 
   // loadData wrapped in useCallback to prevent unnecessary re-renders
   const loadData = useCallback(async () => {
-    
-    
+
+
     try {
       setLoading(true);
       const [serviceRes, categoryRes] = await Promise.all([
@@ -46,12 +46,12 @@ export default function ServiceProvider() {
 
       // Filter logic: Ensure we only show services belonging to this profile
       const userServices = serviceRes.data?.filter((s) => s.profileId === user.profileId) || [];
-      
+
       setServices(userServices);
       setCategories(categoryRes.data || []);
-      
+
       // Ensure the "Add Form" is closed when data reloads
-      setShowAddForm(false); 
+      setShowAddForm(false);
     } catch (err) {
       console.error("Load failed", err);
     } finally {
@@ -176,22 +176,22 @@ export default function ServiceProvider() {
                   <label className="small font-weight-bold text-dark">Service Title</label>
                   <input className="form-control custom-input-white" placeholder="Enter title" value={title} onChange={(e) => setTitle(e.target.value)} required />
                 </div>
-              <div className="col-md-3 mb-2">
-               <label className="small fw-bold">Category</label>
-               <select
-                 className="form-select"
-                 value={categoryName}
-                 onChange={(e) => setCategoryName(e.target.value)}
-                 required
-               >
-                 <option value="">-- Select --</option>
-                 {categories.map(c => (
-                   <option key={c.id} value={c.name}>
-                     {c.name}
-                   </option>
-                 ))}
-                 </select>
-                 </div>
+                <div className="col-md-3 mb-2">
+                  <label className="small fw-bold">Category</label>
+                  <select
+                    className="form-select custom-input-white"
+                    value={categoryName}
+                    onChange={(e) => setCategoryName(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Select --</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="col-md-3 mb-2">
                   <label className="small font-weight-bold text-dark">Price (Rs.)</label>
                   <input type="number" className="form-control custom-input-white" value={price} onChange={(e) => setPrice(e.target.value)} required />
@@ -204,29 +204,51 @@ export default function ServiceProvider() {
                   <label className="small font-weight-bold text-dark">End Time</label>
                   <input type="time" step="1" className="form-control custom-input-white" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
                 </div>
-                 <div className="col-md-6 mb-2">
-                 <label className="small fw-bold text-dark">Initial Status</label>
-                 <select
-                   className="form-select"
-                   value={status}
-                   onChange={(e) => setStatus(e.target.value)}
-                 >
-                   <option value="Active">Active</option>
-                   <option value="Inactive">Inactive</option>
-                   <option value="Pending">Pending</option>
-                 </select>
-                 </div>  
+                <div className="col-md-6 mb-2">
+                  <label className="small fw-bold text-dark">Initial Status</label>
+                  <select
+                    className="form-select custom-input-white"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
                 <div className="col-md-6 mb-2">
                   <label className="small font-weight-bold text-dark">Thumbnail (Image)</label>
-                  <input type="file" accept="image/*" className="form-control custom-input-white" onChange={(e) => setImageFile(e.target.files[0])} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="form-control custom-input-white"
+                    onChange={(e) => {
+                      setImageFile(e.target.files[0]);
+                      if (e.target.files[0]) setVideoFile(null); // Clear video if image selected
+                    }}
+                  />
+                  <small className="text-danger font-weight-bold d-block mt-1">
+                    * Please upload only one: either Thumbnail Image or Video Promo.
+                  </small>
                 </div>
                 <div className="col-md-6 mb-2">
                   <label className="small font-weight-bold text-dark">Video Promo</label>
-                  <input type="file" accept="video/*" className="form-control custom-input-white" onChange={(e) => setVideoFile(e.target.files[0])} />
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="form-control custom-input-white"
+                    onChange={(e) => {
+                      setVideoFile(e.target.files[0]);
+                      if (e.target.files[0]) setImageFile(null); // Clear image if video selected
+                    }}
+                  />
+                  <small className="text-danger font-weight-bold d-block mt-1">
+                    * Please upload only one: either Thumbnail Image or Video Promo.
+                  </small>
                 </div>
                 <div className="col-12 mb-0">
                   <label className="small font-weight-bold text-dark">Description</label>
-                  <textarea className="form-control custom-input-white" rows="2" value={description} onChange={(e) => setDescription(e.target.value)} />
+                  <textarea className="form-control custom-input-white" rows="5" value={description} onChange={(e) => setDescription(e.target.value)} />
                 </div>
               </div>
             </div>
@@ -259,15 +281,15 @@ export default function ServiceProvider() {
                 <td>
                   <div className="media-cell-wrapper">
                     {s.videoUrl ? (
-                      <video 
-                        src={`https://localhost:7065${s.videoUrl}`} 
-                        className="media-preview-item" 
+                      <video
+                        src={`https://localhost:7065${s.videoUrl}`}
+                        className="media-preview-item"
                         muted loop playsInline
                         onClick={() => handleMediaPreview('video', s.videoUrl, s.title)}
                       />
                     ) : (
-                      <img 
-                        src={s.imageUrl ? `https://localhost:7065${s.imageUrl}` : "placeholder.jpg"} 
+                      <img
+                        src={s.imageUrl ? `https://localhost:7065${s.imageUrl}` : "placeholder.jpg"}
                         className="media-preview-item"
                         alt=""
                         onClick={() => s.imageUrl && handleMediaPreview('image', s.imageUrl, s.title)}
@@ -285,17 +307,17 @@ export default function ServiceProvider() {
                 </td>
                 <td className="text-right"><span className="price-text-bold">Rs. {s.price}</span></td>
                 <td className="text-right pr-4">
-                  
+
                   <div className="action-cell">
-                   
-    {/* Review Button */}
-    <button 
-      className="btn-action-transparent icon-blue mr-2" 
-      title="View Reviews"
-      onClick={() => navigate(`/review?serviceId=${s.id}`)}
-    >
-      <i className="far fa-star"></i>
-    </button>
+
+                    {/* Review Button */}
+                    <button
+                      className="btn-action-transparent icon-blue mr-2"
+                      title="View Reviews"
+                      onClick={() => navigate(`/review?serviceId=${s.id}`)}
+                    >
+                      <i className="far fa-star"></i>
+                    </button>
                     <button className="btn-action-transparent icon-teal" onClick={() => navigate(`/services/edit/${s.id}`)}><i className="far fa-edit"></i></button>
                     <button className="btn-action-transparent icon-red" onClick={() => handleDelete(s.id)}><i className="far fa-trash-alt"></i></button>
                   </div>

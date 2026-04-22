@@ -1,60 +1,122 @@
-.admin-page-content {
-  padding: 20px;
-}
-
-.finance-card {
-  padding: 30px;
-  border-radius: 16px;
-  color: white;
-  margin-bottom: 24px;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.3s ease;
-}
-
-.finance-card:hover {
-  transform: translateY(-5px);
-}
-
-/* Platform Specific Colors */
-.finance-card.esewa {
-  background: linear-gradient(135deg, #60bb46 0%, #4e9a39 100%);
-  box-shadow: 0 10px 20px rgba(96, 187, 70, 0.2);
-}
-
-.finance-card.khalti {
-  background: linear-gradient(135deg, #5c2d91 0%, #4a2475 100%);
-  box-shadow: 0 10px 20px rgba(92, 45, 145, 0.2);
-}
-
-.platform-name {
+.fo-section-title {
+  font-size: 0.85rem;
   font-weight: 700;
-  font-size: 1.1rem;
+  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.05em;
+  margin: 1.5rem 0 1rem 0;
+  border-left: 4px solid #6366f1;
+  padding-left: 10px;
 }
 
-.finance-card h2 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin: 15px 0;
+/* Gradients for the Stat Cards */
+.fo-gradient-esewa::before { background: linear-gradient(180deg, #10b981, #059669); }
+.fo-icon-esewa { background: rgba(16,185,129,0.1) !important; color: #10b981 !important; }
+
+.fo-gradient-khalti::before { background: linear-gradient(180deg, #8b5cf6, #6d28d9); }
+.fo-icon-khalti { background: rgba(139,92,246,0.1) !important; color: #8b5cf6 !important; }
+
+.fo-gradient-total::before { background: linear-gradient(180deg, #3b82f6, #2563eb); }
+.fo-icon-total { background: rgba(59,130,246,0.1) !important; color: #3b82f6 !important; }
+
+.fo-gradient-completed::before { background: linear-gradient(180deg, #10b981, #059669); }
+.fo-icon-completed { background: rgba(16,185,129,0.1) !important; color: #10b981 !important; }
+
+.fo-gradient-pending::before { background: linear-gradient(180deg, #f59e0b, #d97706); }
+.fo-icon-pending { background: rgba(245,158,11,0.1) !important; color: #f59e0b !important; }
+
+.fo-gradient-cancelled::before { background: linear-gradient(180deg, #ef4444, #dc2626); }
+.fo-icon-cancelled { background: rgba(239,68,68,0.1) !important; color: #ef4444 !important; }
+
+.fo-gradient-points::before { background: linear-gradient(180deg, #eab308, #ca8a04); }
+.fo-icon-points { background: rgba(234,179,8,0.1) !important; color: #eab308 !important; }
+
+.fo-gradient-balance::before { background: linear-gradient(180deg, #6366f1, #4f46e5); }
+.fo-icon-balance { background: rgba(99,102,241,0.1) !important; color: #6366f1 !important; }
+
+
+/* Bottom Layout (Points vs Summary) */
+.fo-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1rem;
 }
 
-.finance-card .small {
-  opacity: 0.9;
+.fo-economy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.fo-platform-summary {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fo-summary-row-item {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-/* Background decoration for the cards */
-.finance-card::after {
-  content: "";
-  position: absolute;
-  right: -20px;
-  bottom: -20px;
-  width: 100px;
-  height: 100px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
+.fo-summary-row-item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.fo-summary-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fo-summary-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+
+.fo-summary-item-label {
+  font-size: 0.9rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.fo-summary-item-val {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.admin-loader {
+  padding: 60px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+@media (max-width: 992px) {
+  .fo-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .fo-economy-grid {
+    grid-template-columns: 1fr;
+  }
 }

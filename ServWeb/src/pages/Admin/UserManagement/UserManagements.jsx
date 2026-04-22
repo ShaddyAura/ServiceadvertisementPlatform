@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { FaCheck, FaTimes, FaSearch, FaUser } from "react-icons/fa";
 import { 
   fetchAllProfiles, 
-  verifyProfileDirectly 
+  verifyProfileDirectly,
+  toggleSuspension
 } from "../../../api/AccountApi";
 import { useAuth } from "../../../context/AuthContext";
 import Swal from "sweetalert2";
@@ -31,13 +32,55 @@ const UserManagement = () => {
 
   const handleAction = async (profile, actionType) => {
     const isVerify = actionType === 'verify';
+    const isSuspend = actionType === 'suspend';
     
+    let confirmationText = `Confirm manual profile update for this user?`;
+    let confirmBtnText = `Yes, ${actionType}`;
+    
+    if (isSuspend) {
+        if (!profile.isSuspended) {
+            const { value: reason } = await Swal.fire({
+                title: 'Suspend User',
+                input: 'textarea',
+                inputLabel: 'Reason for suspension',
+                inputPlaceholder: 'Type your message here...',
+                showCancelButton: true
+            });
+            if (!reason) return; // Cancelled or empty
+            
+            try {
+                await toggleSuspension(profile.id, reason);
+                Swal.fire("Suspended!", "User has been suspended.", "success");
+                loadProfiles();
+            } catch (e) {
+                Swal.fire("Error", "Could not suspend user.", "error");
+            }
+            return;
+        } else {
+            // Unsuspend
+            const c = await Swal.fire({
+                title: 'Unsuspend User?',
+                text: "User will regain access to the platform.",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Unsuspend"
+            });
+            if (c.isConfirmed) {
+                await toggleSuspension(profile.id, "");
+                Swal.fire("Restored!", "User is no longer suspended.", "success");
+                loadProfiles();
+            }
+            return;
+        }
+    }
+
+    // Verify fallback
     Swal.fire({
-      title: `${isVerify ? 'Verify' : 'Reject'} ${profile.firstName}?`,
-      text: `Confirm manual profile update for this user?`,
+      title: `${isVerify ? 'Verify' : 'Action on'} ${profile.firstName}?`,
+      text: confirmationText,
       icon: "info",
       showCancelButton: true,
-      confirmButtonText: `Yes, ${actionType}`,
+      confirmButtonText: confirmBtnText,
       confirmButtonColor: isVerify ? "#28a745" : "#d33",
       cancelButtonColor: "#6c757d",
     }).then(async (result) => {
@@ -45,8 +88,9 @@ const UserManagement = () => {
         try {
           Swal.fire({ title: 'Processing...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
           
-          // PATCH: api/Profile/verifyprofile?id={guid}
-          await verifyProfileDirectly(profile.id); 
+          if (isVerify) {
+              await verifyProfileDirectly(profile.id); 
+          }
           
           Swal.fire("Updated!", `Profile action completed successfully.`, "success");
           loadProfiles();
@@ -141,6 +185,7 @@ const UserManagement = () => {
                      <code className="text-danger fw-bold" style={{ fontSize: '12px' }}>
                         {p.id.toUpperCase()}
                      </code>
+                     {p.isSuspended && <span className="ms-2 badge bg-danger">Suspended</span>}
                   </td>
 
                   {/* Actions */}
@@ -149,15 +194,17 @@ const UserManagement = () => {
                       <button 
                         className="btn-action-verify" 
                         onClick={() => handleAction(p, 'verify')}
-                        disabled={p.isVerified} // Disable if already verified
+                        disabled={p.isVerified || p.isSuspended} // Disable if already verified or suspended
                       >
                         <FaCheck className="me-1" /> {p.isVerified ? 'Verified' : 'Verify'}
                       </button>
+                      
                       <button 
-                        className="btn-action-reject" 
-                        onClick={() => handleAction(p, 'reject')}
+                        className={p.isSuspended ? "btn-action-verify" : "btn-action-reject"} 
+                        onClick={() => handleAction(p, 'suspend')}
+                        style={p.isSuspended ? {backgroundColor: '#6c757d', borderColor: '#6c757d'} : {}}
                       >
-                        <FaTimes className="me-1" /> Reject
+                        {p.isSuspended ? <><FaCheck className="me-1" /> Unsuspend</> : <><FaTimes className="me-1" /> Suspend</>}
                       </button>
                     </div>
                   </td>

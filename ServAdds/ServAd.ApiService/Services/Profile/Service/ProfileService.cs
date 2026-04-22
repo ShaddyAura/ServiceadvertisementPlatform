@@ -144,9 +144,37 @@ namespace ServAd.ApiService.Services.Profile.Service
         public async Task<bool> ToggleSuspensionAsync(Guid profileId, string? reason)
         {
             var profile = await GetByIdAsync(profileId);
+            
+            // Toggle the cached flag for performance (optional, but keep it for DTO compatibility)
             profile.IsSuspended = !profile.IsSuspended;
             profile.SuspensionReason = profile.IsSuspended ? reason : null;
             profile.UpdatedAt = DateTime.UtcNow;
+
+            if (profile.IsSuspended)
+            {
+                // Create a new suspension record
+                var suspension = new AccountSuspension
+                {
+                    Id = Guid.NewGuid(),
+                    ProfileId = profileId,
+                    Reason = reason ?? "No reason provided",
+                    SuspendedAt = DateTime.UtcNow,
+                    IsActive = true
+                };
+                context.AccountSuspensions.Add(suspension);
+            }
+            else
+            {
+                // Deactivate all current active suspensions
+                var activeSuspensions = await context.AccountSuspensions
+                    .Where(asusp => asusp.ProfileId == profileId && asusp.IsActive)
+                    .ToListAsync();
+                
+                foreach (var s in activeSuspensions)
+                {
+                    s.IsActive = false;
+                }
+            }
             
             context.Profiles.Update(profile);
             return await context.SaveChangesAsync() > 0;

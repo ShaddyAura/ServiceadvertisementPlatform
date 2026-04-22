@@ -91,67 +91,80 @@ background-color: #f7f7f7; /* Deep black */
 }
 
 /* =========================
-   ACTION ROW
+   ACTION ROW (Updated)
 ========================= */
 .action-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* Allows buttons to wrap to next line instead of shrinking */
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.2rem;
+  gap: 8px;        /* Spacing between buttons */
+  margin-top: auto; 
   border-top: 1px solid #ffe5e7;
-  padding-top: 1rem;
+  padding-top: 1.25rem;
+  width: 100%;
 }
 
 /* =========================
-   BUTTONS
+   BUTTONS (Fixed Sizing)
 ========================= */
-.btn.primary {
-  background-color: #dc3545;
-  color: white;
-  width: 100%;
-  margin-top: auto;
+.btn-sm {
+  padding: 8px 14px;      /* Balanced padding */
   border-radius: 8px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.btn.primary:hover {
-  background-color: #b21f2d;
-}
-
-.btn-sm {
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   border: none;
-  transition: transform 0.2s;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  
+  /* CRITICAL FIXES: */
+  min-width: fit-content; /* Ensures button is at least as wide as the text */
+  flex: 0 0 auto;         /* Prevents flexbox from squishing the button */
+  white-space: nowrap;    /* Keeps text on one line */
 }
 
 .btn-sm:hover {
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  filter: brightness(0.9);
 }
 
-.btn-sm.success { background: #28a745; color: white; }
-.btn-sm.process { background: #6f42c1; color: white; }
-.btn-sm.danger { background: #dc3545; color: white; }
-.btn-sm.info { background: #007bff; color: white; }
-.btn-sm.chat { background: #17a2b8; color: white; }
-.btn-sm.trash { background: #f4d7d7; color: white; } /* Black trash button */
+/* Ensure icons don't shrink */
+.btn-sm svg {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
 
+/* Specifically for the Trash button to keep it square/circular */
+.btn-sm.trash {
+  background: #dc3545;
+  color: white;
+  padding: 8px 10px;
+  min-width: 38px; /* Give the trash icon a defined minimum width */
+}
+
+/* Pending Message Row Fix */
 .pending-msg {
   display: flex;
+  flex-wrap: wrap; /* Allows Cancel button to wrap on very small cards */
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  width: 100%;
+  background: #fff3cd;
+  padding: 10px 14px;
+  border-radius: 12px;
   font-size: 0.85rem;
   color: #856404;
   font-weight: 600;
-  width: 100%;
+  gap: 10px;
 }
 
-.ml-2 { margin-left: 10px; }
+.pending-text {
+  flex: 1;
+  white-space: normal;
+}
 
 /* =========================
    STATUS TAGS

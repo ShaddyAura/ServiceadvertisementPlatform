@@ -6,7 +6,8 @@ import {
   fetchProfileById,
   fetchServiceById,
   applyBoost,
-  fetchBoostStatus
+  fetchBoostStatus,
+  getWallet
 } from "../../../api/AccountApi";
 import "./BoostProvider.css";
 
@@ -14,9 +15,10 @@ export default function BoostProvider() {
   const { user, authLoading } = useAuth();
   const hasLoaded = useRef(false);
 
-  const [profile, setProfile] = useState({ boostingPoints: 0 });
+  const [wallet, setWallet] = useState({ pointsBalance: 0, lifetimePurchasedPoints: 0 });
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,6 +31,12 @@ export default function BoostProvider() {
     { type: "Premium", price: 500, duration: "7 Days" },
     { type: "Elite", price: 1000, duration: "15 Days" }
   ];
+
+  // Update current time every minute to refresh countdowns
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && user?.profileId && !hasLoaded.current) {
@@ -68,10 +76,31 @@ export default function BoostProvider() {
     });
   };
 
+  const getRemainingTime = (expiryDate) => {
+    if (!expiryDate) return "";
+    const diff = new Date(expiryDate) - currentTime;
+    if (diff <= 0) return "Expired";
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const mins = Math.floor((diff / (1000 * 60)) % 60);
+
+    if (days > 0) return `${days}d ${hours}h left`;
+    if (hours > 0) return `${hours}h ${mins}m left`;
+    return `${mins}m left`;
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
-      const profileRes = await fetchProfileById(user.profileId);
+      
+      let walletRes;
+      try {
+        walletRes = await getWallet(user.profileId);
+      } catch (err) {
+        console.warn("Wallet fetch error:", err);
+      }
+      
       const serviceRes = await fetchAllServices();
 
       const myServices = serviceRes.data?.filter(s => s.profileId === user.profileId) || [];
@@ -95,7 +124,9 @@ export default function BoostProvider() {
       );
 
       setServices(sortServices(servicesWithBoost));
-      setProfile(profileRes.data);
+      if (walletRes && walletRes.data) {
+        setWallet(walletRes.data);
+      }
     } catch (err) {
       console.error("Load error:", err.message);
     } finally {
@@ -122,7 +153,7 @@ export default function BoostProvider() {
       const selectedPlan = boostPlans[planIndex];
       const daysToBoost = parseInt(selectedPlan.duration.split(" ")[0]);
 
-      if (profile.boostingPoints < selectedPlan.price) {
+      if (wallet.pointsBalance < selectedPlan.price) {
         return Swal.fire("Insufficient Points", `You need ${selectedPlan.price} pts.`, "error");
       }
 
@@ -143,9 +174,9 @@ export default function BoostProvider() {
           return sortServices(updated);
         });
 
-        setProfile(prev => ({
+        setWallet(prev => ({
           ...prev,
-          boostingPoints: prev.boostingPoints - selectedPlan.price
+          pointsBalance: prev.pointsBalance - selectedPlan.price
         }));
 
         Swal.fire({ icon: "success", title: "Boost Activated!", timer: 2000, showConfirmButton: false });
@@ -173,9 +204,15 @@ export default function BoostProvider() {
             <h3 className="fw-bold mb-1">My Services</h3>
             <p className="text-muted small mb-0">Manage and promote your active listings</p>
           </div>
-          <div className="points-status-card">
-            <span className="points-label">Total Points</span>
-            <span className="points-value">{profile.boostingPoints || 0}</span>
+          <div className="d-flex gap-3">
+            <div className="points-status-card">
+              <span className="points-label" style={{ color: '#6c757d' }}>Lifetime Purchased</span>
+              <span className="points-value" style={{ color: '#000' }}>{Math.floor(wallet.lifetimePurchasedPoints || 0)}</span>
+            </div>
+            <div className="points-status-card">
+              <span className="points-label" style={{ color: '#6c757d' }}>Total Available Points</span>
+              <span className="points-value" style={{ color: '#000' }}>{Math.floor(wallet.pointsBalance || 0)}</span>
+            </div>
           </div>
         </div>
 
@@ -224,7 +261,7 @@ export default function BoostProvider() {
                       </button>
                     ) : (
                       <div className="boosted-status-msg py-2 fw-bold text-center rounded-pill mb-2">
-                        Priority Boost Active
+                        Priority Boosted: {getRemainingTime(service.expiryDate)}
                       </div>
                     )}
                   </div>

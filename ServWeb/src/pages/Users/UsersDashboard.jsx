@@ -9,10 +9,21 @@ import {
   createReview,
   getServiceReviews,
   claimUserDailyReward,
-  claimUserWatchTimeReward
+  claimUserWatchTimeReward,
+  fetchAllBookings
 } from "../../api/AccountApi";
 
+import { FaStar, FaTag } from "react-icons/fa";
 import "./UserDashboard.css";
+
+// Helper: Get active promotions from localStorage
+const getActivePromotions = () => {
+  try {
+    const promos = JSON.parse(localStorage.getItem("platform_promotions")) || [];
+    const now = new Date();
+    return promos.filter(p => p.isActive && new Date(p.startDate) <= now && new Date(p.endDate) >= now);
+  } catch { return []; }
+};
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -29,6 +40,7 @@ export default function Dashboard() {
   const [selectedService, setSelectedService] = useState(null);
   const [serviceReviews, setServiceReviews] = useState([]);
   const [strikeInfo, setStrikeInfo] = useState({ canClaim: false, currentStrike: 0 });
+  const [activePromos, setActivePromos] = useState([]);
 
   // Reward Timer States
   const [timer, setTimer] = useState(0);
@@ -55,6 +67,7 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+      setActivePromos(getActivePromotions());
       const [profileRes, serviceRes, catRes] = await Promise.all([
         fetchProfileById(user.profileId),
         fetchAllServices(),
@@ -62,8 +75,10 @@ export default function Dashboard() {
       ]);
 
       const profData = profileRes.data || {};
-      const combinedFullName = profData.fullName || (user.firstName ? `${user.firstName} ${user.lastName}` : "User");
-      
+      const combinedFullName = (profData.fullName && profData.fullName !== "User" && profData.fullName !== "Friend")
+        ? profData.fullName
+        : (user.fullname && user.fullname !== "User" && user.fullname !== "Friend" ? user.fullname : "Friend");
+
       setProfile({
         ...profData,
         fullName: combinedFullName,
@@ -71,20 +86,34 @@ export default function Dashboard() {
       });
 
       setCategories(catRes.data || []);
-      
+
       // Users don't have wallets — strike status is handled locally
       setStrikeInfo({ canClaim: true });
 
       const allServices = serviceRes.data || [];
       const servicesWithBoost = await Promise.all(
         allServices.map(async (service) => {
+          let isBoosted = false;
+          let avgRate = 0;
+          let rCount = 0;
+
           try {
             const res = await fetchBoostStatus(service.id);
             const expiry = res.data?.boostExpiry ? new Date(res.data.boostExpiry) : null;
-            return { ...service, isBoosted: expiry && expiry > new Date() };
-          } catch {
-            return { ...service, isBoosted: false };
-          }
+            isBoosted = expiry && expiry > new Date();
+          } catch { }
+
+          try {
+            const revRes = await getServiceReviews(service.id);
+            const revs = revRes.data || [];
+            rCount = revs.length;
+            if (rCount > 0) {
+              let total = revs.reduce((acc, current) => acc + (current.rating || current.Rating || 5), 0);
+              avgRate = total / rCount;
+            }
+          } catch { }
+
+          return { ...service, isBoosted, avgRating: avgRate.toFixed(1), reviewCount: rCount };
         })
       );
 
@@ -96,28 +125,6 @@ export default function Dashboard() {
     }
   };
 
-  const showPaymentHistory = async () => {
-    const mockHistory = [
-      { date: new Date(), amount: 500, status: "Success", gateway: "eSewa" },
-    ];
-
-    const htmlRows = mockHistory.map(h => `
-      <tr>
-        <td>${new Date(h.date).toLocaleDateString()}</td>
-        <td>Rs. ${h.amount}</td>
-        <td><span class="badge bg-success">${h.status}</span></td>
-        <td class="text-uppercase">${h.gateway}</td>
-      </tr>
-    `).join('');
-
-    Swal.fire({
-      title: 'Payment History',
-      html: `<div class="table-responsive"><table class="table table-sm mt-3" style="font-size: 0.85rem">
-            <thead><tr><th>Date</th><th>Amt</th><th>Status</th><th>Via</th></tr></thead>
-            <tbody>${htmlRows}</tbody></table></div>`,
-      confirmButtonColor: '#6366f1'
-    });
-  };
 
   const startEngagementTimer = async (service) => {
     setSelectedService(service);
@@ -128,7 +135,7 @@ export default function Dashboard() {
     try {
       const res = await getServiceReviews(service.id);
       setServiceReviews(res.data || []);
-    } catch (err) {}
+    } catch (err) { }
 
     if (!isProvider) {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
@@ -215,9 +222,17 @@ export default function Dashboard() {
               )}
               <div className="user-detail-body">
                 <div className="user-detail-title-row">
-                   <h2>{selectedService.title}</h2>
-                   <div className="user-detail-price">Rs. {selectedService.price}</div>
+                  <h2>{selectedService.title}</h2>
+                  <div className="user-detail-price">Rs. {selectedService.price}</div>
                 </div>
+
+                {/* Dynamically Recalculated Stars */}
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', fontSize: '0.9rem' }}>
+                  <FaStar className="text-warning me-2" style={{ fontSize: '1.1rem' }} />
+                  <strong style={{ color: '#1e293b' }}>{selectedService.avgRating > 0 ? selectedService.avgRating : 'New'}</strong>
+                  <span style={{ color: '#64748b', marginLeft: '5px' }}>({selectedService.reviewCount || 0} reviews)</span>
+                </div>
+
                 <span className="user-detail-category">{selectedService.category}</span>
                 <p className="user-detail-desc">{selectedService.description}</p>
               </div>
@@ -228,8 +243,8 @@ export default function Dashboard() {
               <h5>✍️ Leave a Review</h5>
               <div className="user-star-row">
                 {[...Array(5)].map((_, i) => (
-                  <button key={i} className="user-star-btn" onClick={() => setRating(i + 1)} onMouseEnter={() => setHover(i + 1)} onMouseLeave={() => setHover(0)}>
-                    <i className={`bi ${i + 1 <= (hover || rating) ? 'bi-star-fill text-warning' : 'bi-star text-muted'}`} style={{fontSize: '1.4rem'}} />
+                  <button key={i} type="button" className="user-star-btn" onClick={() => setRating(i + 1)} onMouseEnter={() => setHover(i + 1)} onMouseLeave={() => setHover(0)}>
+                    <FaStar className={i + 1 <= (hover || rating) ? 'text-warning' : 'text-muted'} style={{ fontSize: '1.4rem' }} />
                   </button>
                 ))}
               </div>
@@ -242,20 +257,28 @@ export default function Dashboard() {
             {/* REVIEWS LIST */}
             <div className="user-reviews-list-card">
               <h5>💬 Recent Feedbacks</h5>
-              {serviceReviews.length > 0 ? serviceReviews.map((r) => (
-                <div key={r.id} className="user-review-item">
-                  <div className="user-review-avatar">
-                    {(r.profile?.firstName || 'A')[0]}
-                  </div>
-                  <div className="user-review-content">
-                    <h6>{r.profile?.firstName} {r.profile?.lastName}</h6>
-                    <div className="user-review-stars">
-                      {[...Array(5)].map((_, i) => <i key={i} className={`bi ${i < r.rating ? 'bi-star-fill text-warning' : 'bi-star text-muted'}`} style={{fontSize: '0.7rem'}} />)}
+              {serviceReviews.length > 0 ? serviceReviews.map((r, idx) => {
+                const rating = r.rating || r.Rating || 5;
+                const comment = r.comment || r.Comment || "Excellent";
+                const profile = r.profile || r.Profile || {};
+                const fName = profile.firstName || profile.FirstName || "Customer";
+                const lName = profile.lastName || profile.LastName || "";
+                return (
+                  <div key={r.id || r.Id || idx} className="user-review-item">
+                    <div className="user-review-avatar">
+                      {fName[0]}
                     </div>
-                    <p>{r.comment}</p>
+                    <div className="user-review-content">
+                      <h6>{fName} {lName}</h6>
+                      <div className="user-review-stars text-warning">
+                        {[...Array(5)].map((_, i) => <FaStar key={i} className={i < rating ? 'text-warning' : 'text-muted'} style={{ fontSize: '0.9rem' }} />)}
+                        <span className="ms-2 small text-muted">({rating}/5)</span>
+                      </div>
+                      <p style={{ marginTop: '5px' }}>{comment}</p>
+                    </div>
                   </div>
-                </div>
-              )) : <p className="user-no-reviews">No reviews yet. Be the first!</p>}
+                )
+              }) : <p className="user-no-reviews">No reviews yet. Be the first!</p>}
             </div>
           </div>
 
@@ -281,20 +304,37 @@ export default function Dashboard() {
   const filteredServices = services
     .filter(s => (selectedCategory === "All" || s.category === selectedCategory) && s.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
+  // Get matching promo for a service
+  const getPromoForService = (service) => {
+    return activePromos.find(p => p.category === "All Categories" || p.category === service.category);
+  };
+
   return (
     <div className="user-dash-wrapper">
-      
+
       {/* TOP WELCOME BAR */}
       <div className="user-welcome-bar">
         <div className="user-welcome-left">
-          <h2>{getGreeting()}, {user?.fullname?.split(' ')[0] || profile?.fullName?.split(' ')[0] || "User"}! 👋</h2>
+          <h2>{getGreeting()}, {profile?.fullName || user?.fullname || "Friend"}! 👋</h2>
           <p>Explore premium verified services</p>
+
+          {/* DISCOUNT / PROMO HIGHLIGHT */}
+          {activePromos.length > 0 && (
+            <div className="user-welcome-promo fade-in">
+              <div className="user-promo-pill">
+                <FaTag className="me-1" />
+                <span>{activePromos[0].discount}% OFF {activePromos[0].category}</span>
+              </div>
+              <span className="user-promo-mini-msg">{activePromos[0].message}</span>
+            </div>
+          )}
         </div>
-        
-        <div className="user-welcome-right">
+
+        <div className="user-welcome-right" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+
 
           {strikeInfo.canClaim && !isProvider && (
-            <button 
+            <button
               onClick={async () => {
                 setStrikeInfo(prev => ({ ...prev, canClaim: false }));
                 try {
@@ -302,16 +342,17 @@ export default function Dashboard() {
                   setProfile(prev => ({ ...prev, boostingPoints: res.data.boostingPoints }));
                   Swal.fire({ title: 'Bonus!', text: `+2 Pts added`, icon: 'success', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
                 } catch (err) {
-                  Swal.fire({ title: 'Oops', text: err.response?.data?.message || 'Reward already claimed limits reached.', icon: 'info', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+                  const serverError = err.response?.data?.message || (typeof err.response?.data === 'string' ? err.response?.data : null) || 'Daily limit reached or reward already claimed.';
+                  Swal.fire({ title: 'Login Reward Limit', text: serverError, icon: 'info', toast: true, position: 'top-end', timer: 4000, showConfirmButton: false });
                   setStrikeInfo(prev => ({ ...prev, canClaim: true }));
                 }
-              }} 
+              }}
               className="user-claim-btn"
             >
               🎯 Claim 2 Pts
             </button>
           )}
-          
+
           <div className="user-points-pill">
             <i className="bi bi-wallet2"></i>
             <span>{Number(profile?.boostingPoints || 0).toFixed(2)} Pts</span>
@@ -323,12 +364,12 @@ export default function Dashboard() {
       <div className="user-filter-row">
         <div className="user-search-wrap">
           <i className="bi bi-search user-search-icon"></i>
-          <input 
-            type="text" 
-            className="user-search-input" 
-            placeholder="Search services..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
+          <input
+            type="text"
+            className="user-search-input"
+            placeholder="Search services..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <select className="user-category-select" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
@@ -337,53 +378,76 @@ export default function Dashboard() {
         </select>
       </div>
 
+
       {/* SERVICE GRID */}
       <div className="user-services-grid">
-        {filteredServices.map((s) => (
-          <div key={s.id} className="user-service-card" onClick={() => startEngagementTimer(s)}>
-            {/* Boosted Tag */}
-            {s.isBoosted && (
-              <div className="user-featured-tag">🔥 FEATURED</div>
-            )}
+        {filteredServices.map((s) => {
+          const promo = getPromoForService(s);
+          const discountedPrice = promo ? (s.price * (1 - promo.discount / 100)).toFixed(0) : null;
+          return (
+            <div key={s.id} className="user-service-card" onClick={() => startEngagementTimer(s)}>
+              {/* Boosted Tag */}
+              {s.isBoosted && (
+                <div className="user-featured-tag">🔥 FEATURED</div>
+              )}
 
-            <div className="user-card-media">
-              {s.videoUrl ? (
-                <video
-                  src={`https://localhost:7065${s.videoUrl}`}
-                  className="user-card-img"
-                  autoPlay muted loop playsInline
-                  onMouseEnter={(e) => e.target.play()}
-                />
-              ) : (
-                <img
-                  src={`https://localhost:7065${s.imageUrl}`}
-                  className="user-card-img"
-                  alt={s.title}
-                />
+              {/* Discount Tag */}
+              {promo && (
+                <div className="user-discount-tag">{promo.discount}% OFF</div>
               )}
-              {s.videoUrl && (
-                <div className="user-video-indicator">
-                  <i className="bi bi-play-circle-fill"></i>
-                </div>
-              )}
-              <div className="user-price-tag">Rs. {s.price}</div>
-            </div>
 
-            <div className="user-card-body">
-              <span className="user-card-category">{s.category}</span>
-              <h5 className="user-card-title">{s.title}</h5>
-              {!isProvider && (
-                <div className="user-card-earn">
-                  <i className="bi bi-coin"></i> Watch & Earn 10 Pts
+              <div className="user-card-media">
+                {s.videoUrl ? (
+                  <video
+                    src={`https://localhost:7065${s.videoUrl}`}
+                    className="user-card-img"
+                    autoPlay muted loop playsInline
+                    onMouseEnter={(e) => e.target.play()}
+                  />
+                ) : (
+                  <img
+                    src={`https://localhost:7065${s.imageUrl}`}
+                    className="user-card-img"
+                    alt={s.title}
+                  />
+                )}
+                {s.videoUrl && (
+                  <div className="user-video-indicator">
+                    <i className="bi bi-play-circle-fill"></i>
+                  </div>
+                )}
+                {promo ? (
+                  <div className="user-price-tag user-price-discounted">
+                    <span className="user-price-old">Rs. {s.price}</span>
+                    <span>Rs. {discountedPrice}</span>
+                  </div>
+                ) : (
+                  <div className="user-price-tag">Rs. {s.price}</div>
+                )}
+              </div>
+
+              <div className="user-card-body">
+                <span className="user-card-category">{s.category}</span>
+                <h5 className="user-card-title">{s.title}</h5>
+
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', fontSize: '0.8rem', color: '#64748b' }}>
+                  <FaStar className="text-warning" style={{ marginRight: '4px' }} />
+                  <span className="fw-bold" style={{ color: '#1e293b' }}>{s.avgRating > 0 ? s.avgRating : 'New'}</span>
+                  <span style={{ marginLeft: '4px' }}>({s.reviewCount || 0})</span>
                 </div>
-              )}
+                {!isProvider && (
+                  <div className="user-card-earn">
+                    <i className="bi bi-coin"></i> Watch & Earn 10 Pts
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {filteredServices.length === 0 && (
           <div className="user-no-services">
-            <i className="bi bi-inbox" style={{fontSize: '2.5rem', color: '#cbd5e1'}}></i>
+            <i className="bi bi-inbox" style={{ fontSize: '2.5rem', color: '#cbd5e1' }}></i>
             <p>No services found</p>
           </div>
         )}

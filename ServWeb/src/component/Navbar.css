@@ -8,19 +8,33 @@
   border-bottom: 1px solid rgba(255, 18, 18, 0.1);
 }
 
+.auth-navbar {
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: flex-start;
+  background: linear-gradient(
+    to bottom, 
+    rgb(244, 6, 6) 0%, 
+    rgba(206, 36, 13, 0.8) 100%
+  ) !important;
+  border-bottom: 1px solid rgba(255, 18, 18, 0.1);
+}
+
 .custom-navbar {
   font-family: 'Segoe UI', sans-serif;
 }
 
 /* NAV LINKS */
 .nav-link {
-  color: #ffffff !important; /* White text by default */
+  color: #ffffff !important;
+  /* White text by default */
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
 .nav-link:hover {
-  color: #000000 !important; /* Black text on hover */
+  color: #000000 !important;
+  /* Black text on hover */
 }
 
 /* Fix for the hamburger icon on mobile to be white */
@@ -45,13 +59,16 @@
 
 /* Dropdown item styling */
 .dropdown-item {
-  color: #333; /* Default text for dropdown items (inside white box) */
+  color: #333;
+  /* Default text for dropdown items (inside white box) */
   transition: all 0.2s;
 }
 
 .dropdown-item:hover {
-  background-color: #f8f9fa; /* Light grey background */
-  color: #000000 !important; /* Black text on hover */
+  background-color: #f8f9fa;
+  /* Light grey background */
+  color: #000000 !important;
+  /* Black text on hover */
 }
 
 /* Fix dropdown */
@@ -78,12 +95,15 @@
 .btn-light {
   border-radius: 6px;
   font-weight: 600;
-  color: rgb(244, 6, 6); /* Button text matches theme red */
+  color: rgb(244, 6, 6);
+  /* Button text matches theme red */
   border: none;
   transition: 0.3s;
 }
 
 .btn-light:hover {
-  background-color: #000000 !important; /* Button turns black on hover */
-  color: #ffffff !important; /* Text turns white on hover */
+  background-color: #000000 !important;
+  /* Button turns black on hover */
+  color: #ffffff !important;
+  /* Text turns white on hover */
 }

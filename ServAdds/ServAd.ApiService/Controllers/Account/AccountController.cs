@@ -160,6 +160,23 @@ namespace ServAd.ApiService.Controllers.Account
                     var roles = await userManager.GetRolesAsync(user);
                     var role = roles.FirstOrDefault() ?? "User";
 
+                    // ✅ CHECK FOR ACTIVE SUSPENSION IN DEDICATED TABLE
+                    var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
+                    if (profile != null)
+                    {
+                        var activeSuspension = await _context.AccountSuspensions
+                            .Where(s => s.ProfileId == profile.Id && s.IsActive)
+                            .FirstOrDefaultAsync();
+
+                        if (activeSuspension != null)
+                        {
+                            return Problem(
+                                title: "Account Suspended",
+                                detail: $"Your account is suspended. Reason: {activeSuspension.Reason}",
+                                statusCode: StatusCodes.Status403Forbidden);
+                        }
+                    }
+
                     // ✅ ADD ROLE INTO CLAIMS (so JWT has role info too)
                     var claims = new List<Claim>
                     {
@@ -401,6 +418,21 @@ namespace ServAd.ApiService.Controllers.Account
             var roles = await userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault() ?? "User";
 
+            // ✅ FETCH PROFILE TO CHECK FOR SUSPENSION
+            var userProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
+            if (userProfile != null)
+            {
+                var activeSuspension = await _context.AccountSuspensions
+                    .Where(s => s.ProfileId == userProfile.Id && s.IsActive)
+                    .FirstOrDefaultAsync();
+
+                if (activeSuspension != null)
+                {
+                    var encodedReason = System.Net.WebUtility.UrlEncode(activeSuspension.Reason);
+                    return Redirect($"https://localhost:5173/login?error=suspended&reason={encodedReason}");
+                }
+            }
+
             var claims = new List<Claim>
     {
         new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
@@ -502,9 +534,6 @@ namespace ServAd.ApiService.Controllers.Account
                 RoleClaimType = ClaimTypes.Role,
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(settings.SigningKey)
-                ),
-                TokenDecryptionKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(settings.EncryptingKey ?? string.Empty)
                 )
             };
 

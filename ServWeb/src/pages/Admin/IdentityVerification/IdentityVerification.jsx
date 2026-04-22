@@ -31,6 +31,14 @@ const IdentityVerification = () => {
 
   // 2. Review Logic (Matches your API helper: id in params, dto in body)
   const handleReview = async (docId, status) => {
+    // Pre-check: Don't allow verifying an already verified document
+    const doc = verifications.find(d => d.id === docId);
+    const existingStatus = doc?.status ?? doc?.Status;
+    
+    if (doc && (existingStatus === 4 || existingStatus === 1 || existingStatus === 'Verified' || existingStatus === 'Approved')) {
+       return Swal.fire("Notice", "This document has already been verified and locked.", "info");
+    }
+
     // 1 = Verified/Approved, 2 = Rejected per your Enum
     const isApprove = status === 1 || status === 4; 
     
@@ -66,7 +74,12 @@ const IdentityVerification = () => {
         loadData(); // Refresh list
       } catch (err) {
         console.error("API Error:", err);
-        Swal.fire("Error", "Failed to update document status.", "error");
+        const errMsg = err.response?.data?.message || err.response?.data || "Failed to update document status.";
+        Swal.fire(
+          "Update Failed", 
+          typeof errMsg === 'string' ? errMsg : "Failed to update document status. It may already be processed.", 
+          "error"
+        );
       }
     }
   };

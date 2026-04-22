@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServAd.ApiService.Services.Category.Interface;
 using ShareLibrary.cs.Data.Entities;
@@ -23,7 +23,7 @@ public class CategoryController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpGet("getbyid")]
+    [HttpGet("getbyid/{id}")]
     public async Task<IActionResult> GetById(int id)
     {
         var category = await _categoryService.GetByIdAsync(id);
@@ -41,7 +41,7 @@ public class CategoryController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPut("updatecategory")]
+    [HttpPut("updatecategory/{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] ServiceCategory category)
     {
         category.Id = id;
@@ -50,7 +50,7 @@ public class CategoryController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("deletecategory")]
+    [HttpDelete("deletecategory/{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         await _categoryService.DeleteAsync(id);

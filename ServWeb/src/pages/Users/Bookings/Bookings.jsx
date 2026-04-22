@@ -177,12 +177,13 @@ export default function ServicesAndBookings() {
   };
 
   // --- 4. VIEW DETAILS ---
-  const handlePayment = (bookingId, amount) => {
+  const handlePayment = (bookingId, amount, categoryName) => {
       navigate('/payments', {
         state: {
           bookingId: bookingId,
           amount: amount,
-          planType: "Service Booking"
+          planType: "Service Booking",
+          categoryName: categoryName || "All Categories"
         }
       });
   };
@@ -259,34 +260,35 @@ export default function ServicesAndBookings() {
                 <p className="small">Provider: {b.service?.profile?.fullName || "Service Provider"}</p>
                 
                 <div className="action-row">
-                  {isStatus(currentStatus, "Pending") ? (
-                    <div className="pending-msg">
-                      <FaClock /> Waiting for Provider to accept...
-                      <button className="btn-sm danger ml-2" onClick={() => handleUpdate(id, 5, "Cancelled")}>
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
+{isStatus(currentStatus, "Pending") ? (
+  <div className="pending-msg">
+    <span className="pending-text"><FaClock /> Waiting...</span>
+    {/* Ensure this uses btn-sm to inherit the fixed sizes */}
+    <button className="btn-sm danger" onClick={() => handleUpdate(id, 5, "Cancelled")}>
+      Cancel
+    </button>
+  </div>
+) : (
                     <>
                       {isStatus(currentStatus, "Confirmed") && (
-                        <button className="btn-sm primary" style={{backgroundColor: '#28a745'}} onClick={() => handlePayment(id, b.agreedPrice)}>
-                          Pay Now
+                        <button className="btn-sm success" onClick={() => handlePayment(id, b.agreedPrice, b.service?.category?.name)}>
+                          <FaCheckCircle /> Pay Now
                         </button>
                       )}
                       {isStatus(currentStatus, "InProcess") && (
                         <button className="btn-sm danger" onClick={() => handleUpdate(id, 6, "Disputed")}>
-                          Dispute
+                          <FaExclamationTriangle /> Dispute
                         </button>
                       )}
                       
                       <button className="btn-sm info" onClick={() => viewDetails(b)} title="Details">
-                        <FaInfoCircle />
-                      </button>
-                      <button className="btn-sm trash" onClick={() => handleDeleteBooking(id)} title="Delete">
-                        <FaTrash />
+                        <FaInfoCircle /> Details
                       </button>
                       <button className="btn-sm chat" onClick={() => navigate(`/chats/${id}`)} title="Chat">
-                        <FaComments />
+                        <FaComments /> Chat
+                      </button>
+                      <button className="btn-sm trash" onClick={() => handleDeleteBooking(id)} aria-label="Delete">
+                        <FaTrash />
                       </button>
                     </>
                   )}

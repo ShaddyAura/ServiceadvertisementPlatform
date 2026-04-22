@@ -23,6 +23,7 @@ import Authcallback from "./auth/Authcallback";
 import ForgotPassword from "./auth/Forgot password/ForgotPassword";
 import ResetPassword from "./auth/Reset Password/ResetPassword";
 import ConfirmEmail from "./auth/Confirm Email/ConfirmEmail";
+import ChangePassword from "./pages/Auth/ChangePassword";
 
 // USER DASHBOARD PAGES
 import UsersDashboard from "./pages/Users/UsersDashboard";   
@@ -35,6 +36,7 @@ import ChatList from "./pages/Users/Chats/ChatList";
 import Points from "./pages/Users/Point/PointsTrans";
 import Reedems from "./pages/Users/ReedemGifts/Reedems";
 import Gifts from "./pages/Users/Gifts/Gifts";
+import Announcements from "./pages/Users/Announcements/Announcements";
 
 // Admin Dashboard 
 import AdCampaigns from "./pages/Admin/AdCampaigns/AdCampaigns";
@@ -47,6 +49,11 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import SystemSettings from "./pages/Admin/SystemSettings/SystemSettings";
 import Categories from "./pages/Admin/Categorys/Categories";
 import BookingReport from "./pages/Admin/Report/BookingReport"
+import ReviewModeration from "./pages/Admin/ReviewModeration/ReviewModeration";
+import Broadcasting from "./pages/Admin/Broadcasting/Broadcasting";
+import AdminWithdrawals from "./pages/Admin/Withdrawals/AdminWithdrawals";
+import Promotions from "./pages/Admin/Promotions/Promotions";
+import ProviderPayouts from "./pages/ServiceProvider/Payouts/ProviderPayouts";
 
 
 // ServiceProvider Route
@@ -64,6 +71,7 @@ import PointProvider from "./pages/ServiceProvider/Points/PointProvider";
 import ReedemGiftsProvider from "./pages/ServiceProvider/ReedemsGifts/ReedemsGiftsProvider";
 import GiftProvider from "./pages/ServiceProvider/Gifts/GiftProvider";
 import MyBookings from "./pages/ServiceProvider/ProviderReport/mybookings";
+import AnnouncementsProvider from "./pages/ServiceProvider/Announcements/AnnouncementsProvider";
 
 
 import Services from "./pages/Services";
@@ -85,6 +93,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/confirm-email" element={<ConfirmEmail />} />
+        <Route path="/change-password" element={<ChangePassword />} />
          <Route path="/Notification" element={<Notification />} />
 
         {/* PROTECTED NORMAL PAGES (Shared) */}
@@ -105,6 +114,7 @@ export default function App() {
           <Route path="/points" element={<Points />} />
           <Route path="/reedems" element={<Reedems />} />
           <Route path="/gifts" element={<Gifts />} />
+          <Route path="/announcements" element={<Announcements />} />
         </Route>
 
     
@@ -123,7 +133,8 @@ export default function App() {
         <Route path="/reedem" element={<ReedemGiftsProvider />} />
         <Route path="/gift" element={<GiftProvider />} />
          <Route path="/mybook" element={< MyBookings/>} />
-       
+         <Route path="/payouts" element={<ProviderPayouts />} />
+         <Route path="/provider-announcements" element={<AnnouncementsProvider />} />
       </Route>
 
 
@@ -141,7 +152,12 @@ export default function App() {
          <Route path="bookingreport" element={<BookingReport />} />
           <Route path="reportreview" element={<ReportReview />} />
 
-         <Route path="/settings" element={<SystemSettings />} />
+
+          <Route path="/settings" element={<SystemSettings />} />
+          <Route path="/moderation" element={<ReviewModeration />} />
+          <Route path="/broadcast" element={<Broadcasting />} />
+          <Route path="/withdrawals" element={<AdminWithdrawals />} />
+          <Route path="/promotions" element={<Promotions />} />
      </Route>
 
       </Routes>

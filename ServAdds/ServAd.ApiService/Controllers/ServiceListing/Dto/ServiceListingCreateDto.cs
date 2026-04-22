@@ -10,10 +10,12 @@ namespace ServAd.ApiService.Controllers.ServiceListing.Dto
         public Guid ProfileId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string Category { get; set; } = string.Empty;
+
+        [Required]
+        public string? Category { get; set; } 
         public decimal Price { get; set; }
 
-        // Change from TimeSpan to string for clean API input
+
         public string StartTime { get; set; } = "00:00:00";
         public string EndTime { get; set; } = "00:00:00";
         public ServiceStatus Status { get; set; }

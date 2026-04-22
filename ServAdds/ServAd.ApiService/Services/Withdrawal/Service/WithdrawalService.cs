@@ -107,5 +107,21 @@ namespace ServAd.ApiService.Services.Withdrawal.Service
 
             return true;
         }
+
+        public async Task<bool> CancelRequestAsync(Guid requestId)
+        {
+            var request = await context.WithdrawalRequests.FindAsync(requestId)
+                ?? throw new ApiException("Request not found.", 404);
+
+            if (request.Status != "Pending")
+                throw new ApiException("Only pending requests can be cancelled.", 400);
+
+            request.Status = "Cancelled";
+            request.ProcessedAt = DateTime.UtcNow;
+
+            await context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

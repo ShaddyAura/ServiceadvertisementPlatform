@@ -1,43 +1,42 @@
 import React, { useState } from "react";
+import { 
+  Box, Typography, TextField, Button, InputAdornment, useTheme
+} from "@mui/material";
+import { Email as EmailIcon, ArrowBack as ArrowBackIcon } from "@mui/icons-material";
+import { Link as RouterLink } from "react-router-dom";
+import Logo from "../../component/Logo";
+import "./../Login/Login.css";
 import { forgotPassword } from "../../api/AccountApi";
-import "./ForgotPassword.css";
 import Swal from "sweetalert2";
 
 export default function ForgotPassword() {
+  const theme = useTheme();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!email.trim()) {
-      Swal.fire({
-        icon: "warning",
-        title: "Email required",
-        text: "Please enter your email address",
-      });
+      Swal.fire({ icon: "warning", title: "Email required", text: "Please enter your email address" });
       return;
     }
 
     try {
       setLoading(true);
-
       await forgotPassword({ email });
-
       Swal.fire({
         icon: "success",
         title: "Email Sent!",
         text: "Password reset link has been sent to your email.",
-        confirmButtonColor: "#5ca9ff",
+        confirmButtonColor: theme.palette.primary.main,
       });
-
       setEmail("");
     } catch (err) {
       Swal.fire({
         icon: "error",
         title: "Failed",
         text: err.response?.data || "Failed to send reset link.",
-        confirmButtonColor: "#d33",
+        confirmButtonColor: theme.palette.error.main,
       });
     } finally {
       setLoading(false);
@@ -45,53 +44,63 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="forgot-bg">
-      <div className="container d-flex justify-content-center align-items-center min-vh-100">
-        <div className="forgot-card shadow-lg">
-          <div className="row g-0 align-items-center">
+    <div className="auth-bg">
+      <nav className="auth-navbar">
+        <Logo width={120} />
+      </nav>
 
-            {/* LEFT FORM */}
-            <div className="col-md-6 p-4">
-              <h2 className="text-center mb-3">Forgot Password</h2>
-              <p className="text-muted text-center mb-4">
-                Enter your email and we’ll send you a password reset link.
-              </p>
+      <div className="login-wrapper">
+        <div className="login-card">
+          <div className="login-form">
+             <Button 
+                component={RouterLink} 
+                to="/login" 
+                startIcon={<ArrowBackIcon />}
+                sx={{ mb: 4, textTransform: 'none', color: 'text.secondary', alignSelf: 'flex-start' }}
+              >
+                Back to Login
+              </Button>
 
-              <form onSubmit={handleSubmit}>
-                <label className="form-label fw-semibold">Email</label>
+            <h2>Forgot Password?</h2>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 4 }}>
+              No worries! Enter your email below to receive a reset link.
+            </Typography>
 
-                <div className="position-relative mb-3">
-                  <i className="fa fa-envelope forgot-icon"></i>
-
-                  <input
-                    type="email"
-                    className="form-control forgot-input"
-                    placeholder="email@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn forgot-btn w-100"
-                  disabled={loading}
-                >
-                  {loading ? "Sending..." : "Send Reset Link"}
-                </button>
-              </form>
-            </div>
-
-            {/* RIGHT IMAGE */}
-            <div className="col-md-6 d-none d-md-flex justify-content-center align-items-center p-3">
-              <img
-                src="/assets/forgot.png"
-                alt="Forgot Password"
-                className="img-fluid"
-                style={{ maxHeight: "300px" }}
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <TextField 
+                fullWidth
+                label="Email Address"
+                variant="outlined"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon sx={{ color: 'action.active' }} />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </div>
 
+              <Button 
+                fullWidth 
+                variant="contained" 
+                size="large" 
+                type="submit"
+                disabled={loading}
+                sx={{ py: 1.5, borderRadius: 2, fontWeight: 700, mt: 1 }}
+              >
+                {loading ? "Sending..." : "Send Reset Link"}
+              </Button>
+            </Box>
+          </div>
+
+          <div className="login-img" style={{ background: '#f8fafc' }}>
+            <img
+              src="/assets/forgot.png"
+              alt="Forgot Password"
+              style={{ width: '80%', height: 'auto', objectFit: 'contain' }}
+            />
           </div>
         </div>
       </div>

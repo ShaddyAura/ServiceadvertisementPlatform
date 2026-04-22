@@ -219,6 +219,72 @@ namespace ShareLibrary.cs.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.AccountSuspension", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("SuspendedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfileId");
+
+                    b.ToTable("AccountSuspensions");
+                });
+
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.BookingPayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CustomerProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Gateway")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("NetAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PlatformFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("ProviderProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.ToTable("BookingPayments");
+                });
+
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Bookings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -539,6 +605,48 @@ namespace ShareLibrary.cs.Migrations
                     b.ToTable("Profiles");
                 });
 
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.ProviderContact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("MobileNo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("OperatingHours")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProviderName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfileId");
+
+                    b.ToTable("ProviderContacts");
+                });
+
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.RedeemedGift", b =>
                 {
                     b.Property<Guid>("Id")
@@ -845,6 +953,28 @@ namespace ShareLibrary.cs.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.AccountSuspension", b =>
+                {
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
+                        .WithMany()
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Profile");
+                });
+
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.BookingPayment", b =>
+                {
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Bookings", "Booking")
+                        .WithMany()
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+                });
+
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.Bookings", b =>
                 {
                     b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
@@ -942,6 +1072,17 @@ namespace ShareLibrary.cs.Migrations
                         .HasForeignKey("ShareLibrary.cs.Data.Entities.Profiles", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ShareLibrary.cs.Data.Entities.ProviderContact", b =>
+                {
+                    b.HasOne("ShareLibrary.cs.Data.Entities.Profiles", "Profile")
+                        .WithMany()
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Profile");
                 });
 
             modelBuilder.Entity("ShareLibrary.cs.Data.Entities.RedeemedGift", b =>

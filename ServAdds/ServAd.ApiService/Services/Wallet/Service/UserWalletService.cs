@@ -171,12 +171,12 @@ namespace ServAd.ApiService.Services.Wallet.Service
 
         public async Task<UserWallet> ClaimWatchTimeRewardAsync(Guid profileId, decimal secondsWatched)
         {
-            if (secondsWatched < 10) throw new ApiException("Not enough watch time for a reward.", 400);
+            if (secondsWatched < 60) throw new ApiException("Not enough watch time for a reward.", 400);
 
             var wallet = await GetWalletByProfileIdAsync(profileId);
             
-            // Give 10.0m points per watch session as specified
-            decimal pointsToGive = 10.0m;
+            // Give 0.1m points per watch session as specified
+            decimal pointsToGive = 0.1m;
             
             wallet.PointsBalance += pointsToGive;
             wallet.LifetimePurchasedPoints += pointsToGive;
@@ -194,6 +194,24 @@ namespace ServAd.ApiService.Services.Wallet.Service
 
             await context.SaveChangesAsync();
 
+            return wallet;
+        }
+
+        public async Task<UserWallet> AddBookingRevenueAsync(Guid profileId, decimal amount, string gateway)
+        {
+            var wallet = await GetWalletByProfileIdAsync(profileId);
+
+            if (string.Equals(gateway, "esewa", StringComparison.OrdinalIgnoreCase))
+            {
+                wallet.ESewaBalance += amount;
+            }
+            else if (string.Equals(gateway, "khalti", StringComparison.OrdinalIgnoreCase))
+            {
+                wallet.KhaltiBalance += amount;
+            }
+
+            wallet.LastUpdated = DateTime.UtcNow;
+            await context.SaveChangesAsync();
             return wallet;
         }
     }

@@ -3,6 +3,7 @@ using ServAd.ApiService.Exceptions;
 using ServAd.ApiService.Services.Booking.Interface;
 using ServAd.ApiService.Services.Notifications.Interface; // Added
 using ServAd.ApiService.Services.RabbitMq.Interface;
+using ServAd.ApiService.Services.Wallet.Interface; // Added
 using ShareLibrary.cs.Data;
 using ShareLibrary.cs.Data.Entities;
 using ShareLibrary.cs.Data.Enums;
@@ -13,7 +14,8 @@ namespace ServAd.ApiService.Services.Booking.Service
     public class ServAddBookingService(
         ServiceDbContext context,
         IRabbitmqService rabbitMQ,
-        INotificationService notification, 
+        INotificationService notification,
+        IUserWalletService walletService, // Added
         ILogger<ServAddBookingService> logger) : IServAddBooking
     {
         public async Task<Bookings> CreateAsync(Bookings booking)
@@ -73,7 +75,7 @@ namespace ServAd.ApiService.Services.Booking.Service
                 .FirstOrDefaultAsync(b => b.Id == id)
             ?? throw new ApiException($"Booking {id} not found.", 404);
 
-        public async Task UpdateStatusAsync(Guid id, BookingStatus status)
+        public async Task UpdateStatusAsync(Guid id, BookingStatus status, string? gateway = null)
         {
             var booking = await GetByIdAsync(id);
             
@@ -84,6 +86,7 @@ namespace ServAd.ApiService.Services.Booking.Service
 
             if (status == BookingStatus.Paid)
             {
+                // 1. Record in General Payment History
                 var paymentHistory = new UserRewardHistory
                 {
                     Id = Guid.NewGuid(),
@@ -95,6 +98,32 @@ namespace ServAd.ApiService.Services.Booking.Service
                     CreatedAt = DateTime.UtcNow
                 };
                 context.UserRewardHistories.Add(paymentHistory);
+
+                // 2. Record in Dedicated BookingPayments Table with Commission
+                decimal totalAmount = booking.AgreedPrice;
+                decimal commissionRate = 0.10m; // 10% Platform Fee
+                decimal platformFee = totalAmount * commissionRate;
+                decimal netAmount = totalAmount - platformFee;
+
+                var bookingPayment = new BookingPayment
+                {
+                    Id = Guid.NewGuid(),
+                    BookingId = booking.Id,
+                    Amount = totalAmount,
+                    PlatformFee = platformFee,
+                    NetAmount = netAmount,
+                    Gateway = gateway ?? "Unknown",
+                    ProviderProfileId = booking.ProviderProfileId,
+                    CustomerProfileId = booking.ProfileId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                context.BookingPayments.Add(bookingPayment);
+
+                // 3. Update Provider's Wallet Balance (With Net Amount only)
+                if (!string.IsNullOrEmpty(gateway))
+                {
+                    await walletService.AddBookingRevenueAsync(booking.ProviderProfileId, netAmount, gateway);
+                }
             }
 
             await context.SaveChangesAsync();

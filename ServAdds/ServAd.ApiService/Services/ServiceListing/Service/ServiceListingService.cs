@@ -88,6 +88,11 @@ namespace ServAd.ApiService.Services.ServiceListing.Service
             existing.Description = updated.Description;
             existing.Price = updated.Price;
             existing.Status = updated.Status;
+            
+            // These were missing!
+            existing.Category = updated.Category;
+            existing.StartTime = updated.StartTime;
+            existing.EndTime = updated.EndTime;
 
             if (imageFile != null)
             {

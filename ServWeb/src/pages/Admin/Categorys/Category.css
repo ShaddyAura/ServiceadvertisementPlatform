@@ -54,7 +54,28 @@
 }
 
 .search-box input {
-  padding-left: 48px; /* increases gap between icon and placeholder */
+  padding-left: 48px; 
+  border: 1px solid #444;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  color: #000 !important; /* Typed text BLACK */
+}
+
+.search-box input:focus {
+  border-color: #fca5a5; /* Reddish Focus */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(244, 6, 6, 0.1);
+}
+
+.form-control {
+  border: 1px solid #444 !important;
+  border-radius: 12px !important;
+  color: #000 !important; /* Typed text BLACK */
+}
+
+.form-control:focus {
+  border-color: #f40606 !important;
+  box-shadow: 0 0 0 3px rgba(244, 6, 6, 0.1) !important;
 }
 
 /* Table Card */

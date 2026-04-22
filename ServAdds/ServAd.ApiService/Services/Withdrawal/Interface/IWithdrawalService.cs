@@ -9,5 +9,6 @@ namespace ServAd.ApiService.Services.Withdrawal.Interface
         Task<IEnumerable<WithdrawalRequest>> GetRequestsByProfileIdAsync(Guid profileId);
         Task<bool> ApproveRequestAsync(Guid requestId);
         Task<bool> RejectRequestAsync(Guid requestId);
+        Task<bool> CancelRequestAsync(Guid requestId);
     }
 }

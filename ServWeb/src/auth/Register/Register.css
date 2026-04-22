@@ -1,253 +1,119 @@
-/* ================= AUTH NAVBAR ================= */
+/* AUTH COMMON STYLES — RESTORED & MODERNIZED (Matching Login.css) */
+.auth-bg {
+  min-height: 100vh;
+  background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+  display: flex;
+  flex-direction: column;
+}
+
 .auth-navbar {
-  width: 100%;
-  height: 70px;
-  padding: 10px 30px;
+  padding: 1rem 2rem;
   background: linear-gradient(
     to bottom, 
     rgb(244, 6, 6) 0%, 
-    rgba(242, 40, 14, 0.8) 100%
+    rgba(206, 36, 13, 0.8) 100%
   ) !important;
-  border-bottom: 1px solid rgba(255, 18, 18, 0.1);
-  display: flex;
-  align-items: center;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.1);
 }
 
-/* ================= PAGE BACKGROUND ================= */
-.auth-bg {
-  background: #f5f7fa;
-  min-height: 100vh;
-}
-
-/* ================= LOGO ================= */
-.logo-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  height: 70px;
-}
-
-.logo-icon {
-  width: 40px;
-  height: 40px;
-}
-
-.logo-text {
-  font-size: 26px;
-  font-weight: 700;
-  color: #ff7a00;
-  letter-spacing: 0.5px;
-}
-
-/* ================= REGISTER LAYOUT ================= */
 .register-wrapper {
-  width: 100%;
-  min-height: calc(100vh - 70px);
-  background-color: #f6f6f7;
+  flex: 1;
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 30px;
+  align-items: center;
+  padding: 20px;
 }
 
 .register-card {
-  width: 100%;
-  max-width: 1100px;
-  background: #ffffff;
-  border-radius: 16px;
   display: flex;
-  padding: 40px 60px;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  max-width: 1100px;
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.6s ease-out;
 }
 
-/* ================= FORM ================= */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .register-form {
-  width: 50%;
+  padding: 3rem;
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
 }
 
 .register-form h2 {
-  font-size: 32px;
-  margin-bottom: 25px;
-  font-weight: 700;
-  color: #111;
+  font-weight: 900;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+  font-size: 2.2rem;
 }
 
-/* ================= INPUT BOX ================= */
-.input-box {
-  position: relative;
-  margin-bottom: 18px;
-}
-
-.input-box i {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #666;
-  font-size: 14px;
-}
-
-/* ================= INPUT ================= */
-.input-box input {
-  width: 100%;
-  padding: 12px 16px;
-  padding-right: 42px; /* space for right icon */
-  background: #f1f1f1;
-  border: 1px solid #ddd;
-  outline: none;
-  color: #111;
-  border-radius: 6px;
-  font-size: 16px;
-}
-
-.toggle-password {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #666;
+.register-img {
+  flex: 1;
+  background: #f8fafc;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
-/* Input Focus */
-.input-box input:focus {
-  border-color: #5ca9ff;
-  box-shadow: 0 0 0 2px rgba(92, 169, 255, 0.2);
+@media (max-width: 900px) {
+  .register-img {
+    display: none;
+  }
+  .register-form {
+    padding: 2rem;
+  }
 }
 
-/* Placeholder */
-.input-box input::placeholder {
-  color: #888;
+.register-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* ================= TERMS ================= */
-.terms {
-  margin: 12px 0 22px;
-  font-size: 14px;
-  color: #333;
+.terms-container {
+  margin: 1rem 0;
 }
 
-.terms span {
-  color: #000;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* ================= BUTTON ================= */
-.register-btn {
-  background: #5ca9ff;
-  border: none;
-  padding: 12px 28px;
-  color: #ffffff;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 15px;
-  transition: background 0.2s ease;
-}
-
-.register-btn:hover {
-  background: #4a98f0;
-}
-
-.register-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* ================= FOOTER LINK ================= */
 .already {
-  margin-top: 18px;
-  font-size: 14px;
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #64748b;
+  font-size: 0.95rem;
 }
 
 .login-link {
-  color: #007bff;
+  color: #f40606;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .login-link:hover {
   text-decoration: underline;
 }
 
-/* ================= IMAGE ================= */
-.register-img {
-  width: 45%;
-  display: flex;
-  justify-content: center;
+/* LOCAL INPUT STYLING (MUI Fix) */
+.register-form .MuiOutlinedInput-root {
+  border-radius: 12px !important;
+  color: #000 !important; /* Forces typed text to BLACK */
 }
 
-.register-img img {
-  width: 100%;
-  max-width: 380px;
-  object-fit: contain;
+.register-form .MuiOutlinedInput-notchedOutline {
+  border-color: #444 !important;
+  border-width: 1px !important;
 }
 
-/* ================= RESPONSIVE ================= */
-@media (max-width: 900px) {
-  .register-card {
-    flex-direction: column;
-    padding: 30px;
-  }
-
-  .register-form,
-  .register-img {
-    width: 100%;
-  }
-
-  .register-img {
-    margin-top: 30px;
-  }
-
-  
+.register-form .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #f40606 !important;
+  border-width: 2px !important;
 }
 
-/* 
-.role-selection {
-  margin-bottom: 20px;
+.register-form .MuiInputLabel-root.Mui-focused {
+  color: #f40606 !important;
 }
-
-.role-label {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
-  text-align: left;
-}
-
-.role-options {
-  display: flex;
-  gap: 15px;
-}
-
-.role-item {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.role-item input {
-  display: none; /* Hide original radio button */
-/* }
-
-.role-item span {
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.role-item.active {
-  border-color: #4F46E5;
-  background-color: #f5f3ff;
-  color: #4F46E5;
-  box-shadow: 0 0 0 1px #4F46E5;
-}  */

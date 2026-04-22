@@ -77,13 +77,15 @@ namespace ServAd.ApiService.Services.Verification.Service
                     // 4. Notify User (RabbitMQ) - Wrapped to prevent rolling back DB on MQ failure
                     try
                     {
+                        var statusMessage = status == VerificationStatus.Approved 
+                            ? "Your document verification has been approved! You can now access full provider features." 
+                            : $"Your document verification was {status}. Admin note: {Message}";
+
                         await rabbitMQ.PublishMessageAsync(new
                         {
-                            doc.ProfileId,
-                            DocumentId = doc.Id,
-                            NewStatus = status.ToString(),
-                            AdminNote = Message,
-                            Timestamp = DateTime.UtcNow
+                            ProfileId = doc.ProfileId,
+                            Title = $"Document Verification {status}",
+                            Message = statusMessage
                         }, "user_notification_queue");
                     }
                     catch (Exception ex)

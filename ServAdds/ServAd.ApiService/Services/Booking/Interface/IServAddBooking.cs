@@ -1,4 +1,4 @@
-﻿using ShareLibrary.cs.Data.Entities;
+using ShareLibrary.cs.Data.Entities;
 using ShareLibrary.cs.Data.Enums;
 
 namespace ServAd.ApiService.Services.Booking.Interface
@@ -10,7 +10,7 @@ namespace ServAd.ApiService.Services.Booking.Interface
         Task<Bookings> GetByIdAsync(Guid id);
         // ✅ Interface now strictly uses the Model (Entity)
         Task<Bookings> CreateAsync(Bookings booking);
-        Task UpdateStatusAsync(Guid id, BookingStatus status);
+        Task UpdateStatusAsync(Guid id, BookingStatus status, string? gateway = null);
         Task DeleteAsync(Guid id);
     }
 }

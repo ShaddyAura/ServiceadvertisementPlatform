@@ -35,7 +35,7 @@ const Notification = ({ notifications, setNotifications }) => {
   return (
     <Menu as="div" className="notification-menu-container">
       <Menu.Button className="notification-bell-btn">
-        <Bell size={22} />
+        <Bell size={22} color="#facc15" />
         {unreadCount > 0 && (
           <span className="unread-badge">
             {unreadCount > 9 ? '9+' : unreadCount}

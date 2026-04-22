@@ -50,10 +50,9 @@ namespace ServAd.ApiService.Services.RedeemGift.Service
             // 4. Notify via RabbitMQ (For persistent storage or other background processes)
             await rabbitMQ.PublishMessageAsync(new
             {
-                profileId,
-                Title = gift.Title,
-                Code = redeemedGift.VoucherCode,
-                Action = "VoucherGenerated"
+                ProfileId = profileId,
+                Title = "Reward Redeemed",
+                Message = $"Gift: {gift.Title}. Your code is: {redeemedGift.VoucherCode}"
             }, "user_notification_queue");
 
             logger.LogInformation("Voucher {Code} created for Profile {Id}", redeemedGift.VoucherCode, profileId);

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
-using ShareLibrary.cs.Data.Entities; // Ensure this points to your ChatMessage model
+using ShareLibrary.cs.Data.Entities;
 
 namespace ServAd.ApiService.Hubs
 {

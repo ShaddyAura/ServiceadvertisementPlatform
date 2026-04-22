@@ -17,5 +17,16 @@ namespace ServAd.ApiService.Services.UserPayment.Service
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<BookingPayment>> GetProviderEarningsAsync(Guid profileId)
+        {
+            return await context.BookingPayments
+                .Include(p => p.Booking)
+                    .ThenInclude(b => b.Service)
+                .Where(p => p.ProviderProfileId == profileId)
+                .OrderByDescending(p => p.CreatedAt)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

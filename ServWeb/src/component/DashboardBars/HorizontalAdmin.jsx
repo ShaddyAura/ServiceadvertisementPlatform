@@ -2,15 +2,28 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./HorizontalAdmin.css"; 
 import Logo from "../Logo"; 
-import { FaUserShield, FaCommentDots, FaUserCircle } from "react-icons/fa";
+import { FaUserShield, FaCommentDots, FaUserCircle, FaLock, FaSignOutAlt, FaCog } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
+import { logoutUser } from "../../api/AccountApi";
 import Notification from "../Notifications/Notification"; 
 import { useNotifications } from "../Notifications/useNotifications"; 
 
 const HorizontalAdmin = () => {
   const [nepalTime, setNepalTime] = useState("");
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      setUser(null);
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed", err);
+      setUser(null);
+      navigate("/login");
+    }
+  };
 
   // Notification integration (was missing)
   const { notifications, setNotifications } = useNotifications(user?.profileId);
@@ -73,8 +86,13 @@ const HorizontalAdmin = () => {
               </div>
             </div>
             <hr />
-            <div className="hover-footer" onClick={() => navigate("/settings")}>
-               View Settings
+            <div className="hover-footer-links">
+               <div className="hover-link-item" onClick={() => navigate("/change-password")}>
+                 <FaLock /> <span>Change Password</span>
+               </div>
+               <div className="hover-link-item logout-link" onClick={handleLogout}>
+                 <FaSignOutAlt /> <span>Logout</span>
+               </div>
             </div>
           </div>
         </div>

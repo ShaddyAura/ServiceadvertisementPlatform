@@ -1,0 +1,41 @@
+.bal-card {
+    flex: 1;
+    padding: 12px 18px;
+    border-radius: 12px;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.bal-card.esewa { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+.bal-card.khalti { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+
+.bal-card span { font-size: 0.75rem; opacity: 0.9; }
+.bal-card h6 { margin: 0; font-weight: 700; font-size: 1.1rem; }
+
+.badge-method {
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.badge-method.esewa { background: #dcfce7; color: #15803d; }
+.badge-method.khalti { background: #e0e7ff; color: #4338ca; }
+
+.status-tag {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-tag.pending { background: #fef3c7; color: #b45309; }
+.status-tag.approved { background: #ecfdf5; color: #10b981; }
+.status-tag.rejected { background: #fef2f2; color: #ef4444; }
+
+.table th { font-weight: 700; font-size: 0.8rem; border: none; }
+.table td { border-bottom: 1px solid #f1f5f9; padding: 16px 8px; }
+
+.form-label { color: #475569; }
+.form-control, .form-select { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
+.form-control:focus, .form-select:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }

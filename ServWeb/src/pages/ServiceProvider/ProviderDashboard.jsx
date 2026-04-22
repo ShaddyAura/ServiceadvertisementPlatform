@@ -13,27 +13,8 @@ import {
 } from "recharts";
 import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
-import { fetchAllBookings, fetchProfileById, GetStrikeStatus, claimDailyReward } from "../../api/AccountApi";
+import { fetchAllBookings, fetchProfileById, GetStrikeStatus, claimDailyReward, getWallet, fetchAllServices, getServiceReviews } from "../../api/AccountApi";
 import "./ProviderDashboard.css";
-const earningsData = [
-  { month: "Jan", earnings: 2400 },
-  { month: "Feb", earnings: 3800 },
-  { month: "Mar", earnings: 3200 },
-  { month: "Apr", earnings: 5100 },
-  { month: "May", earnings: 4200 },
-  { month: "Jun", earnings: 6800 },
-  { month: "Jul", earnings: 5900 },
-];
-
-const weeklyData = [
-  { day: "Mon", jobs: 3 },
-  { day: "Tue", jobs: 5 },
-  { day: "Wed", jobs: 2 },
-  { day: "Thu", jobs: 7 },
-  { day: "Fri", jobs: 4 },
-  { day: "Sat", jobs: 6 },
-  { day: "Sun", jobs: 1 },
-];
 
 const ProviderDashboard = () => {
   const { user } = useAuth();
@@ -41,31 +22,186 @@ const ProviderDashboard = () => {
     totalEarnings: 0,
     activeBookings: 0,
     completedJobs: 0,
-    avgRating: 4.8
+    pointsSpent: 0,
+    repeatClients: 0
   });
+  
+  const [smartAlerts, setSmartAlerts] = useState({ pending: 0, unpaid: 0, lowBalance: false, balance: 0 });
+  const [recentReviews, setRecentReviews] = useState([]);
+  
+  const [earningsData, setEarningsData] = useState([]);
+  const [weeklyData, setWeeklyData] = useState([]);
+
   const [profile, setProfile] = useState({ boostingPoints: 0, fullName: "Provider", walletId: null });
   const [strikeInfo, setStrikeInfo] = useState({ canClaim: false, currentStrike: 0 });
   const [recentBookings, setRecentBookings] = useState([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [topServices, setTopServices] = useState([]);
 
   useEffect(() => {
     const getDashboardStats = async () => {
       try {
         const res = await fetchAllBookings();
-        const data = res.data || [];
+        let allBookings = res.data || [];
         
-        const completed = data.filter(b => b.status === 3 || b.Status === 3);
-        const active = data.filter(b => b.status === 1 || b.status === 2);
+        // Fetch services to fix service title mapping issue
+        try {
+           const sRes = await fetchAllServices();
+           const allSvc = sRes.data || [];
+           allBookings = allBookings.map(b => {
+              const sid = b.serviceId || b.ServiceId;
+              const svc = allSvc.find(x => String(x.id||x.Id) === String(sid));
+              return { ...b, service: svc || b.service };
+           });
+        } catch(e) { console.warn("Failed to stitch services", e); }
+        
+        // Ensure we only see bookings for the logged in PROVIDER
+        const providerBookings = allBookings.filter(b => 
+          String(b.providerProfileId || b.ProviderProfileId) === String(user?.profileId) || String(b.service?.profileId) === String(user?.profileId)
+        );
+
+        const completed = providerBookings.filter(b => {
+          const s = b.status ?? b.Status;
+          return s === 3 || s === 4 || s === "Completed" || s === "Paid";
+        });
+        const active = providerBookings.filter(b => {
+          const s = b.status ?? b.Status;
+          return s === 0 || s === 1 || s === 2 || s === "Pending" || s === "Confirmed" || s === "InProcess";
+        });
         const earnings = completed.reduce((sum, b) => sum + (b.agreedPrice || b.AgreedPrice || 0), 0);
+        // --- Repeat Customers & Smart Alerts ---
+        const pendingCount = providerBookings.filter(b => (b.status ?? b.Status) === 0 || (b.status ?? b.Status) === "Pending").length;
+        const unpaidCount = providerBookings.filter(b => (b.status ?? b.Status) === 3 || (b.status ?? b.Status) === "Completed").length;
+        setSmartAlerts(prev => ({ ...prev, pending: pendingCount, unpaid: unpaidCount }));
+
+        const clientCounts = {};
+        providerBookings.forEach(b => {
+             const pid = String(b.profileId || b.ProfileId || "unknown");
+             if(!clientCounts[pid]) clientCounts[pid] = 0;
+             clientCounts[pid]++;
+        });
+        const repeatCount = Object.values(clientCounts).filter(c => c > 1).length;
 
         setStats(prev => ({
           ...prev,
           totalEarnings: earnings,
           activeBookings: active.length,
-          completedJobs: completed.length
+          completedJobs: completed.length,
+          repeatClients: repeatCount
         }));
 
-        // Get recent bookings for the table
-        setRecentBookings(data.slice(0, 5));
+        // --- Monthly Earnings Chart (Dynamic 6 months) ---
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const currentMonthIdx = new Date().getMonth();
+        
+        const generatedMonthlyEarnings = [];
+        for(let i=5; i>=0; i--) {
+           let m = currentMonthIdx - i;
+           if(m < 0) m += 12;
+           generatedMonthlyEarnings.push({ month: months[m], monthIndex: m, earnings: 0 });
+        }
+
+        completed.forEach(b => {
+            const d = new Date(b.scheduledEnd || b.ScheduledEnd || b.createdAt || b.CreatedAt);
+            if(!isNaN(d.getTime())) {
+                const bMonth = d.getMonth();
+                const targetMatch = generatedMonthlyEarnings.find(m => m.monthIndex === bMonth);
+                // Accept if it's within the trailing year
+                if (targetMatch && d.getFullYear() >= (new Date().getFullYear() - 1)) {
+                    targetMatch.earnings += (b.agreedPrice || b.AgreedPrice || 0);
+                }
+            }
+        });
+        setEarningsData(generatedMonthlyEarnings);
+
+        // --- Weekly Jobs Chart (Group all recent jobs by Day) ---
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const generatedWeekStats = days.map(d => ({ day: d, jobs: 0 }));
+        
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+        
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+        
+        // Add all jobs to the dynamic weekday graph
+        providerBookings.forEach(b => {
+             let rawDate = b.scheduledStart || b.ScheduledStart || b.createdAt || b.CreatedAt;
+             if (typeof rawDate === 'string' && !rawDate.endsWith('Z')) {
+                 rawDate += 'Z'; // Force UTC interpretation to fix timezone shift
+             }
+             const d = new Date(rawDate);
+             if(!isNaN(d.getTime())) {
+                 // Only count bookings arriving strictly within the current week bounds
+                 if(d.getTime() >= startOfWeek.getTime() && d.getTime() <= endOfWeek.getTime()) {
+                     generatedWeekStats[d.getDay()].jobs += 1;
+                 }
+             }
+        });
+        setWeeklyData(generatedWeekStats);
+
+        // --- Recent Bookings Table (Top 5) ---
+        const sortedDesc = [...providerBookings].sort(
+            (a,b) => new Date(b.scheduledStart || b.createdAt) - new Date(a.scheduledStart || a.createdAt)
+        );
+        setRecentBookings(sortedDesc.slice(0, 5));
+
+        // --- Upcoming Appointments (Top 3 ahead of now) ---
+        const nowMs = now.getTime();
+        const upcoming = providerBookings.filter(b => {
+           let rawDate = b.scheduledStart || b.ScheduledStart || b.createdAt || b.CreatedAt;
+           if (typeof rawDate === 'string' && !rawDate.endsWith('Z')) rawDate += 'Z';
+           const bd = new Date(rawDate).getTime();
+           
+           const s = b.status ?? b.Status;
+           const isPendingOrConfirmed = (s === 0 || s === 1 || s === "Pending" || s === "Confirmed");
+           return isPendingOrConfirmed && bd >= (nowMs - 43200000); // 12 hours leniency
+        }).sort((a,b) => {
+           let da = new Date(a.scheduledStart || a.ScheduledStart || a.createdAt || a.CreatedAt).getTime();
+           let db = new Date(b.scheduledStart || b.ScheduledStart || b.createdAt || b.CreatedAt).getTime();
+           return da - db;
+        }).slice(0, 3);
+        setUpcomingAppointments(upcoming);
+
+        // --- Top Performing Services (Top 3 by booking count) ---
+        const svcGroups = {};
+        providerBookings.forEach(b => {
+           const sId = b.serviceId || b.ServiceId || "Unknown";
+           const sTitle = b.service?.title || b.service?.Title || b.serviceListing?.title || "Unknown Service";
+           if(!svcGroups[sId]) svcGroups[sId] = { title: sTitle, count: 0, revenue: 0 };
+           
+           svcGroups[sId].count += 1;
+           const st = b.status ?? b.Status;
+           if (st === 3 || st === 4 || st === "Completed" || st === "Paid") {
+               svcGroups[sId].revenue += (b.agreedPrice || b.AgreedPrice || 0);
+           }
+        });
+        const topSvc = Object.values(svcGroups).sort((a,b) => b.count - a.count).slice(0, 3);
+        setTopServices(topSvc);
+
+        // --- Fetch Live Service Reviews ---
+        try {
+           const mySvcObj = {};
+           providerBookings.forEach(b => {
+               const sid = b.serviceId || b.ServiceId;
+               if(sid) mySvcObj[sid] = true;
+           });
+           const mySvcList = Object.keys(mySvcObj);
+           const revPromises = mySvcList.map(id => getServiceReviews(id).catch(e => ({data: []})));
+           const revResponses = await Promise.all(revPromises);
+           
+           let allRevs = [];
+           revResponses.forEach(r => {
+               if(r?.data && Array.isArray(r.data)) allRevs = allRevs.concat(r.data);
+           });
+           allRevs.sort((a,b) => new Date(b.createdAt || b.CreatedAt).getTime() - new Date(a.createdAt || a.CreatedAt).getTime());
+           
+           setRecentReviews(allRevs.slice(0, 4));
+        } catch(e) { console.warn("Failed to stitch reviews", e); }
+
       } catch (err) {
         console.error("Dashboard stats error:", err);
       }
@@ -74,12 +210,30 @@ const ProviderDashboard = () => {
         if (user?.profileId) {
           const profileRes = await fetchProfileById(user.profileId);
           const profData = profileRes.data || {};
-          setProfile(profData);
+          
+          const combinedFullName = (profData.fullName && profData.fullName !== "User" && profData.fullName !== "Provider" && profData.fullName !== "Gamer")
+            ? profData.fullName 
+            : (user.fullname && user.fullname !== "User" && user.fullname !== "Provider" && user.fullname !== "Gamer" ? user.fullname : "Provider");
+
+          setProfile({
+            ...profData,
+            fullName: combinedFullName
+          });
           
           if (profData.walletId) {
             const strikeRes = await GetStrikeStatus(profData.walletId);
             setStrikeInfo(strikeRes.data);
           }
+          
+          try {
+            const walletRes = await getWallet(user.profileId);
+            if (walletRes.data) {
+                const w = walletRes.data;
+                const spent = (w.lifetimePurchasedPoints || 0) - (w.pointsBalance || 0);
+                setStats(prev => ({ ...prev, pointsSpent: Math.max(0, Math.floor(spent)) }));
+                setSmartAlerts(prev => ({ ...prev, lowBalance: w.pointsBalance < 500, balance: w.pointsBalance }));
+            }
+          } catch(e) { console.warn("Wallet fetch failed", e); }
         }
       } catch (err) {
         console.error("Error loading profile/strike info:", err);
@@ -93,7 +247,7 @@ const ProviderDashboard = () => {
       label: "Total Revenue", 
       value: `Rs. ${stats.totalEarnings.toLocaleString()}`, 
       icon: <FaMoneyBillWave />, 
-      trend: "+18.2%", 
+      trend: "+Dynamic", 
       trendUp: true,
       color: "provider-card-emerald"
     },
@@ -101,36 +255,40 @@ const ProviderDashboard = () => {
       label: "Active Requests", 
       value: stats.activeBookings, 
       icon: <FaUserClock />, 
-      trend: "+5 new", 
-      trendUp: true,
+      trend: `${stats.activeBookings} active`, 
+      trendUp: stats.activeBookings > 0,
       color: "provider-card-blue"
     },
     { 
       label: "Completed Jobs", 
       value: stats.completedJobs, 
       icon: <FaCalendarCheck />, 
-      trend: "+12 this week", 
+      trend: `${stats.completedJobs} total`, 
       trendUp: true,
       color: "provider-card-violet"
     },
     { 
-      label: "Avg Rating", 
-      value: stats.avgRating, 
+      label: "Points Spent", 
+      value: stats.pointsSpent, 
       icon: <FaStar />, 
-      trend: "Top 10%", 
+      trend: "Total Boost Inv.", 
       trendUp: true,
       color: "provider-card-amber"
     },
   ];
 
   const getStatusLabel = (status) => {
-    switch (status) {
+    // Graceful check if status comes back dynamically configured as Int or String
+    const mapStr = typeof status === 'string' ? { "Pending": 0, "Confirmed": 1, "InProcess": 2, "Completed": 3, "Paid": 4, "Cancelled": 5, "Disputed": 6 }[status] : status;
+    switch (mapStr ?? status) {
       case 0: return { text: "Pending", cls: "status-pending" };
-      case 1: return { text: "Accepted", cls: "status-active" };
+      case 1: return { text: "Confirmed", cls: "status-active" };
       case 2: return { text: "In Progress", cls: "status-active" };
       case 3: return { text: "Completed", cls: "status-completed" };
-      case 4: return { text: "Cancelled", cls: "status-cancelled" };
-      default: return { text: "Unknown", cls: "status-pending" };
+      case 4: return { text: "Paid", cls: "status-completed" };
+      case 5: return { text: "Cancelled", cls: "status-cancelled" };
+      case 6: return { text: "Disputed", cls: "status-cancelled" };
+      default: return { text: "Pending", cls: "status-pending" };
     }
   };
 
@@ -147,8 +305,8 @@ const ProviderDashboard = () => {
       <div className="provider-hero">
         <div className="provider-hero-content">
           <div className="provider-hero-text">
-            <h1>{getGreeting()}, {user?.fullname?.split(' ')[0] || "Provider"}! 👋</h1>
-            <p>Here's what's happening with your services today.</p>
+            <h1>{getGreeting()}, {profile?.fullName?.split(' ')[0] || user?.fullname?.split(' ')[0] || "Provider"}! 👋</h1>
+            <p>Here's your live dynamic data analysis for your services.</p>
           </div>
           <div className="provider-hero-badge">
             <FaStar className="provider-hero-star" />
@@ -175,6 +333,30 @@ const ProviderDashboard = () => {
         </div>
       </div>
 
+      {/* Smart Action Alerts */}
+      {(smartAlerts.pending > 0 || smartAlerts.unpaid > 0 || smartAlerts.lowBalance) && (
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          {smartAlerts.pending > 0 && (
+            <div className="provider-stat-card" style={{ flex: 1, padding: '12px 18px', background: '#fffbeb', borderLeft: '4px solid #f59e0b', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: 'none' }}>
+               <div style={{ fontSize: '1.2rem', color: '#f59e0b' }}>⚠️</div>
+               <div style={{ fontSize: '0.85rem', color: '#92400e' }}><strong>{smartAlerts.pending} Pending requests</strong> waiting for your approval.</div>
+            </div>
+          )}
+          {smartAlerts.unpaid > 0 && (
+            <div className="provider-stat-card" style={{ flex: 1, padding: '12px 18px', background: '#f0fdf4', borderLeft: '4px solid #10b981', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: 'none' }}>
+               <div style={{ fontSize: '1.2rem', color: '#10b981' }}>💳</div>
+               <div style={{ fontSize: '0.85rem', color: '#065f46' }}><strong>{smartAlerts.unpaid} Completed jobs</strong> waiting for the client to pay.</div>
+            </div>
+          )}
+          {smartAlerts.lowBalance && (
+            <div className="provider-stat-card" style={{ flex: 1, padding: '12px 18px', background: '#fef2f2', borderLeft: '4px solid #ef4444', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: 'none' }}>
+               <div style={{ fontSize: '1.2rem', color: '#ef4444' }}>📉</div>
+               <div style={{ fontSize: '0.85rem', color: '#991b1b' }}><strong>Low Wallet Points ({smartAlerts.balance}).</strong> Consider top-up to maintain boosts.</div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Stat Cards */}
       <div className="provider-stats-grid">
         {statCards.map((card, i) => (
@@ -198,7 +380,7 @@ const ProviderDashboard = () => {
       <div className="provider-charts-row">
         <div className="provider-chart-card provider-chart-main">
           <div className="provider-chart-head">
-            <h5>💰 Monthly Earnings</h5>
+            <h5>💰 Monthly Earnings (Dynamic)</h5>
           </div>
           <div className="provider-chart-area">
             <ResponsiveContainer width="100%" height={260}>
@@ -224,7 +406,7 @@ const ProviderDashboard = () => {
 
         <div className="provider-chart-card provider-chart-side">
           <div className="provider-chart-head">
-            <h5>📊 Weekly Jobs</h5>
+            <h5>📊 Weekly Booking Count</h5>
           </div>
           <div className="provider-chart-area">
             <ResponsiveContainer width="100%" height={260}>
@@ -260,59 +442,114 @@ const ProviderDashboard = () => {
               <tbody>
                 {recentBookings.length > 0 ? recentBookings.map((b, i) => {
                   const s = getStatusLabel(b.status || b.Status || 0);
+                  const custName = b.profile?.fullName || b.Profile?.FullName || "Customer";
+                  const sTitle = b.service?.title || b.service?.Title || b.serviceListing?.title || b.Service?.Title || "Service Job";
                   return (
                     <tr key={i}>
-                      <td className="provider-td-name">{b.customerName || b.CustomerName || "Customer"}</td>
-                      <td>{b.serviceTitle || b.ServiceTitle || "Service"}</td>
+                      <td className="provider-td-name">{custName}</td>
+                      <td>{sTitle}</td>
                       <td className="provider-td-amount">Rs. {b.agreedPrice || b.AgreedPrice || 0}</td>
                       <td><span className={`provider-status-badge ${s.cls}`}>{s.text}</span></td>
                     </tr>
                   );
                 }) : (
-                  <tr><td colSpan="4" className="provider-empty">No bookings yet</td></tr>
+                  <tr><td colSpan="4" className="provider-empty">No dynamic bookings found</td></tr>
                 )}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Tips & Insights */}
+        {/* Recent Customer Reviews */}
         <div className="provider-tips-card">
           <div className="provider-chart-head">
-            <h5>💡 Tips & Insights</h5>
+            <h5>⭐ Recent Customer Reviews</h5>
           </div>
           <div className="provider-tips-list">
-            <div className="provider-tip-item tip-gold">
-              <div className="provider-tip-icon">⚡</div>
-              <div>
-                <h6>Respond Quickly</h6>
-                <p>Responding within 1 hour increases your hire rate by 40%!</p>
-              </div>
-            </div>
-            <div className="provider-tip-item tip-blue">
-              <div className="provider-tip-icon">📸</div>
-              <div>
-                <h6>Upload Portfolio</h6>
-                <p>Providers with videos get 3x more bookings.</p>
-              </div>
-            </div>
-            <div className="provider-tip-item tip-green">
-              <div className="provider-tip-icon">🎯</div>
-              <div>
-                <h6>Boost Your Service</h6>
-                <p>Use earned points to boost visibility and reach more customers.</p>
-              </div>
-            </div>
-            <div className="provider-tip-item tip-purple">
-              <div className="provider-tip-icon">⭐</div>
-              <div>
-                <h6>Collect Reviews</h6>
-                <p>Ask happy clients for reviews. Higher ratings = more bookings.</p>
-              </div>
-            </div>
+             {recentReviews.length > 0 ? recentReviews.map((r, i) => {
+                const rating = r.rating || r.Rating || 5;
+                const comment = r.comment || r.Comment || "Great service!";
+                const profile = r.profile || r.Profile || {};
+                const fName = profile.firstName || profile.FirstName || "Customer";
+                const lName = profile.lastName || profile.LastName || "";
+                return (
+                <div className="provider-tip-item tip-purple" key={i}>
+                  <div className="provider-tip-icon" style={{ marginTop: '-4px' }}>
+                     <div style={{ background: '#e0e7ff', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', color: '#4338ca', fontWeight: 'bold' }}>
+                        {fName[0]}
+                     </div>
+                  </div>
+                  <div style={{ flex: 1, marginLeft: '8px' }}>
+                    <h6 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                        <span>{fName} {lName}</span>
+                        <span style={{ fontSize: '0.7rem' }}>
+                           {'⭐'.repeat(rating)}<span style={{color: '#cbd5e1'}}>{'⭐'.repeat(5-rating)}</span>
+                        </span>
+                    </h6>
+                    <p style={{ margin: 0, fontStyle: 'italic', fontSize: '0.8rem' }}>"{comment}"</p>
+                  </div>
+                </div>
+             )}) : <div className="provider-empty">No reviews collected yet. Keep up the good work!</div>}
           </div>
         </div>
       </div>
+
+      {/* Third Row (Extra Widgets) */}
+      <div className="provider-bottom-row" style={{ marginTop: '1.25rem' }}>
+        {/* Upcoming Appointments */}
+        <div className="provider-bookings-card">
+          <div className="provider-chart-head">
+            <h5>⏳ Upcoming Appointments</h5>
+          </div>
+          <div className="provider-tips-list">
+             {upcomingAppointments.length > 0 ? upcomingAppointments.map((b, i) => {
+              const custName = b.profile?.fullName || b.Profile?.FullName || "Customer";
+              const sTitle = b.service?.title || b.service?.Title || b.serviceListing?.title || "Service";
+              const dateRaw = b.scheduledStart || b.ScheduledStart || b.createdAt || b.CreatedAt;
+              const dateObj = new Date(dateRaw);
+              const dateStr = dateObj.toLocaleDateString('en-GB') + " " + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+              return (
+                <div className="provider-tip-item tip-blue" key={i}>
+                  <div className="provider-tip-icon">📅</div>
+                  <div style={{ flex: 1 }}>
+                    <h6 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <span>{sTitle}</span>
+                        <span style={{ fontSize: '0.75rem', color: '#3b82f6', fontWeight: 'bold' }}>{dateStr}</span>
+                    </h6>
+                    <p style={{ margin: 0 }}>Client: {custName}</p>
+                  </div>
+                </div>
+              )
+            }) : <div className="provider-empty">No immediate upcoming appointments found</div>}
+          </div>
+        </div>
+
+        {/* Top Performing Services */}
+        <div className="provider-tips-card">
+          <div className="provider-chart-head">
+            <h5>🏆 Top Performing Services</h5>
+          </div>
+          <div className="provider-tips-list">
+             {topServices.length > 0 ? topServices.map((s, i) => {
+              return (
+                <div className="provider-tip-item tip-gold" key={i}>
+                  <div className="provider-tip-icon" style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#f59e0b' }}>#{i+1}</div>
+                  <div style={{ flex: 1, marginLeft: '10px' }}>
+                    <h6 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <span>{s.title}</span>
+                        <span style={{ fontSize: '0.8rem', color: '#b45309', fontWeight: 'bold', background: '#fef3c7', padding: '2px 8px', borderRadius: '10px' }}>
+                          {s.count} Bookings
+                        </span>
+                    </h6>
+                    <p style={{ margin: 0, color: '#10b981', fontWeight: 'bold' }}>Revenue generated: Rs. {s.revenue}</p>
+                  </div>
+                </div>
+              )
+            }) : <div className="provider-empty">No performance data established yet</div>}
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };

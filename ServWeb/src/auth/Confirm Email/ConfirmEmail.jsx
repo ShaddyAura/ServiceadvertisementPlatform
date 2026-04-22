@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import "./ConfirmEmail.css";
 import { verifyEmailCode, resendVerificationEmail } from "../../api/AccountApi";
+import Logo from "../../component/Logo";
 
 export default function ConfirmEmail() {
   const [params] = useSearchParams();
@@ -71,7 +72,12 @@ export default function ConfirmEmail() {
 
   return (
     <div className="confirm-page">
-      <div className="confirm-card">
+      <nav className="auth-navbar">
+        <Logo />
+      </nav>
+
+      <div className="confirm-wrapper">
+        <div className="confirm-card">
         <h2>Check your inbox</h2>
         <p className="subtitle">
           Enter the verification code sent to your email
@@ -102,7 +108,8 @@ export default function ConfirmEmail() {
             {resendLoading ? "Resending..." : "Resend email"}
           </span>
         </p>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
 }

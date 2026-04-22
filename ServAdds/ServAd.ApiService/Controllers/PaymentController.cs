@@ -80,7 +80,8 @@ namespace ServAd.ApiService.Controllers
             [FromQuery] string gateway,
             [FromQuery] string? pidx,
             [FromQuery] string? data,
-            [FromQuery] Guid? id)
+            [FromQuery] Guid? id,
+            [FromQuery] string? status)
         {
             try
             {
@@ -90,12 +91,15 @@ namespace ServAd.ApiService.Controllers
                     if (string.IsNullOrEmpty(pidx))
                         return BadRequest("Missing pidx for Khalti verification");
 
+                    if (status == "User_cancelled")
+                        return BadRequest("Payment was cancelled by the user.");
+
                     bool isValid = await _paymentService.VerifyKhaltiPaymentAsync(pidx);
-                    if (!isValid) return BadRequest("Khalti verification failed");
+                    if (!isValid) return BadRequest("Khalti verification failed or was cancelled.");
 
                     if (id.HasValue)
                     {
-                        await _bookingService.UpdateStatusAsync(id.Value, BookingStatus.Paid);
+                        await _bookingService.UpdateStatusAsync(id.Value, BookingStatus.Paid, "khalti");
                     }
                     return Ok(new { message = "Booking payment verified via Khalti" });
                 }
@@ -117,15 +121,15 @@ namespace ServAd.ApiService.Controllers
                     if (payload == null)
                         return BadRequest("Invalid eSewa callback data");
 
-                    var status = payload.GetValueOrDefault("status").GetString();
-                    if (status != "COMPLETE")
-                        return BadRequest($"eSewa payment status: {status}");
+                    var eSewaStatus = payload.GetValueOrDefault("status").GetString();
+                    if (eSewaStatus != "COMPLETE")
+                        return BadRequest($"eSewa payment status: {eSewaStatus}");
 
                     string txUuid = payload["transaction_uuid"].GetString() ?? string.Empty;
                     string totalAmt = payload["total_amount"].GetString()?.Replace(",", "") ?? "0";
 
                     // Verify signature
-                    string dataToSign = $"transaction_code={payload["transaction_code"].GetString() ?? ""},status={status},total_amount={totalAmt},transaction_uuid={txUuid},product_code={payload.GetValueOrDefault("product_code").GetString() ?? "EPAYTEST"},signed_field_names={payload["signed_field_names"].GetString() ?? ""}";
+                    string dataToSign = $"transaction_code={payload["transaction_code"].GetString() ?? ""},status={eSewaStatus},total_amount={totalAmt},transaction_uuid={txUuid},product_code={payload.GetValueOrDefault("product_code").GetString() ?? "EPAYTEST"},signed_field_names={payload["signed_field_names"].GetString() ?? ""}";
                     string providedSignature = payload["signature"].GetString() ?? string.Empty;
 
                     if (!_paymentService.VerifyEsewaSignature(dataToSign, providedSignature))
@@ -138,7 +142,7 @@ namespace ServAd.ApiService.Controllers
                     var bookingIdStr = txUuid.Split("_")[0];
                     if (Guid.TryParse(bookingIdStr, out var bookingId))
                     {
-                        await _bookingService.UpdateStatusAsync(bookingId, BookingStatus.Paid);
+                        await _bookingService.UpdateStatusAsync(bookingId, BookingStatus.Paid, "esewa");
                         return Ok(new { message = "Booking payment verified via eSewa" });
                     }
 
@@ -197,7 +201,8 @@ namespace ServAd.ApiService.Controllers
             [FromQuery] string? pidx,
             [FromQuery] string? data,
             [FromQuery] int pts,
-            [FromQuery] decimal amt)
+            [FromQuery] decimal amt,
+            [FromQuery] string? status)
         {
             var profileIdStr = User.FindFirst("ProfileId")?.Value
                 ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -213,8 +218,11 @@ namespace ServAd.ApiService.Controllers
                     if (string.IsNullOrEmpty(pidx))
                         return BadRequest("Missing pidx for Khalti verification");
 
+                    if (status == "User_cancelled")
+                        return BadRequest("Payment was cancelled by the user.");
+
                     bool isValid = await _paymentService.VerifyKhaltiPaymentAsync(pidx);
-                    if (!isValid) return BadRequest("Khalti verification failed");
+                    if (!isValid) return BadRequest("Khalti verification failed or was cancelled.");
 
                     await _walletService.PurchasePointsAsync(profileId, amt, pts, "khalti");
                     return Ok(new { message = "Points purchased via Khalti" });

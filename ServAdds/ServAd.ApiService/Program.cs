@@ -104,8 +104,9 @@ builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.Extern
 });
 
 // ============================================================================
-// 4. JWT Configuration
+// 4. JWT & RabbitMQ Configuration
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMQ"));
 
 var jwtSettings = builder.Configuration
     .GetSection(JwtSettings.SectionName)
@@ -135,11 +136,7 @@ options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = signingKey,
         ClockSkew = TimeSpan.Zero,
-        RoleClaimType = ClaimTypes.Role,
-
-       
-        TokenDecryptionKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtSettings.EncryptingKey ?? string.Empty))
+        RoleClaimType = ClaimTypes.Role
     };
 
 

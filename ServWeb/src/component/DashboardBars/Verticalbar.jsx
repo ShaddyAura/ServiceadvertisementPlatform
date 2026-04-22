@@ -10,6 +10,10 @@ import {
   FaMoneyBill,
   FaStar,
   FaSignOutAlt,
+  FaBullhorn,
+  FaGift,
+  FaCreditCard,
+  FaTags
 } from "react-icons/fa";
 
 const Verticalbar = () => {
@@ -22,10 +26,10 @@ const Verticalbar = () => {
     // { to: "/payments", label: "Payments", icon: <FaMoneyBill /> },
     // { to: "/reviews", label: "Reviews", icon: <FaStar /> },
     // { to: "/points", label: "points", icon: <FaStar /> },
-    { to: "/payments", label: "Payments", icon: <FaStar /> },
-    { to: "/reedems", label: "ReedemGifts", icon: <FaStar /> },
-    { to: "/gifts", label: "Gifts", icon: <FaStar /> },
-
+    { to: "/payments", label: "Payments", icon: <FaCreditCard /> },
+    { to: "/reedems", label: "Redeem Gifts", icon: <FaTags /> },
+    { to: "/gifts", label: "Gifts", icon: <FaGift /> },
+    { to: "/announcements", label: "Announcements", icon: <FaBullhorn /> },
 
     { to: "/login", label: "Logout", icon: <FaSignOutAlt />, className: "logout" },
   ];

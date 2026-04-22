@@ -11,21 +11,34 @@
     letter-spacing: -0.5px;
 }
 
-/* --- Form Controls --- */
-.custom-input-white {
-    background-color: #ffffff !important; 
+/* --- Form Controls UNIFIED --- */
+.custom-input-white,
+.form-control,
+.form-select {
+    background-color: #ffffff !important;
     border: 1.5px solid #ffcccc !important;
     border-radius: 8px !important;
-    padding: 12px 15px !important;
+    padding: 10px 15px !important;
     font-size: 14px !important;
     color: #000000 !important;
     -webkit-text-fill-color: #000000 !important;
     transition: all 0.25s ease;
+    height: 45px !important;
+    /* Forces exact uniform height */
+    line-height: normal !important;
 }
 
-.custom-input-white:focus {
+.custom-input-white:focus,
+.form-control:focus,
+.form-select:focus {
     border-color: #dc3545 !important;
     box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+}
+
+/* Special fix for select arrow centering */
+select.form-select {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 /* --- Force black text on all form elements --- */
@@ -45,9 +58,7 @@
 
 .manage-services-container select,
 .manage-services-container textarea,
-.manage-services-container input,
-.manage-services-container .form-control,
-.manage-services-container .form-select {
+.manage-services-container input {
     color: #000000 !important;
 }
 
@@ -71,30 +82,9 @@
 
 .add-service-card select,
 .add-service-card select option,
-.add-service-card .form-control[as="select"],
-.manage-services-container select.custom-input-white {
+.add-service-card .form-control[as="select"] {
     color: #000000 !important;
     -webkit-text-fill-color: #000000 !important;
-}
-
-/* .manage-services-container select.custom-input-white option {
-    color: #000000 !important;
-    background-color: #ffffff !important;
-} */
-/* Force selected value text to black */
-/* INPUTS & SELECTS */
-.form-control, .form-select {
-    background-color: #ffffff !important; 
-    color: #000000 !important; 
-    border: 2px solid #ffcccc !important; /* Light Red Input Border */
-    padding: 1rem !important; /* Taller inputs */
-    border-radius: 15px !important;
-    font-size: 1.05rem;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #ef4444 !important;
-    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.15) !important;
 }
 
 /* --- Media Styling --- */
@@ -114,7 +104,7 @@
 
 .media-cell-wrapper:hover {
     transform: scale(1.1);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .media-preview-item {
@@ -162,54 +152,40 @@
 
 /* --- Optimized Badge Logic --- */
 .badge {
-    /* Critical Fix: Ensure badge stays inside the cell flow */
-    position: relative !important; 
+    position: relative !important;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    
-    /* Sizing */
     padding: 5px 12px !important;
-    min-width: 80px; /* Ensures consistent width */
+    min-width: 80px;
     font-size: 12px !important;
     font-weight: 700 !important;
     border-radius: 6px !important;
-    
-    /* Reset any 'flying' properties */
-    top: auto !important;
-    right: auto !important;
-    float: none !important;
-    margin: 0 !important;
-
-    /* Theme: Black text + Light Red Border */
     color: #000000 !important;
     background-color: #ffffff !important;
     border: 1.5px solid #ffb3b3 !important;
     line-height: 1;
 }
 
-/* Category Badge (Standard) */
 .badge-category {
     background-color: #f8f9fa !important;
     border: 1px solid #dee2e6 !important;
 }
 
-/* --- Status Specifics (Overriding the border/background but keeping black text) --- */
-
 .status-active {
-    border-color: #28a745 !important; /* Green Border */
+    border-color: #28a745 !important;
     background-color: #f0fff4 !important;
 }
 
-.status-inactive, .status-pending {
-    border-color: #ffc107 !important; /* Yellow Border */
+.status-inactive,
+.status-pending {
+    border-color: #ffc107 !important;
     background-color: #fffbeb !important;
 }
 
-/* Ensure the Table Cell doesn't collapse */
 .custom-data-table td {
     vertical-align: middle !important;
-    height: 60px; /* Gives enough room for the badge */
+    height: 60px;
 }
 
 /* --- Pagination --- */
@@ -226,45 +202,6 @@
 
 /* --- Actions --- */
 .btn-action-transparent {
-    background: none;
-    border: none;
-    padding: 5px;
-    font-size: 18px;
-    transition: transform 0.2s ease;
-}
-
-.btn-action-transparent:hover {
-    transform: translateY(-2px);
-}
-
-.icon-teal { color: #0d9488; }
-.icon-red { color: #e11d48; }
-
-/* --- Animations --- */
-.animate-slide-down {
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-
-/* Review Button Specific Styling */
-.icon-blue {
-    color: #007bff; /* Standard Bootstrap Blue */
-    transition: all 0.2s ease-in-out;
-}
-
-.icon-blue:hover {
-    color: #0056b3;
-    background-color: rgba(0, 123, 255, 0.1);
-    transform: scale(1.1);
-}
-
-/* Base style for the transparent action buttons if not already defined */
-.btn-action-transparent {
     background: transparent;
     border: none;
     padding: 8px;
@@ -274,15 +211,55 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.btn-action-transparent:hover {
+    transform: translateY(-2px);
+}
+
+.icon-teal {
+    color: #0d9488;
+}
+
+.icon-red {
+    color: #e11d48;
+}
+
+.icon-blue {
+    color: #007bff;
+}
+
+.icon-blue:hover {
+    color: #0056b3;
+    background-color: rgba(0, 123, 255, 0.1);
+    transform: scale(1.1);
 }
 
 /* Star Rating Colors for the Review Page */
 .text-warning {
-    color: #ffc107 !important; /* Gold/Yellow for stars */
+    color: #ffc107 !important;
 }
 
 .star-rating {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+/* --- Animations --- */
+.animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

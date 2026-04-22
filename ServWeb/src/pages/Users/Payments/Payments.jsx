@@ -1,204 +1,316 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { FaArrowLeft, FaShieldAlt, FaWallet } from "react-icons/fa";
+import { FaArrowLeft, FaShieldAlt, FaTicketAlt, FaHistory, FaCheckCircle, FaMinusCircle } from "react-icons/fa";
 import { useAuth } from "../../../context/AuthContext";
-import { getWallet } from "../../../api/AccountApi"; // Ensure this path is correct
+import { initiateBookingPayment, getUserPaymentHistory } from "../../../api/AccountApi";
 import "./Payments.css";
 
 export default function Payment() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Selected Booking state for checkout
+  const [selectedBooking, setSelectedBooking] = useState(null);
   
-  const { amount, planType } = location.state || { amount: 0, planType: "N/A" };
-
+  // Payment History State
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [wallet, setWallet] = useState(null);
-  const [credentials, setCredentials] = useState({ 
-    esewaId: "", esewaPw: "", 
-    khaltiId: "", khaltiPw: "" 
-  });
 
-  // Fetch Wallet Balance on mount
+  // Discount Calculation State
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountMessage, setDiscountMessage] = useState("");
+
   useEffect(() => {
-    if (user?.profileId) {
-      fetchWalletDetails();
+    // If navigating directly with checkout data
+    if (location.state && location.state.bookingId && location.state.amount) {
+      setSelectedBooking({
+        bookingId: location.state.bookingId,
+        amount: location.state.amount,
+        planType: location.state.planType,
+        categoryName: location.state.categoryName || "All Categories"
+      });
+      calculateDiscount(location.state.categoryName || "All Categories");
+    } else {
+      // Load history
+      loadPaymentHistory();
     }
-  }, [user]);
+  }, [location.state]);
 
-  const fetchWalletDetails = async () => {
+  const loadPaymentHistory = async () => {
     try {
-      const res = await getWallet(user.profileId);
-      setWallet(res.data);
+      setHistoryLoading(true);
+      const res = await getUserPaymentHistory();
+      // Only keep the recent elements, ordered by most recent
+      const sortedHistory = (res.data || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setPaymentHistory(sortedHistory);
     } catch (err) {
-      console.error("Error fetching wallet:", err);
+      console.error(err);
+      Swal.fire("Error", "Could not load your history ledger.", "error");
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    // Only allow digits
-    if (value !== "" && !/^\d+$/.test(value)) return;
-    
-    // Enforce max length
-    if ((name === "esewaId" || name === "khaltiId") && value.length > 10) return;
-    if ((name === "esewaPw" || name === "khaltiPw") && value.length > 4) return;
+  const calculateDiscount = (categoryName) => {
+    try {
+      const promos = JSON.parse(localStorage.getItem("platform_promotions")) || [];
+      const now = new Date();
+      now.setHours(0,0,0,0);
+      
+      const activePromo = promos.find(p => 
+        p.isActive && 
+        (p.category === categoryName || p.category === "All Categories") &&
+        now >= new Date(p.startDate) && 
+        now <= new Date(p.endDate)
+      );
 
-    setCredentials(prev => ({ ...prev, [name]: value }));
+      if (activePromo) {
+        setDiscountPercent(activePromo.discount);
+        setDiscountMessage(activePromo.message || `Promo Applied on ${activePromo.category}`);
+      } else {
+        setDiscountPercent(0);
+      }
+    } catch {
+      setDiscountPercent(0);
+    }
   };
 
+  // ── Helper: submit eSewa form (redirect to eSewa gateway) ──
+  const submitEsewaForm = (esewaData, paymentUrl) => {
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = paymentUrl;
+
+    const fieldMapping = {
+      amount: "amount",
+      taxAmount: "tax_amount",
+      totalAmount: "total_amount",
+      transactionUuid: "transaction_uuid",
+      productCode: "product_code",
+      productServiceCharge: "product_service_charge",
+      productDeliveryCharge: "product_delivery_charge",
+      successUrl: "success_url",
+      failureUrl: "failure_url",
+      signedFieldNames: "signed_field_names",
+      signature: "signature",
+    };
+
+    for (const key in esewaData) {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = fieldMapping[key] || key;
+      input.value = esewaData[key];
+      form.appendChild(input);
+    }
+    document.body.appendChild(form);
+    form.submit();
+  };
+
+  // ── Pay via gateway ──
   const handlePayment = async (gateway) => {
-    const isEsewa = gateway === "eSewa";
-    const id = isEsewa ? credentials.esewaId : credentials.khaltiId;
-    const pw = isEsewa ? credentials.esewaPw : credentials.khaltiPw;
-
-    if (!id || !pw) {
-      return Swal.fire("Required", `Please enter your ${gateway} credentials.`, "warning");
+    if (!selectedBooking || !selectedBooking.bookingId) {
+      return Swal.fire("Error", "Missing booking information.", "error");
     }
 
-    if (!/^\d{10}$/.test(id)) {
-      return Swal.fire("Invalid ID", "Mobile number must be exactly 10 digits.", "warning");
-    }
-
-    if (!/^\d{4}$/.test(pw)) {
-      return Swal.fire("Invalid PIN", "Transaction PIN must be exactly 4 digits.", "warning");
-    }
+    const originalAmount = parseFloat(selectedBooking.amount);
+    const discountValue = (originalAmount * discountPercent) / 100;
+    const finalAmount = originalAmount - discountValue;
 
     const result = await Swal.fire({
       title: "Confirm Payment",
-      text: `Confirm payment of Rs. ${amount} via ${gateway}?`,
+      html: `<div style="text-align:left">
+        <p><strong>Service:</strong> ${selectedBooking.planType}</p>
+        <p><strong>Original Price:</strong> Rs. ${originalAmount.toLocaleString()}</p>
+        ${discountPercent > 0 ? `<p class="text-success"><strong>Discount (${discountPercent}%):</strong> - Rs. ${discountValue.toLocaleString()}</p>` : ''}
+        <h5 class="mt-2 text-danger">Total Payable: Rs. ${finalAmount.toLocaleString()}</h5>
+        <p><strong>Gateway:</strong> ${gateway}</p>
+      </div>`,
       icon: "info",
       showCancelButton: true,
-      confirmButtonText: "Confirm",
-      confirmButtonColor: isEsewa ? "#60bb46" : "#5c2d91",
+      confirmButtonText: `Pay via ${gateway}`,
+      confirmButtonColor: gateway === "eSewa" ? "#60bb46" : "#5c2d91",
     });
 
-    if (result.isConfirmed) {
-      setIsProcessing(true);
-      try {
-        const { initiateBookingPayment } = await import('../../../api/AccountApi');
-        const res = await initiateBookingPayment({ bookingId: location.state?.bookingId, gateway: gateway.toLowerCase() });
-        
-        if (gateway === 'eSewa') {
-           const { esewaData, paymentUrl } = res.data;
-           const form = document.createElement('form');
-           form.method = 'POST';
-           form.action = paymentUrl;
-           
-           const fieldMapping = {
-               Amount: 'amount', TaxAmount: 'tax_amount', TotalAmount: 'total_amount',
-               TransactionUuid: 'transaction_uuid', ProductCode: 'product_code',
-               ProductServiceCharge: 'product_service_charge', ProductDeliveryCharge: 'product_delivery_charge',
-               SuccessUrl: 'success_url', FailureUrl: 'failure_url',
-               SignedFieldNames: 'signed_field_names', Signature: 'signature'
-           };
-           for (const key in esewaData) {
-              const input = document.createElement('input');
-              input.type = 'hidden';
-              input.name = fieldMapping[key] || key;
-              input.value = esewaData[key];
-              form.appendChild(input);
-           }
-           document.body.appendChild(form);
-           form.submit();
-        } else if (gateway === 'Khalti') {
-           window.location.href = res.data.paymentUrl;
-        }
-      } catch (error) {
-        Swal.fire("Error", "Transaction could not be completed.", "error");
-        setIsProcessing(false);
+    if (!result.isConfirmed) return;
+
+    setIsProcessing(true);
+    try {
+      const res = await initiateBookingPayment({
+        bookingId: selectedBooking.bookingId,
+        gateway: gateway.toLowerCase(),
+        finalAmount: finalAmount // Sent to backend!
+      });
+
+      if (gateway === "eSewa") {
+        const { esewaData, paymentUrl } = res.data;
+        submitEsewaForm(esewaData, paymentUrl);
+      } else if (gateway === "Khalti") {
+        window.location.href = res.data.paymentUrl;
       }
+    } catch (error) {
+      Swal.fire("Payment Failed", error.response?.data?.message || "Could not initiate payment.", "error");
+      setIsProcessing(false);
     }
   };
+
+
+  // 1. RENDER PAYMENT HISTORY / LEDGER (Default view when not checking out)
+  if (!selectedBooking) {
+    if (historyLoading) return <div className="text-center p-5">Loading payment history...</div>;
+    
+    return (
+      <div className="payment-page-wrapper">
+        <div className="container py-5">
+          <div className="d-flex align-items-center mb-4 pb-2 border-bottom">
+             <FaHistory className="text-primary me-3 fs-3" />
+             <h3 style={{ fontWeight: 800, margin: 0 }}>Payment History</h3>
+          </div>
+          
+          {paymentHistory.length > 0 ? (
+            <div className="bg-white rounded-3 shadow-sm border p-0 overflow-hidden">
+               <div className="table-responsive">
+                  <table className="table table-hover mb-0" style={{ fontSize: '0.95rem' }}>
+                    <thead className="table-light">
+                      <tr>
+                        <th className="px-4 py-3">Date</th>
+                        <th className="px-4 py-3">Description</th>
+                        <th className="px-4 py-3 text-center">Type</th>
+                        <th className="px-4 py-3 text-end">Amount / Points</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paymentHistory.map((b) => {
+                        const isBooking = b.rewardType === 'BookingPayment';
+                        const dateStr = new Date(b.createdAt).toLocaleString();
+                        
+                        let amountText = isBooking ? `Rs. ${b.amount.toLocaleString()}` : `+${b.pointsEarned} Pts`;
+                        let descText = isBooking 
+                            ? (b.booking?.service?.title || 'Service Booking') 
+                            : (b.rewardType === 'DailyLogin' ? 'Daily Login Bonus' : 'Engagement Bonus');
+                        
+                        return (
+                          <tr key={b.id}>
+                            <td className="px-4 py-3 text-muted">{dateStr}</td>
+                            <td className="px-4 py-3 fw-bold">{descText}</td>
+                            <td className="px-4 py-3 text-center">
+                               {isBooking ? (
+                                  <span className="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">
+                                    <FaCheckCircle className="me-1"/> Online Paid
+                                  </span>
+                               ) : (
+                                  <span className="badge bg-primary-subtle text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill">
+                                    <FaTicketAlt className="me-1"/> Reward
+                                  </span>
+                               )}
+                            </td>
+                            <td className={`px-4 py-3 text-end fw-bold ${isBooking ? 'text-danger' : 'text-primary'}`}>
+                               {isBooking ? '-' : ''}{amountText}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+               </div>
+            </div>
+          ) : (
+            <div className="text-center p-5 bg-white rounded-3 shadow-sm border mt-3">
+              <FaMinusCircle className="text-muted fs-1 mb-3 opacity-50" />
+              <h4 className="text-muted fw-bold">No Payment History found.</h4>
+              <p className="mb-0 text-secondary">Your completed payments and earned rewards will appear here.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 2. RENDER CHECKOUT GATEWAY VIEW (When passed via router state)
+  const originalAmount = parseFloat(selectedBooking.amount);
+  const discountValue = (originalAmount * discountPercent) / 100;
+  const finalAmount = originalAmount - discountValue;
 
   return (
     <div className="payment-page-wrapper">
       <div className="container py-5">
         <div className="d-flex justify-content-between align-items-center mb-4">
-            <button className="back-link btn btn-link text-dark p-0" onClick={() => navigate(-1)}>
-                <FaArrowLeft /> Back
-            </button>
-            <div className="badge bg-light text-dark p-2 border shadow-sm">
-                <FaShieldAlt className="text-success me-1" /> Secure SSL Encrypted
-            </div>
+          <button className="back-link btn btn-link text-dark p-0 fw-bold shadow-none" onClick={() => navigate(-1)}>
+            <FaArrowLeft className="me-2" /> Cancel & Go Back
+          </button>
+          <div className="badge bg-white text-dark p-2 border shadow-sm rounded-pill px-3">
+            <FaShieldAlt className="text-success me-2" /> Secure SSL Encrypted
+          </div>
         </div>
 
         <div className="row justify-content-center">
-          <div className="col-lg-9">
-            {/* Summary Row */}
-            <div className="alert alert-secondary border-0 shadow-sm d-flex justify-content-between align-items-center p-3 mb-4">
-                <div>
-                    <span className="text-muted small d-block">Subscribing to</span>
-                    <strong className="h5 mb-0">{planType} Plan</strong>
-                </div>
-                <div className="text-end">
-                    <span className="text-muted small d-block">Total Payable</span>
-                    <strong className="h4 mb-0 text-danger">Rs. {amount}</strong>
-                </div>
+          <div className="col-lg-7">
+            {/* Payment Summary */}
+            <div className="checkout-summary-card shadow-sm border-0 rounded-4 overflow-hidden mb-4 bg-white">
+               <div className="bg-light p-3 border-bottom text-center">
+                 <h5 className="mb-0 fw-bold text-dark">Checkout Summary</h5>
+               </div>
+               <div className="p-4">
+                 <div className="d-flex justify-content-between align-items-center mb-3">
+                    <span className="text-muted">Paying for</span>
+                    <strong className="fs-5">{selectedBooking.planType}</strong>
+                 </div>
+                 <div className="d-flex justify-content-between align-items-center mb-3">
+                    <span className="text-muted">Original Amount</span>
+                    <strong className="fs-5">Rs. {originalAmount.toLocaleString()}</strong>
+                 </div>
+                 
+                 {discountPercent > 0 && (
+                   <div className="d-flex justify-content-between align-items-center mb-3 py-2 px-3 bg-success-subtle rounded text-success border border-success border-opacity-25">
+                      <div className="d-flex align-items-center gap-2">
+                        <FaTicketAlt /> 
+                        <span className="fw-bold">{discountMessage} ({discountPercent}%)</span>
+                      </div>
+                      <strong className="fs-5">- Rs. {discountValue.toLocaleString()}</strong>
+                   </div>
+                 )}
+
+                 <hr className="my-3"/>
+                 <div className="d-flex justify-content-between align-items-center">
+                    <span className="text-muted fw-bold">Total Payable</span>
+                    <strong className="fs-3 text-danger fw-black">Rs. {finalAmount.toLocaleString()}</strong>
+                 </div>
+               </div>
             </div>
 
-            <div className="payment-grid">
-              {/* eSewa Card */}
-              <div className="payment-card esewa-theme shadow-sm border-0">
-                <div className="card-top p-3 text-center border-bottom">
-                  <img src="/assets/esewa.png" alt="eSewa" style={{ height: "40px" }} />
-                </div>
-                <div className="card-body-custom p-4">
-                  <div className="input-box mb-3">
-                    <label className="small fw-bold">eSewa ID (Mobile Number)</label>
-                    <input type="text" name="esewaId" className="form-control" value={credentials.esewaId} onChange={handleInputChange} placeholder="98XXXXXXXX" />
-                  </div>
-                  <div className="input-box mb-4">
-                    <label className="small fw-bold">Password / MPIN</label>
-                    <input type="password" name="esewaPw" className="form-control" value={credentials.esewaPw} onChange={handleInputChange} placeholder="****" />
-                  </div>
-                  <button className="btn w-100 pay-btn esewa text-white fw-bold py-2" onClick={() => handlePayment("eSewa")} disabled={isProcessing}>
-                    {isProcessing ? "Processing..." : `Pay Rs. ${amount}`}
-                  </button>
+            {/* Payment Gateway Selectors */}
+            <h6 className="text-muted mb-3 fw-bold text-center">Choose Payment Gateway</h6>
+            <div className="row g-3">
+              {/* ── eSewa ── */}
+              <div className="col-sm-6">
+                <div className="payment-gateway-btn h-100 p-4 rounded-4 text-center cursor-pointer esewa-hover shadow-sm border bg-white position-relative"
+                     onClick={() => handlePayment("eSewa")}
+                     style={{ cursor: 'pointer', transition: 'all 0.2s', ...(isProcessing ? {opacity: 0.7, pointerEvents: 'none'} : {}) }}>
+                  <img src="/assets/esewa.png" alt="eSewa" style={{ height: "45px", objectFit: "contain" }} className="mb-3" />
+                  <div className="fw-bold text-dark">Pay with eSewa</div>
                 </div>
               </div>
 
-              {/* Khalti Card */}
-              <div className="payment-card khalti-theme shadow-sm border-0">
-                <div className="card-top p-3 text-center border-bottom">
-                  <img src="/assets/khelti.png" alt="Khalti" style={{ height: "40px" }} />
-                </div>
-                <div className="card-body-custom p-4">
-                  <div className="input-box mb-3">
-                    <label className="small fw-bold">Khalti ID (Mobile Number)</label>
-                    <input type="text" name="khaltiId" className="form-control" value={credentials.khaltiId} onChange={handleInputChange} placeholder="98XXXXXXXX" />
-                  </div>
-                  <div className="input-box mb-4">
-                    <label className="small fw-bold">Khalti PIN</label>
-                    <input type="password" name="khaltiPw" className="form-control" value={credentials.khaltiPw} onChange={handleInputChange} placeholder="****" />
-                  </div>
-                  <button className="btn w-100 pay-btn khalti text-white fw-bold py-2" onClick={() => handlePayment("Khalti")} disabled={isProcessing}>
-                    {isProcessing ? "Processing..." : `Pay Rs. ${amount}`}
-                  </button>
+              {/* ── Khalti ── */}
+              <div className="col-sm-6">
+                <div className="payment-gateway-btn h-100 p-4 rounded-4 text-center cursor-pointer khalti-hover shadow-sm border bg-white position-relative"
+                     onClick={() => handlePayment("Khalti")}
+                     style={{ cursor: 'pointer', transition: 'all 0.2s', ...(isProcessing ? {opacity: 0.7, pointerEvents: 'none'} : {}) }}>
+                  <img src="/assets/khelti.png" alt="Khalti" style={{ height: "45px", objectFit: "contain" }} className="mb-3" />
+                  <div className="fw-bold text-dark">Pay with Khalti</div>
                 </div>
               </div>
             </div>
 
-            {/* --- NEW: Wallet Balance Footer Card --- */}
-            <div className="wallet-balance-footer mt-5 p-4 bg-white rounded shadow-sm border d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center">
-                    <div className="wallet-icon-circle me-3">
-                        <FaWallet className="text-danger h4 m-0" />
-                    </div>
-                    <div>
-                        <h6 className="mb-0 fw-bold">System Wallet</h6>
-                        <small className="text-muted">Available balance for boosting</small>
-                    </div>
-                </div>
-                <div className="text-end">
-                    <h4 className="mb-0 fw-bold text-dark">
-                        {wallet ? `Rs. ${wallet.balance}` : "Loading..."}
-                    </h4>
-                    <span className="badge bg-success-soft text-success small">Verified Account</span>
-                </div>
-            </div>
-
+            {isProcessing && (
+              <div className="text-center mt-4">
+                 <div className="spinner-border text-primary" role="status"></div>
+                 <p className="mt-2 text-muted fw-bold">Initiating secure gateway...</p>
+              </div>
+            )}
+            
           </div>
         </div>
       </div>

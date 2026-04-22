@@ -10,6 +10,12 @@ import {
   FaCalendarCheck,  // Added missing import
   FaStar,
   FaSignOutAlt,
+  FaMoneyBillWave,
+  FaBullhorn,
+  FaCoins,
+  FaTags,
+  FaClipboardList,
+  FaGift
 } from "react-icons/fa";
 
 const VerticalServiceProvider = () => {
@@ -19,11 +25,13 @@ const VerticalServiceProvider = () => {
     { to: "/services/manage", label: "My Services", icon: <FaTools /> },
     { to: "/boosts", label: "Boost Services", icon: <FaRocket /> },
     { to: "/booking", label: "Bookings", icon: <FaCalendarCheck /> },
+    { to: "/payouts", label: "Payouts", icon: <FaMoneyBillWave /> },
     // { to: "/review", label: "Reviews", icon: <FaStar /> },
-    { to: "/point", label: "Points", icon: <FaStar /> },
-    { to: "/reedem", label: "Redeem Gifts", icon: <FaStar /> },
-    { to: "/mybook", label: "MyBooking", icon: <FaExclamationTriangle /> },
-    { to: "/gift", label: "Gifts", icon: <FaStar /> },
+    { to: "/point", label: "Points", icon: <FaCoins /> },
+    { to: "/reedem", label: "Redeem Gifts", icon: <FaTags /> },
+    { to: "/mybook", label: "MyBooking", icon: <FaClipboardList /> },
+    { to: "/gift", label: "Gifts", icon: <FaGift /> },
+    { to: "/provider-announcements", label: "Announcements", icon: <FaBullhorn /> },
     { to: "/login", label: "Logout", icon: <FaSignOutAlt />, className: "logout" },
   ];
 

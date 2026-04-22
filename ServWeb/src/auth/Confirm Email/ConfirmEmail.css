@@ -1,76 +1,124 @@
 .confirm-page {
   min-height: 100vh;
-  background: #ffffff;
+  background: #f8fafc; /* Lighter background to make red navbar pop */
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.auth-navbar {
+  padding: 1rem 2rem;
+  background: linear-gradient(
+    to bottom, 
+    rgb(244, 6, 6) 0%, 
+    rgba(206, 36, 13, 0.8) 100%
+  ) !important;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+.confirm-wrapper {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
 }
 
 .confirm-card {
   width: 100%;
-  max-width: 420px;
+  max-width: 450px;
   background: #ffffff;
-  padding: 32px;
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  padding: 3rem;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.6s ease-out;
+  text-align: center;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .confirm-card h2 {
-  font-size: 26px;
-  margin-bottom: 8px;
-  color: #111;
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 0.5rem;
+  color: #0f172a;
 }
 
 .subtitle {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 24px;
+  font-size: 1rem;
+  color: #64748b;
+  margin-bottom: 2.5rem;
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 1.5rem;
+  text-align: left;
 }
 
 .form-group label {
   display: block;
-  font-size: 14px;
-  margin-bottom: 6px;
-  color: #333;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
 }
 
 .form-group input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 15px;
+  padding: 12px 16px;
+  border: 1px solid #444; /* Light Black Sync */
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+  color: #000 !important; /* Typed text is BLACK */
+}
+
+.form-group input:focus {
+  border-color: #f40606; /* Red on Focus */
+  box-shadow: 0 0 0 3px rgba(244, 6, 6, 0.1);
 }
 
 .confirm-card button {
   width: 100%;
-  margin-top: 12px;
-  padding: 10px;
-  background: #000;
+  margin-top: 1.5rem;
+  padding: 14px;
+  background: #f40606;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-card button:hover {
+  background: #d90000;
+  transform: translateY(-2px);
 }
 
 .confirm-card button:disabled {
   opacity: 0.7;
+  transform: none;
   cursor: not-allowed;
 }
 
 .footer-text {
-  margin-top: 16px;
-  font-size: 14px;
-  color: #333;
+  margin-top: 2rem;
+  font-size: 0.95rem;
+  color: #64748b;
 }
 
 .footer-text span {
-  color: #007bff;
+  color: #f40606;
+  font-weight: 700;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .footer-text span:hover {

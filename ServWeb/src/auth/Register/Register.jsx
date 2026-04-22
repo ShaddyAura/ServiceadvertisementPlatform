@@ -1,12 +1,20 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { 
+  Box, Typography, TextField, Button, IconButton, 
+  InputAdornment, Checkbox, FormControlLabel, useTheme
+} from "@mui/material";
+import { 
+  Visibility, VisibilityOff, Person as PersonIcon,
+  Email as EmailIcon, Lock as LockIcon 
+} from "@mui/icons-material";
 import Logo from "../../component/Logo";
-import "./Register.css"; // Using your existing CSS
+import "./Register.css";
 import { registerUser } from "../../api/AccountApi";
 import Swal from "sweetalert2";
 
 export default function Register() {
+  const theme = useTheme();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -15,7 +23,7 @@ export default function Register() {
     email: "",
     password: "",
     repeatPassword: "",
-    userType: "User", // Hardcoded for this page
+    userType: "User",
     agree: false,
   });
 
@@ -36,8 +44,7 @@ export default function Register() {
       icon: "error",
       title: "Registration Failed",
       text: message,
-      confirmButtonClass: "btn btn-danger",
-      buttonsStyling: false,
+      confirmButtonColor: theme.palette.error.main,
     });
   };
 
@@ -46,12 +53,10 @@ export default function Register() {
       showError("Please fill all fields.");
       return;
     }
-
     if (form.password !== form.repeatPassword) {
       showError("Passwords do not match.");
       return;
     }
-
     if (!form.agree) {
       showError("You must accept the Terms of Service.");
       return;
@@ -97,42 +102,144 @@ export default function Register() {
       <nav className="auth-navbar">
         <Logo width={120} />
       </nav>
+
       <div className="register-wrapper">
         <div className="register-card">
           <div className="register-form">
-            <h2>Sign up as Customer</h2>
-            <div className="input-box">
-              <input name="firstName" onChange={handleChange} value={form.firstName} type="text" placeholder="First Name" />
-            </div>
-            <div className="input-box">
-              <input name="lastName" onChange={handleChange} value={form.lastName} type="text" placeholder="Last Name" />
-            </div>
-            <div className="input-box">
-              <input name="email" onChange={handleChange} value={form.email} type="email" placeholder="Email" />
-            </div>
-            <div className="input-box">
-              <input name="password" onChange={handleChange} value={form.password} type={showPassword ? "text" : "password"} placeholder="Password" />
-              <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </span>
-            </div>
-            <div className="input-box">
-              <input name="repeatPassword" onChange={handleChange} value={form.repeatPassword} type={showRepeatPassword ? "text" : "password"} placeholder="Repeat your password" />
-              <span className="toggle-password" onClick={() => setShowRepeatPassword(!showRepeatPassword)}>
-                {showRepeatPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </span>
-            </div>
-            <div className="terms">
-              <input type="checkbox" id="t1" name="agree" checked={form.agree} onChange={handleChange} />
-              <label htmlFor="t1">I agree all statements in <span>Terms of service</span></label>
-            </div>
-            <button onClick={handleRegister} className="register-btn" disabled={loading}>
-              {loading ? "Registering..." : "Register"}
-            </button>
-            <p className="already">
-              <Link to="/login" className="login-link">Already a member?</Link>
-            </p>
+            <h2>Create Account</h2>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 4 }}>
+              Sign up today and start hiring verified professionals.
+            </Typography>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField 
+                  fullWidth
+                  label="First Name"
+                  name="firstName"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  variant="outlined"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon sx={{ color: 'action.active' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <TextField 
+                  fullWidth
+                  label="Last Name"
+                  name="lastName"
+                  value={form.lastName}
+                  onChange={handleChange}
+                  variant="outlined"
+
+                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <EmailIcon sx={{ color: 'action.active' }} />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                />
+              </Box>
+
+              <TextField 
+                fullWidth
+                label="Email Address"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                variant="outlined"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon sx={{ color: 'action.active' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField 
+                fullWidth
+                label="Password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={handleChange}
+                variant="outlined"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon sx={{ color: 'action.active' }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} sx={{ color: 'rgba(0, 0, 0, 0.6)', mr: -1 }}>
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField 
+                fullWidth
+                label="Confirm Password"
+                name="repeatPassword"
+                type={showRepeatPassword ? "text" : "password"}
+                value={form.repeatPassword}
+                onChange={handleChange}
+                variant="outlined"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowRepeatPassword(!showRepeatPassword)} sx={{ color: 'rgba(0, 0, 0, 0.6)', mr: -1 }}>
+                        {showRepeatPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <FormControlLabel
+                control={
+                  <Checkbox 
+                    name="agree" 
+                    checked={form.agree} 
+                    onChange={handleChange} 
+                    color="primary" 
+                  />
+                }
+                label={
+                  <Typography variant="body2" color="text.secondary">
+                    I agree to the <span className="login-link" style={{ cursor: 'pointer' }}>Terms of Service</span>
+                  </Typography>
+                }
+              />
+
+              <Button 
+                fullWidth 
+                variant="contained" 
+                size="large" 
+                onClick={handleRegister}
+                disabled={loading}
+                sx={{ py: 1.5, borderRadius: 2, fontWeight: 700, mt: 1 }}
+              >
+                {loading ? "Registering..." : "Create Account"}
+              </Button>
+
+              <p className="already">
+                Already have an account?{' '}
+                <RouterLink to="/login" className="login-link">Sign in</RouterLink>
+              </p>
+            </Box>
           </div>
+
           <div className="register-img">
             <img src="/assets/register.jpg" alt="Register Visual" />
           </div>

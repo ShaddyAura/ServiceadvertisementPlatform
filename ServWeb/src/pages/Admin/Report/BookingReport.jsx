@@ -14,6 +14,7 @@ export default function BookingReport() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeSection, setActiveSection] = useState(1);
 
   // Report Metrics
   const [metrics, setMetrics] = useState({
@@ -21,7 +22,8 @@ export default function BookingReport() {
     completed: 0,
     cancelled: 0,
     disputed: 0,
-    totalRevenue: 0
+    totalRevenue: 0,
+    totalExpected: 0
   });
 
   const loadReportData = useCallback(async () => {
@@ -69,14 +71,24 @@ export default function BookingReport() {
       });
 
 
+      // Helper to safely parse status
+      const isStatus = (booking, targetInt, targetStr) => {
+          const s = String(booking.status ?? booking.Status).toLowerCase();
+          return s === String(targetInt) || s === targetStr.toLowerCase();
+      };
+
       // Calculate Metrics from Database Data
-      const completed = mappedBookings.filter(b => (b.status ?? b.Status) === 3).length;
-      const cancelled = mappedBookings.filter(b => (b.status ?? b.Status) === 4).length;
-      const disputed = mappedBookings.filter(b => (b.status ?? b.Status) === 5).length;
+      const completed = mappedBookings.filter(b => isStatus(b, 3, "Completed")).length;
+      const cancelled = mappedBookings.filter(b => isStatus(b, 4, "Cancelled")).length;
+      const disputed = mappedBookings.filter(b => isStatus(b, 5, "Disputed")).length;
       
       // Calculate Revenue (Only from Completed Bookings)
       const revenue = mappedBookings
-        .filter(b => (b.status ?? b.Status) === 3)
+        .filter(b => isStatus(b, 3, "Completed"))
+        .reduce((sum, b) => sum + (b.agreedPrice || b.AgreedPrice || 0), 0);
+
+      // Calculate Expected Revenue (From ALL non-cancelled bookings)
+      const expectedRev = mappedBookings
         .reduce((sum, b) => sum + (b.agreedPrice || b.AgreedPrice || 0), 0);
 
       setMetrics({
@@ -84,7 +96,8 @@ export default function BookingReport() {
         completed,
         cancelled,
         disputed,
-        totalRevenue: revenue
+        totalRevenue: revenue,
+        totalExpected: expectedRev
       });
       
       setBookings(mappedBookings);
@@ -100,15 +113,17 @@ export default function BookingReport() {
   }, [loadReportData]);
 
   // Helper to map status code to display text
+  // Helper to map status code to display text (Handle String Enum & Int)
   const getStatusMeta = (status) => {
-    switch (status) {
-      case 0: return { text: "Pending", cls: "bg-warning-light" };
-      case 1: return { text: "Confirmed", cls: "bg-info-light" };
-      case 2: return { text: "In Process", cls: "bg-primary-light" };
-      case 3: return { text: "Completed", cls: "bg-success-light" };
-      case 4: return { text: "Cancelled", cls: "bg-danger-light" };
-      case 5: return { text: "Disputed", cls: "bg-secondary-light" };
-      default: return { text: "Unknown", cls: "bg-light" };
+    const s = String(status).toLowerCase();
+    switch (s) {
+      case "0": case "pending": return { text: "Pending", cls: "bg-warning-light" };
+      case "1": case "confirmed": return { text: "Confirmed", cls: "bg-info-light" };
+      case "2": case "in process": case "inprocess": return { text: "In Process", cls: "bg-primary-light" };
+      case "3": case "completed": return { text: "Completed", cls: "bg-success-light" };
+      case "4": case "cancelled": return { text: "Cancelled", cls: "bg-danger-light" };
+      case "5": case "disputed": return { text: "Disputed", cls: "bg-secondary-light" };
+      default: return { text: status || "Unknown", cls: "bg-light" };
     }
   };
 
@@ -137,86 +152,102 @@ export default function BookingReport() {
         </div>
       </div>
 
-      {/* METRICS SUMMARY TABLE */}
-      <table className="logsheet-table">
-        <thead>
-          <tr>
-            <th colSpan="5" className="logsheet-table-section-header">Booking Metrics Overview</th>
-          </tr>
-          <tr>
-            <th>Total Bookings</th>
-            <th>Completed Jobs</th>
-            <th>Cancelled Jobs</th>
-            <th>Disputed Jobs</th>
-            <th>Total Cleared Revenue (Rs.)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{metrics.total}</td>
-            <td>{metrics.completed}</td>
-            <td>{metrics.cancelled}</td>
-            <td>{metrics.disputed}</td>
-            <td style={{ fontWeight: 'bold' }}>{metrics.totalRevenue.toLocaleString()}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      {/* SEARCH AND FILTERS ROW (Rendered as simple table or div inside logsheet) */}
-      <div style={{ marginBottom: "15px", display: "flex", gap: "10px", alignItems: "center", border: "1px solid #eec4c4", padding: "10px", background: "#fdf5f5" }}>
-        <FaSearch color="#888" />
-        <input 
-          type="text" 
-          placeholder="Search Booking ID, Service, or Provider..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "0.85rem" }}
-        />
+      <div className="logsheet-tabs">
+        <button 
+          className={`logsheet-tab-btn ${activeSection === 1 ? 'active' : ''}`}
+          onClick={() => setActiveSection(1)}>
+          1. Metrics Overview
+        </button>
+        <button 
+          className={`logsheet-tab-btn ${activeSection === 2 ? 'active' : ''}`}
+          onClick={() => setActiveSection(2)}>
+          2. Detailed Ledger
+        </button>
       </div>
 
-      {/* MAIN DATA TABLE */}
-      <table className="logsheet-table">
-        <thead>
-          <tr>
-            <th colSpan="6" className="logsheet-table-section-header">Detailed Booking Ledger</th>
-          </tr>
-          <tr>
-            <th>Booking ID</th>
-            <th>Service Details</th>
-            <th>Provider Name</th>
-            <th>Agreed Price (Rs.)</th>
-            <th>Scheduled On</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredBookings.length > 0 ? (
-            filteredBookings.map((b) => {
-              const statusMeta = getStatusMeta(b.status ?? b.Status);
-              return (
-                <tr key={b.id || b.Id}>
-                  <td>#{ (b.id || b.Id).toString().slice(0, 8) }</td>
-                  <td><strong>{b.resolvedServiceName}</strong></td>
-                  <td>{b.resolvedProviderName}</td>
-                  <td>{b.agreedPrice || b.AgreedPrice}</td>
-                  <td>{new Date(b.scheduledStart || b.ScheduledStart).toLocaleDateString()}</td>
-                  <td>
-                    <span style={{ fontWeight: 600, color: statusMeta.cls.includes('success') ? 'green' : (statusMeta.cls.includes('danger') ? 'red' : 'inherit') }}>
-                      {statusMeta.text}
-                    </span>
+      {activeSection === 1 && (
+        <table className="logsheet-table">
+          <thead>
+            <tr>
+              <th colSpan="5" className="logsheet-table-section-header">Booking Metrics Overview</th>
+            </tr>
+            <tr>
+              <th>Total Bookings</th>
+              <th>Completed Jobs</th>
+              <th>Cancelled Jobs</th>
+              <th>Disputed Jobs</th>
+              <th>Total Booking Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{metrics.total}</td>
+              <td>{metrics.completed}</td>
+              <td>{metrics.cancelled}</td>
+              <td>{metrics.disputed}</td>
+              <td style={{ fontWeight: 'bold', color: 'green' }}>Rs. {metrics.totalExpected.toLocaleString()}</td>
+            </tr>
+          </tbody>
+        </table>
+      )}
+
+      {activeSection === 2 && (
+        <>
+          <div style={{ marginBottom: "15px", display: "flex", gap: "10px", alignItems: "center", border: "1px solid #eec4c4", padding: "10px", background: "#fdf5f5" }}>
+            <FaSearch color="#888" />
+            <input 
+              type="text" 
+              placeholder="Search Booking ID, Service, or Provider..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "0.85rem" }}
+            />
+          </div>
+
+          <table className="logsheet-table">
+            <thead>
+              <tr>
+                <th colSpan="6" className="logsheet-table-section-header">Detailed Booking Ledger</th>
+              </tr>
+              <tr>
+                <th>Booking ID</th>
+                <th>Service Details</th>
+                <th>Provider Name</th>
+                <th>Agreed Price (Rs.)</th>
+                <th>Scheduled On</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBookings.length > 0 ? (
+                filteredBookings.map((b) => {
+                  const statusMeta = getStatusMeta(b.status ?? b.Status);
+                  return (
+                    <tr key={b.id || b.Id}>
+                      <td>#{ (b.id || b.Id).toString().slice(0, 8) }</td>
+                      <td><strong>{b.resolvedServiceName}</strong></td>
+                      <td>{b.resolvedProviderName}</td>
+                      <td>{b.agreedPrice || b.AgreedPrice}</td>
+                      <td>{new Date(b.scheduledStart || b.ScheduledStart).toLocaleDateString()}</td>
+                      <td>
+                        <span style={{ fontWeight: 600, color: statusMeta.cls.includes('success') ? 'green' : (statusMeta.cls.includes('danger') ? 'red' : 'inherit') }}>
+                          {statusMeta.text}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="6" style={{ padding: '30px', color: '#888' }}>
+                    No bookings match your search criteria.
                   </td>
                 </tr>
-              );
-            })
-          ) : (
-            <tr>
-              <td colSpan="6" style={{ padding: '30px', color: '#888' }}>
-                No bookings match your search criteria.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+              )}
+            </tbody>
+          </table>
+        </>
+      )}
     </div>
   );
 }

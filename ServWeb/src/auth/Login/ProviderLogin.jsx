@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
+import { 
+  Box, Typography, TextField, Button, IconButton, 
+  InputAdornment, Divider, useTheme
+} from "@mui/material";
+import { 
+  Visibility, VisibilityOff, Email as EmailIcon, 
+  Lock as LockIcon 
+} from "@mui/icons-material";
 import Logo from "../../component/Logo";
-import "./Login.css"; // Reusing the same CSS
+import "./Login.css";
 import { loginUser } from "../../api/AccountApi";
 import { getCurrentUser } from "../../Services/authService";
 import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
 
 export default function ProviderLogin() {
+  const theme = useTheme();
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -17,27 +25,24 @@ export default function ProviderLogin() {
   const location = useLocation();
   const { setUser } = useAuth();
 
-  /* ---------------- GOOGLE HANDLERS ---------------- */
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const error = params.get("error");
-
     if (error) {
       const messages = {
         google_cancelled: "You cancelled Google sign in",
         access_denied: "Google sign in was denied",
         google_failed: "Something went wrong. Please try again.",
       };
-
       Swal.fire({
         icon: "error",
         title: "Login Issue",
         text: messages[error] || "An error occurred",
-        confirmButtonColor: "#5ca9ff",
+        confirmButtonColor: theme.palette.primary.main,
       });
       window.history.replaceState({}, document.title, "/provider-login");
     }
-  }, [location.search]);
+  }, [location.search, theme.palette.primary.main]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -51,38 +56,25 @@ export default function ProviderLogin() {
 
     try {
       setLoading(true);
-      Swal.fire({
-        title: "Signing in as Provider...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
+      Swal.fire({ title: "Signing in as Provider...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-      // 1. Backend Login
       const res = await loginUser(form);
       const role = res.data?.role;
-
-      // 2. Auth Context
       const user = await getCurrentUser();
       setUser(user);
 
       Swal.close();
+      if (role === "ServiceProvider") navigate("/serviceproviderDashboard");
+      else if (role === "Admin") navigate("/admin-dashboard");
+      else navigate("/user-dashboard");
 
-      // 3. Redirect Logic (Ensuring only ServiceProviders get through here)
-      if (role === "ServiceProvider") {
-        navigate("/serviceproviderDashboard");
-      } else if (role === "Admin") {
-        navigate("/admin-dashboard");
-      } else {
-        // If a regular user tries to login here, send them to user dashboard
-        navigate("/user-dashboard");
-      }
     } catch (err) {
       Swal.close();
       Swal.fire({
         icon: "error",
         title: "Login Failed",
         text: "Invalid provider credentials",
-        confirmButtonColor: "#dc3545",
+        confirmButtonColor: theme.palette.error.main,
       });
     } finally {
       setLoading(false);
@@ -98,63 +90,95 @@ export default function ProviderLogin() {
       <div className="login-wrapper">
         <div className="login-card">
           <div className="login-form">
-            <h2 style={{ color: "#dc3545" }}>Provider Sign in</h2>
-            <p className="text-muted small mb-4">Manage your services and reviews</p>
+            <h2 style={{ color: theme.palette.secondary.main }}>Provider Login</h2>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 4 }}>
+              Manage your services and track your performance.
+            </Typography>
 
-            <div className="input-box">
-              <input
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              <TextField 
+                fullWidth
+                label="Provider Email"
                 name="email"
+                variant="outlined"
                 value={form.email}
                 onChange={handleChange}
-                type="email"
-                placeholder="Provider Email"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon sx={{ color: 'action.active' }} />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </div>
 
-            <div className="input-box">
-              <input
+              <TextField 
+                fullWidth
+                label="Password"
                 name="password"
+                type={showPassword ? "text" : "password"}
+                variant="outlined"
                 value={form.password}
                 onChange={handleChange}
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon sx={{ color: 'action.active' }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} sx={{ color: 'rgba(0, 0, 0, 0.6)', mr: -1 }}>
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
-              <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </span>
-            </div>
 
-            <div className="text-center mt-2">
-              <Link to="/forgot-password" size="small" className="login-link">
-                Forgot Password?
-              </Link>
-            </div>
+              <Box sx={{ textAlign: 'right' }}>
+                <Typography 
+                  component={RouterLink} 
+                  to="/forgot-password" 
+                  variant="body2" 
+                  className="login-link"
+                >
+                  Forgot Password?
+                </Typography>
+              </Box>
 
-            <button onClick={handleLogin} className="login-btn" disabled={loading}>
-              {loading ? "Verifying..." : "Provider Login"}
-            </button>
+              <Button 
+                fullWidth 
+                variant="contained" 
+                color="secondary"
+                size="large" 
+                onClick={handleLogin}
+                disabled={loading}
+                sx={{ py: 1.5, borderRadius: 2, fontWeight: 700, mt: 1 }}
+              >
+                {loading ? "Verifying..." : "Provider Login"}
+              </Button>
 
-            {/* GOOGLE LOGIN - UPDATED userType to ServiceProvider */}
-            <button
-              onClick={() =>
-                (window.location.href =
-                  "https://localhost:7065/api/account/google-login?userType=ServiceProvider")
-              }
-              className="google-btn"
-            >
-              <img src="/assets/google-icon.png" alt="Google icon" />
-              Provider Sign in with Google
-            </button>
+              <Divider sx={{ my: 1 }}>
+                <Typography variant="caption" color="text.secondary">OR</Typography>
+              </Divider>
 
-            <p className="already">
-              <Link to="/providerregister" className="login-link">
-                Register as a New Provider
-              </Link>
-            </p>
+              <button 
+                className="google-btn"
+                onClick={() => window.location.href = "https://localhost:7065/api/account/google-login?userType=ServiceProvider"}
+              >
+                <img src="/assets/google-icon.png" alt="google" />
+                Provider Sign in with Google
+              </button>
+
+              <p className="already">
+                Need a business account?{' '}
+                <RouterLink to="/providerregister" className="login-link" style={{ color: theme.palette.secondary.main }}>Register as Provider</RouterLink>
+              </p>
+            </Box>
           </div>
 
           <div className="login-img">
-            {/* You can use a different image here if you have one for providers */}
             <img src="/assets/Login.jpg" alt="Provider Login Visual" />
           </div>
         </div>

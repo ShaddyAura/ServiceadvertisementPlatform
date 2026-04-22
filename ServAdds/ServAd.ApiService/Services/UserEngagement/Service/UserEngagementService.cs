@@ -69,13 +69,13 @@ namespace ServAd.ApiService.Services.UserEngagement.Service
 
         public async Task<Profiles> ClaimWatchTimeRewardAsync(Guid profileId, decimal secondsWatched)
         {
-            if (secondsWatched < 10) throw new ApiException("Not enough watch time for a reward.", 400);
+            if (secondsWatched < 60) throw new ApiException("Not enough watch time for a reward.", 400);
 
             var profile = await context.Profiles.FindAsync(profileId) 
                 ?? throw new ApiException("Profile not found.", 404);
             
-            // Give 10.0m points per watch session as specified
-            decimal pointsToGive = 10.0m;
+            // Give 0.1m points per watch session as specified
+            decimal pointsToGive = 0.1m;
             
             profile.BoostingPoints += pointsToGive;
             profile.LifetimePoints += pointsToGive;

@@ -4,7 +4,6 @@ import api from "./axios"; // must match your default axios instance
 export const registerUser = (data) =>
   api.post("/account/register", data, { withCredentials: true });
 
-// LOGIN
 export const loginUser = (data) =>
   api.post("/account/login", data, { withCredentials: true });
 
@@ -44,9 +43,9 @@ export const refreshToken = () =>
   api.post("/account/refresh-token", null, { withCredentials: true });
 
 
-// // 🔐 CHANGE PASSWORD (for logged-in user)
-// export const changePassword = (data) =>
-//   api.post("/account/change-password", data, { withCredentials: true });
+// 🔐 CHANGE PASSWORD (for logged-in user)
+export const changePassword = (data) =>
+  api.post("/account/change-password", data, { withCredentials: true });
 
 
 // -------------------------------------------------------------
@@ -143,6 +142,9 @@ export const submitDocument = (formData) =>
 // // Connects to: PUT api/Profile/{id}
 // export const updateProfile = (id, profileData) => api.put(`/Profile/${id}`, profileData);
 
+export const toggleSuspension = (profileId, reason) => 
+  api.patch(`/Profile/togglesuspension?id=${profileId}&reason=${reason}`);
+
 
 
 
@@ -206,6 +208,9 @@ export const fetchBoostHistory = (serviceId) =>
 // GET: api/Boosting/status/{serviceId}
 export const fetchBoostStatus = (serviceId) => 
     api.get(`/Boosting/status/${serviceId}`);
+
+export const fetchAllBoostingTransactions = () => 
+    api.get("/Boosting/all-history");
 
 export const cancelBoost = (serviceId) =>
   axios.post(`/Boosting/cancel/${serviceId}`);
@@ -377,6 +382,9 @@ export const GetMyVouchers = (profileId) =>
 export const getWallet = (profileId) =>
     api.get(`/Wallets/getwallet?profileId=${profileId}`); // changed to query param pattern
 
+export const fetchAllWallets = () =>
+    api.get(`/Wallets/allwallets`);
+
 export const purchasePoints = (data) =>
     api.post(`/Wallets/purchasepoints`, data);
 
@@ -430,3 +438,32 @@ export const markNotificationAsRead = (id) =>
 
 export const sendManualNotification = (data) => 
     api.post(`/Notification/sendmanual`, data);
+
+export const sendBroadcast = (data) => 
+    api.post(`/Notification/broadcast`, data);
+
+export const getUserPaymentHistory = () =>
+    api.get(`/UserPayment/history`);
+
+// Admin Review Moderation
+export const fetchAllReviews = () => 
+    api.get(`/Reviews/all-reviews`);
+
+export const deleteReview = (reviewId) => 
+    api.delete(`/Reviews/delete/${reviewId}`);
+
+// Withdrawal Management
+export const fetchAllWithdrawals = () => 
+    api.get("/Withdrawal/all-requests");
+
+export const approveWithdrawal = (id) => 
+    api.patch(`/Withdrawal/approve/${id}`);
+
+export const rejectWithdrawal = (id) => 
+    api.patch(`/Withdrawal/reject/${id}`);
+
+export const createWithdrawalRequest = (data) => 
+    api.post("/Withdrawal/request", data);
+
+export const getUserWithdrawals = (profileId) => 
+    api.get(`/Withdrawal/user-requests/${profileId}`);

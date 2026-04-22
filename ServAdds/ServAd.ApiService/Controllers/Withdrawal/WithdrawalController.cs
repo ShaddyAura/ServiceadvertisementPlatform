@@ -49,5 +49,13 @@ namespace ServAd.ApiService.Controllers.Withdrawal
             if (!success) return BadRequest("Could not reject request.");
             return Ok(new { Message = "Withdrawal request rejected." });
         }
+
+        [HttpPatch("cancel/{requestId}")]
+        public async Task<IActionResult> CancelRequest(Guid requestId)
+        {
+            var success = await withdrawalService.CancelRequestAsync(requestId);
+            if (!success) return BadRequest("Could not cancel request.");
+            return Ok(new { Message = "Withdrawal request cancelled." });
+        }
     }
 }

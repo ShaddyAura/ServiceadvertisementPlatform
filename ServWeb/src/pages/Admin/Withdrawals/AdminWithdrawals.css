@@ -1,0 +1,188 @@
+/* === Modern Light-Themed Admin Withdrawals === */
+
+.admin-payout-wrapper {
+    background: #ffffff !important; /* Pure White background as requested */
+    min-height: 100vh;
+    padding: 2rem;
+    color: #1e293b;
+    font-family: 'Inter', sans-serif;
+}
+
+.admin-dash-title {
+    color: #0f172a !important;
+    font-weight: 800;
+}
+
+.admin-dash-subtitle {
+    color: #64748b !important;
+}
+
+/* Stats Cards Section (Light Version) */
+.admin-stat-card.simplified {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+}
+
+.admin-stat-card.simplified .label {
+    color: #64748b !important;
+}
+
+.admin-stat-card.simplified .value {
+    color: #0f172a !important;
+}
+
+/* Table Card Container */
+.admin-chart-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+    margin-top: 1.5rem;
+    border-radius: 12px;
+}
+
+.admin-chart-header {
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 1.25rem 1.5rem;
+}
+
+.admin-chart-header h5 {
+    color: #1e293b !important;
+}
+
+/* Table Styling */
+.withdrawal-table-container {
+    padding: 0;
+    overflow: hidden;
+}
+
+.withdrawal-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.withdrawal-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.withdrawal-table td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+.withdrawal-table tr:hover td {
+    background: #fdfdfd;
+}
+
+/* Financial Figure Visibility - Critical Fix */
+.payout-amount-text {
+    font-weight: 800;
+    color: #059669 !important; /* Darker Emerald for high visibility on white */
+    font-size: 1rem;
+}
+
+.code-font {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    background: #f1f5f9;
+    color: #2563eb; /* Royal blue for account IDs */
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+/* Search Box Visibility */
+.search-wrap {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #1e293b !important;
+}
+
+.search-wrap input {
+    color: #1e293b !important;
+}
+
+.search-wrap input::placeholder {
+    color: #94a3b8;
+}
+
+/* Badges & Pills */
+.method-badge {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.method-badge.esewa { background: #dcfce7; color: #065f46; }
+.method-badge.khalti { background: #f3e8ff; color: #581c87; }
+
+.status-pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-pill.pending { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.status-pill.approved { background: #dcfce7; color: #065f46; border: 1px solid #6ee7b7; }
+.status-pill.rejected { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+/* ACTION BUTTONS (Explicit Text) - Updated for Light Theme */
+.payout-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.payout-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #ffffff;
+}
+
+.payout-btn.approve {
+    border: 1.5px solid #059669;
+    color: #059669;
+}
+
+.payout-btn.approve:hover {
+    background: #059669;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+    transform: translateY(-2px);
+}
+
+.payout-btn.reject {
+    border: 1.5px solid #dc2626;
+    color: #dc2626;
+}
+
+.payout-btn.reject:hover {
+    background: #dc2626;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    transform: translateY(-2px);
+}
+
+.processed-at {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}

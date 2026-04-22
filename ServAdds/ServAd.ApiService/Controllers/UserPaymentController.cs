@@ -22,5 +22,18 @@ namespace ServAd.ApiService.Controllers
             var history = await paymentService.GetUserPaymentHistoryAsync(profileId);
             return Ok(history);
         }
+
+        [HttpGet("provider-earnings")]
+        public async Task<IActionResult> GetProviderEarnings()
+        {
+            var profileIdStr = User.FindFirst("ProfileId")?.Value 
+                ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if (profileIdStr == null || !Guid.TryParse(profileIdStr, out var profileId))
+                return Unauthorized();
+
+            var earnings = await paymentService.GetProviderEarningsAsync(profileId);
+            return Ok(earnings);
+        }
     }
 }

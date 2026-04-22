@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -29,8 +29,7 @@ namespace ServAd.ApiService.Services.Jwt
                 NotBefore = now,
                 Expires = now.AddMinutes(_jwtSettings.ExpiryInMinutes),
                 Subject = new ClaimsIdentity(claims),
-                SigningCredentials = _jwtSettings.SigningCredentials,
-                EncryptingCredentials = _jwtSettings.EncryptingCredentials
+                SigningCredentials = _jwtSettings.SigningCredentials
             };
 
             var handler = new JwtSecurityTokenHandler();

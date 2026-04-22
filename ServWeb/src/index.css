@@ -112,8 +112,3 @@ button:focus-visible {
 .forgot-page {
   background: #fff !important;
 }
-
-/* Force body white if route is forgot password */
-body.forgot-password {
-  background: #fff !important;
-}
